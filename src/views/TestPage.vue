@@ -1,21 +1,38 @@
-<template>
-  <section class="p-6">
-    <h2 class="text-2xl font-bold mb-4">🧪 Test Page</h2>
-
-    <div v-if="isLoading" class="text-gray700">불러오는 중...</div>
-    <div v-else-if="user">
-      <p class="text-lg">🙋 유저 이름: {{ user.name }}</p>
-      <p class="text-gray700 text-sm mt-1">이메일: {{ user.email }}</p>
-    </div>
-    <div v-else class="text-red-500">유저 정보를 불러오지 못했습니다.</div>
-    <BaseButton>테스트 버튼</BaseButton>
-  </section>
-</template>
-
 <script setup>
-import BaseButton from '@/components/common/BaseButton.vue';
-import { useUser } from '@/composables/user/useUser';
+import { ref } from "vue";
 
-const userId = 1;
-const { user, isLoading } = useUser(userId);
+import BaseButton from "@/components/common/BaseButton.vue";
+import BaseInput from "@/components/common/BaseInput.vue";
+import FormSectionTitle from "@/components/common/FormSectionTitle.vue";
+
+const name = ref("");
+const password = ref("");
 </script>
+
+<template>
+  <FormSectionTitle
+    title="생년월일을 입력해주세요."
+    subtitle="응답하신 생년월일은 공개되지 않습니다."
+  />
+  <div class="flex flex-col items-center space-y-4">
+    <BaseInput placeholder="이름을 입력해주세요" v-model="name">
+      <template #icon>
+        <span class="text-xl text-gray-500">👤</span>
+      </template>
+    </BaseInput>
+    <BaseInput
+      placeholder="비밀번호를 입력해주세요"
+      type="password"
+      v-model="password"
+      :isInvalid="password.length < 6"
+    >
+      <template #icon>
+        <span class="text-xl text-gray-500">🔒</span>
+      </template>
+    </BaseInput>
+  </div>
+
+  <div class="mt-4 flex justify-center">
+    <BaseButton>가입 완료</BaseButton>
+  </div>
+</template>

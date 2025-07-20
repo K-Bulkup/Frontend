@@ -1,6 +1,7 @@
+<script setup></script>
+
 <template>
   <header>
-    <h1>My App</h1>
+    <h1 class="text-white">Header</h1>
   </header>
 </template>
-<script setup></script>
