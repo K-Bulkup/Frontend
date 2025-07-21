@@ -27,7 +27,7 @@ const password = ref("");
       :isInvalid="password.length < 6"
     >
       <template #icon>
-        <span class="text-xl text-gray-500">🔒</span>
+        <font-awesome-icon :icon="['fas', 'unlock-keyhole']" />
       </template>
     </BaseInput>
   </div>

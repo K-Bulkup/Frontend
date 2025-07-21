@@ -28,7 +28,7 @@ export default {
         white: "#FFFFFF",
         black: "#333446",
         realBlack: "#090909",
-        error: "#EF4444",
+        error: "#FF4444",
       },
       borderRadius: {
         md: "8px",

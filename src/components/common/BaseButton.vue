@@ -10,10 +10,9 @@ defineProps({
 <template>
   <button
     :class="[
-      'text-heading w-[90%] rounded-xl font-medium',
-      isDisabled
-        ? 'cursor-not-allowed border-gray-600 bg-gray-700 text-gray-400'
-        : 'bg-black text-white hover:opacity-80',
+      'w-[90%] rounded-xl text-heading font-medium',
+      'bg-black text-white hover:opacity-80',
+      isDisabled ? 'cursor-not-allowed' : '',
       'border-gray100 border',
       'py-[12px]',
     ]"
