@@ -23,9 +23,9 @@ const inputAttrs = useAttrs();
 </script>
 
 <template>
-  <div class="w-[90%]">
+  <div class="w-full">
     <div
-      class="flex flex-col gap-[4px] rounded-xl border bg-gray-100 px-[16px] py-[12px]"
+      class="flex flex-col gap-1 rounded-xl border bg-gray-100 px-4 py-3"
       :class="[
         isInvalid ? 'border-error' : 'border-gray200',
         'transition duration-200',
