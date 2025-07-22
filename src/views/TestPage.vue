@@ -3,7 +3,7 @@ import { ref } from "vue";
 
 import BaseButton from "@/components/common/BaseButton.vue";
 import BaseInput from "@/components/common/BaseInput.vue";
-import FormSectionTitle from "@/components/common/FormSectionTitle.vue";
+import FormSectionTitle from "@/components/common/BaseStatusMessage.vue";
 
 const name = ref("");
 const password = ref("");

@@ -4,7 +4,7 @@ import { ref } from "vue";
 import { useSignup } from "@/composables/user/useSignup";
 import BaseButton from "@/components/common/BaseButton.vue";
 import BaseInput from "@/components/common/BaseInput.vue";
-import FormSectionTitle from "@/components/common/FormSectionTitle.vue";
+import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
 
 const step = ref(1);
 const { signupAndHandle } = useSignup();
@@ -24,6 +24,10 @@ const isPasswordValid = (password) => /^(?=.*[^\w\s]).{8,}$/.test(password);
 const isPasswordConfirmed = () =>
   form.value.password === form.value.passwordConfirm;
 
+const isNicknameValid = (nickname) => /^[^\s]{1,12}$/.test(nickname);
+
+const isBirthdateValid = (birthdate) => /^\d{6}$/.test(birthdate);
+
 const goNext = () => {
   if (step.value === 1) {
     const valid =
@@ -33,7 +37,7 @@ const goNext = () => {
     if (!valid) return;
     step.value++;
   } else if (step.value === 2) {
-    if (!form.value.nickname || form.value.nickname.length > 12) return;
+    if (!isNicknameValid(form.value.nickname)) return;
     step.value++;
   }
 };
@@ -51,7 +55,7 @@ const submit = () => {
 <template>
   <div class="flex min-h-screen flex-col justify-between px-1 py-20">
     <div>
-      <FormSectionTitle
+      <BaseStatusMessage
         :title="
           step === 1
             ? '회원가입을 진행해주세요.'
@@ -66,6 +70,7 @@ const submit = () => {
               ? '이름은 공백 없이 12자 이하만 가능합니다.'
               : '응답하신 생년월일은 공개되지 않습니다.'
         "
+        variant="guide"
       />
 
       <div class="mt-6 flex flex-col items-center space-y-4">
@@ -112,7 +117,9 @@ const submit = () => {
           <BaseInput
             v-model="form.nickname"
             placeholder="이름을 입력해주세요"
-            :is-invalid="form.nickname !== '' && form.nickname.length > 12"
+            :is-invalid="
+              form.nickname !== '' && !isNicknameValid(form.nickname)
+            "
             error-message="이름은 공백 없이 12자 이하만 가능합니다"
           />
         </template>
@@ -121,6 +128,10 @@ const submit = () => {
           <BaseInput
             v-model="form.birthdate"
             placeholder="생년월일을 입력해주세요"
+            :is-invalid="
+              form.birthdate !== '' && !isBirthdateValid(form.birthdate)
+            "
+            error-message="6자리 숫자(990101 형식)로 입력해주세요"
           />
         </template>
       </div>
@@ -147,7 +158,13 @@ const submit = () => {
         다음
       </BaseButton>
 
-      <BaseButton v-else @click="submit">가입완료</BaseButton>
+      <BaseButton
+        v-if="step === 3"
+        @click="submit"
+        :isDisabled="!isBirthdateValid(form.birthdate)"
+      >
+        가입완료
+      </BaseButton>
     </div>
   </div>
 </template>
