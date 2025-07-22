@@ -118,7 +118,9 @@ const submit = async () => {
             error-message="올바른 이메일 형식을 입력해주세요"
           >
             <template #icon>
-              <span class="text-xl text-gray-500">👤</span>
+              <span class="text-xl text-gray-500">
+                <font-awesome-icon :icon="['far', 'user']" />
+              </span>
             </template>
           </BaseInput>
 
@@ -132,7 +134,9 @@ const submit = async () => {
             error-message="비밀번호는 8자 이상, 특수문자를 포함해야 합니다"
           >
             <template #icon>
-              <span class="text-xl text-gray-500">🔒</span>
+              <span class="text-xl text-gray-500">
+                <font-awesome-icon :icon="['fas', 'lock']" />
+              </span>
             </template>
           </BaseInput>
 
@@ -144,7 +148,9 @@ const submit = async () => {
             error-message="비밀번호가 일치하지 않습니다"
           >
             <template #icon>
-              <span class="text-xl text-gray-500">🔒</span>
+              <span class="text-xl text-gray-500">
+                <font-awesome-icon :icon="['fas', 'lock']" />
+              </span>
             </template>
           </BaseInput>
         </template>

@@ -1,4 +1,5 @@
 import { library } from "@fortawesome/fontawesome-svg-core";
-import { faUnlockKeyhole } from "@fortawesome/free-solid-svg-icons";
+import { faUser } from "@fortawesome/free-regular-svg-icons";
+import { faLock } from "@fortawesome/free-solid-svg-icons";
 
-library.add(faUnlockKeyhole);
+library.add(faUser, faLock);
