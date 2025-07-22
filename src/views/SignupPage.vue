@@ -1,11 +1,13 @@
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 
 import { useSignup } from "@/composables/user/useSignup";
 import BaseButton from "@/components/common/BaseButton.vue";
 import BaseInput from "@/components/common/BaseInput.vue";
 import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
 
+const router = useRouter();
 const step = ref(1);
 const { signupAndHandle } = useSignup();
 
@@ -42,18 +44,52 @@ const goNext = () => {
   }
 };
 
-const submit = () => {
-  signupAndHandle({
+const result = ref(null);
+
+const submit = async () => {
+  const { success } = await signupAndHandle({
     email: form.value.email,
     password: form.value.password,
     nickname: form.value.nickname,
     birthdate: form.value.birthdate,
   });
+
+  result.value = success ? "success" : "fail";
 };
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col justify-between px-1 py-20">
+  <div
+    v-if="result === 'success'"
+    class="flex min-h-screen flex-col justify-between px-1 py-20"
+  >
+    <BaseStatusMessage
+      icon="✅"
+      title="회원가입이 완료되었습니다"
+      subtitle="K-Bulkup과 함께 건강한 습관을 시작해보세요"
+      variant="status"
+    />
+    <div class="mt-10 flex w-full justify-center">
+      <BaseButton @click="router.push('/login')">홈으로 가기</BaseButton>
+    </div>
+  </div>
+
+  <div
+    v-else-if="result === 'fail'"
+    class="flex min-h-screen flex-col justify-between px-1 py-20"
+  >
+    <BaseStatusMessage
+      icon="⚠️"
+      title="회원가입에 실패했습니다"
+      subtitle="입력한 정보를 다시 한 번 확인해주세요"
+      variant="status"
+    />
+    <div class="mt-10 flex w-full justify-center">
+      <BaseButton @click="result = null">다시 시도</BaseButton>
+    </div>
+  </div>
+
+  <div v-else class="flex min-h-screen flex-col justify-between px-1 py-20">
     <div>
       <BaseStatusMessage
         :title="
