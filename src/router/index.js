@@ -39,7 +39,7 @@ const router = createRouter({
 
     //training
     { path: "/training", component: TrainingListPage },
-    { path: "/training/:id", component: TrainingDetailPage },
+    { path: "/training/:trainingId", component: TrainingDetailPage },
 
     //trainee
     { path: "/trainee/mypage", component: TraineeMyPage },
