@@ -1,19 +1,14 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { postLogin } from "@/composables/api/useUserApi";
+import { useAuthStore } from "@/stores/auth";
 
 export const useLogin = () => {
-  const user = ref(null);
+  const authStore = useAuthStore();
 
   const loginAndHandle = async (formData) => {
-    try {
-      const res = await postLogin(formData);
-      user.value = res.data;
-      return { success: true, data: res.data };
-    } catch (e) {
-      return { success: false, error: e };
-    }
+    const { success, error } = await authStore.login(formData);
+    return { success, error };
   };
 
-  return { user, loginAndHandle };
+  return { loginAndHandle };
 };

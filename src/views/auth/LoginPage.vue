@@ -29,22 +29,14 @@ const goNext = () => {
 
 const selectRoleAndLogin = async (role) => {
   form.value.role = role;
-  const { success, error } = await loginAndHandle(form.value);
+  const { success } = await loginAndHandle(form.value);
 
   if (success) {
     result.value = "success";
-    const destination =
-      form.value.role === "trainer" ? "/trainer/mypage" : "/trainee/mypage";
-    router.push(destination);
+    // 리디렉션은 useAuthStore에서 처리하므로 여기서는 별도 처리하지 않음
   } else {
     result.value = "fail";
-    console.error("Login failed:", error);
   }
-};
-
-const resetLogin = () => {
-  result.value = null;
-  step.value = 1;
 };
 </script>
 
@@ -77,7 +69,7 @@ const resetLogin = () => {
       variant="status"
     />
     <div class="mt-10 flex w-full justify-center">
-      <BaseButton @click="resetLogin">다시 시도</BaseButton>
+      <BaseButton @click="result = null; step = 1;">다시 시도</BaseButton>
     </div>
   </div>
 
