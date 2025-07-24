@@ -1,15 +1,26 @@
 <script setup>
-import Header from "@/components/layout/Header.vue";
-import Footer from "@/components/layout/Footer.vue";
+import { onMounted } from "vue";
+import { useAuthStore } from "./stores/auth";
+
+import NavigationBar from "./components/layout/NavigationBar.vue";
+
+const authStore = useAuthStore();
+
+onMounted(async () => {
+  const token = localStorage.getItem("accessToken");
+  if (token) {
+    authStore.setToken(token);
+    await authStore.fetchUserInfo();
+  }
+});
 </script>
 
 <template>
   <div class="app-container">
     <div class="mx-auto max-w-screen-md px-4">
-      <Header />
       <RouterView />
-      <Footer />
     </div>
+    <NavigationBar />
   </div>
 </template>
 
