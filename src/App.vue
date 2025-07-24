@@ -1,10 +1,11 @@
 <script setup>
-import { onMounted } from "vue";
+import { onMounted, computed } from "vue";
+import { useRoute } from "vue-router";
 import { useAuthStore } from "./stores/auth";
-
 import NavigationBar from "./components/layout/NavigationBar.vue";
 
 const authStore = useAuthStore();
+const route = useRoute();
 
 onMounted(async () => {
   const token = localStorage.getItem("accessToken");
@@ -13,6 +14,8 @@ onMounted(async () => {
     await authStore.fetchUserInfo();
   }
 });
+
+const hideNavBar = computed(() => route.path.includes("chat"));
 </script>
 
 <template>
@@ -20,8 +23,6 @@ onMounted(async () => {
     <div class="mx-auto max-w-screen-md px-4">
       <RouterView />
     </div>
-    <NavigationBar />
+    <NavigationBar v-if="!hideNavBar" />
   </div>
 </template>
-
-<style></style>

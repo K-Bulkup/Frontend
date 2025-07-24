@@ -24,7 +24,7 @@ export const useAuthStore = defineStore("auth", {
       // } catch (e) {
       //   console.error("유저 정보 가져오기 실패:", e);
       // }
-      this.setRole("trainee");
+      this.setRole("trainer");
     },
 
     logout() {
