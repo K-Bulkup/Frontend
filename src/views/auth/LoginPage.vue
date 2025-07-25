@@ -3,11 +3,13 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 import { useLogin } from "@/composables/user/useLogin";
+import { useAuthStore } from "@/stores/auth";
 import BaseButton from "@/components/common/BaseButton.vue";
 import BaseInput from "@/components/common/BaseInput.vue";
 import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
 
 const router = useRouter();
+const authStore = useAuthStore();
 const { loginAndHandle } = useLogin();
 const step = ref(1);
 
@@ -65,7 +67,7 @@ const handleLogin = async () => {
       variant="status"
     />
     <div class="mt-10 flex w-full justify-center">
-      <BaseButton @click="router.push('/login')">홈으로 가기</BaseButton>
+      <BaseButton @click="authStore.role === 'trainer' ? router.push('/trainer/mypage') : router.push('/trainee/mypage')">홈으로 가기</BaseButton>
     </div>
   </div>
 
