@@ -33,9 +33,9 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     //auth
-    { path: "/splash", component: SplashPage },
-    { path: "/login", component: LoginPage },
-    { path: "/signup", component: SignupPage },
+    { path: "/splash", component: SplashPage, meta: { hideNavbar: true } },
+    { path: "/login", component: LoginPage, meta: { hideNavbar: true } },
+    { path: "/signup", component: SignupPage, meta: { hideNavbar: true } },
 
     //training
     { path: "/training", component: TrainingListPage },
