@@ -66,7 +66,7 @@ const isNextButtonDisabled = computed(() => {
 });
 
 const nextButtonText = computed(() => {
-  return step.value === 1 ? "다음" : "트레이닝 생성 완료";
+  return step.value === 4 ? "트레이닝 오픈하기" : "다음";
 });
 
 // 메서드 (Methods)
@@ -108,7 +108,6 @@ const handleNextStep = () => {
     };
 
     console.log("최종 커리큘럼 데이터:", curriculumData);
-    alert("트레이닝 생성이 완료되었습니다!");
     // router.push('/trainer/dashboard');
   }
 };
