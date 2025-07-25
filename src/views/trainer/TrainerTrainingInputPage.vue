@@ -53,7 +53,7 @@ const handleNext = () => {
           :key="category"
           @click="handleSelectCategory(category)"
           :class="[
-            'w-full rounded-xl border-2 border-solid py-3 text-center text-base transition-colors',
+            'w-full rounded-md border-2 border-solid py-3 text-center text-body transition-colors',
             selectedCategory === category
               ? 'border-primary bg-primary text-black'
               : 'border-gray-200 bg-gray-100 text-black hover:bg-gray-200',
