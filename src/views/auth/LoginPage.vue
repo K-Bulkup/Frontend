@@ -19,6 +19,7 @@ const form = ref({
 });
 
 const result = ref(null);
+const selectedRole = ref(null); // 새로 추가: 선택된 역할을 저장
 
 const goNext = () => {
   if (form.value.email && form.value.password) {
@@ -27,8 +28,19 @@ const goNext = () => {
   }
 };
 
-const selectRoleAndLogin = async (role) => {
+// 역할 카드 클릭 시 호출될 함수
+const handleRoleSelection = (role) => {
   form.value.role = role;
+  selectedRole.value = role; // 선택된 역할 업데이트
+};
+
+// "다음" 버튼 클릭 시 호출될 로그인 함수
+const handleLogin = async () => {
+  if (!form.value.role) {
+    // 역할이 선택되지 않았다면 경고 또는 처리
+    alert("역할을 선택해주세요.");
+    return;
+  }
   const { success } = await loginAndHandle(form.value);
 
   if (success) {
@@ -125,7 +137,8 @@ const selectRoleAndLogin = async (role) => {
         <div class="mt-8 space-y-4">
           <!-- 트레이너 카드 -->
           <div
-            @click="selectRoleAndLogin('trainer')"
+            @click="handleRoleSelection('trainer')"
+            :class="{ 'border-4 border-yellow-500': selectedRole === 'trainer' }"
             class="flex cursor-pointer items-center justify-between rounded-xl bg-white px-4 py-4 shadow"
           >
             <div>
@@ -141,7 +154,8 @@ const selectRoleAndLogin = async (role) => {
 
           <!-- 회원 카드 -->
           <div
-            @click="selectRoleAndLogin('trainee')"
+            @click="handleRoleSelection('trainee')"
+            :class="{ 'border-4 border-yellow-500': selectedRole === 'trainee' }"
             class="flex cursor-pointer items-center justify-between rounded-xl bg-white px-4 py-4 shadow"
           >
             <div>
@@ -157,7 +171,7 @@ const selectRoleAndLogin = async (role) => {
         </div>
 
         <div class="mt-10">
-          <BaseButton class="w-full bg-[#2D2D40] py-3 text-white"
+          <BaseButton @click="handleLogin" class="w-full bg-[#2D2D40] py-3 text-white"
             >다음</BaseButton
           >
         </div>
