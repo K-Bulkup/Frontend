@@ -13,6 +13,7 @@ export const useAuthStore = defineStore("auth", {
 
     setToken(token) {
       this.token = token;
+      localStorage.setItem("accessToken", token); // 이 줄을 추가합니다.
     },
 
     async fetchUserInfo() {

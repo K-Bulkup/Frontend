@@ -20,7 +20,7 @@ onMounted(async () => {
     <div class="mx-auto max-w-screen-md px-4">
       <RouterView />
     </div>
-    <NavigationBar />
+    <NavigationBar v-if="!$route.meta.hideNavbar" />
   </div>
 </template>
 
