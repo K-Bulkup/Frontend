@@ -2,6 +2,7 @@
 import SplashPage from "@/views/auth/SplashPage.vue";
 import SignupPage from "@/views/auth/SignupPage.vue";
 import LoginPage from "@/views/auth/LoginPage.vue";
+import NaverCallbackPage from "@/views/auth/NaverCallbackPage.vue";
 
 //training
 import TrainingListPage from "@/views/training/TrainingListPage.vue";
@@ -36,6 +37,7 @@ const router = createRouter({
     { path: "/splash", component: SplashPage, meta: { hideNavbar: true } },
     { path: "/login", component: LoginPage, meta: { hideNavbar: true } },
     { path: "/signup", component: SignupPage, meta: { hideNavbar: true } },
+    { path: "/oauth/naver/callback", component: NaverCallbackPage, meta: { hideNavbar: true } },
 
     //training
     { path: "/training", component: TrainingListPage },

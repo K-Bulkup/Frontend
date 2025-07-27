@@ -1,16 +1,20 @@
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
 
+import apiClient from "@/plugins/axios";
 import { useLogin } from "@/composables/user/useLogin";
+import { useSignup } from "@/composables/user/useSignup"; // useSignup import 추가
 import { useAuthStore } from "@/stores/auth";
 import BaseButton from "@/components/common/BaseButton.vue";
 import BaseInput from "@/components/common/BaseInput.vue";
 import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 const { loginAndHandle } = useLogin();
+const { signupAndHandle } = useSignup(); // signupAndHandle 추가
 const step = ref(1);
 
 const form = ref({
@@ -22,6 +26,47 @@ const form = ref({
 
 const result = ref(null);
 const selectedRole = ref(null); // 새로 추가: 선택된 역할을 저장
+
+const availableRolesFromNaver = ref([]); // 네이버 콜백에서 받은 역할 목록
+const isNaverSignupFlow = ref(false); // 네이버 신규 가입 흐름인지 여부
+const naverProfileData = ref(null); // 네이버 프로필 데이터 저장
+
+onMounted(() => {
+  console.log('LoginPage received query:', route.query); // 디버깅을 위한 로그 추가
+  // 네이버 소셜 로그인 콜백 처리
+  if (route.query.naverSignup || route.query.naverLogin) {
+    step.value = 2; // step을 2로 설정하여 역할 선택 화면으로 이동
+    console.log('step.value set to:', step.value); // 추가된 로그
+
+    if (route.query.naverSignup) {
+      // 신규 사용자 (회원가입 유도)
+      isNaverSignupFlow.value = true; // 신규 가입 흐름 설정
+      try {
+        const naverProfile = JSON.parse(route.query.naverProfile);
+        naverProfileData.value = naverProfile; // 네이버 프로필 데이터 저장
+        console.log('naverProfileData:', naverProfileData.value); // 추가된 로그
+        form.value.email = naverProfile.email; // 이메일 미리 채우기
+        form.value.logintype = "NAVER"; // 로그인 타입 설정
+        availableRolesFromNaver.value = JSON.parse(route.query.availableRoles); // availableRoles 파싱
+      } catch (e) {
+        console.error("Failed to parse naverProfile or availableRoles:", e);
+      }
+    } else if (route.query.naverLogin) {
+      // 기존 사용자 (로그인 유도)
+      try {
+        availableRolesFromNaver.value = JSON.parse(route.query.availableRoles);
+        console.log('availableRolesFromNaver:', availableRolesFromNaver.value); // 추가된 로그
+        form.value.email = route.query.email; // 이메일 미리 채우기
+        form.value.logintype = "NAVER"; // 로그인 타입 설정
+        // availableRoles를 사용하여 역할 선택 UI를 구성해야 함
+        // 현재는 form.value.role과 selectedRole을 초기화하지 않음 (사용자가 선택하도록)
+      } catch (e) {
+        console.error("Failed to parse availableRoles:", e);
+      }
+    }
+  }
+});
+
 
 const goNext = () => {
   if (form.value.email && form.value.password) {
@@ -43,14 +88,55 @@ const handleLogin = async () => {
     alert("역할을 선택해주세요.");
     return;
   }
-  const { success } = await loginAndHandle(form.value);
+
+  let success = false;
+
+  if (isNaverSignupFlow.value) {
+    // 네이버 신규 가입 흐름인 경우 social-signup-complete API 호출
+    try {
+      const response = await apiClient.post('/api/common/auth/social-signup-complete', {
+        email: naverProfileData.value.email,
+        name: naverProfileData.value.name, // 네이버 프로필에서 이름 가져오기
+        providerId: naverProfileData.value.id, // 네이버 프로필에서 providerId 가져오기
+        selectedRole: form.value.role,
+        // password: form.value.password // 백엔드 요청에 따라 제거
+      });
+      authStore.setToken(response.data.accessToken);
+      authStore.setRole(form.value.role);
+      success = true;
+    } catch (error) {
+      console.error('소셜 회원가입 완료 중 오류 발생:', error);
+      alert('회원가입 중 오류가 발생했습니다.');
+      success = false;
+    }
+  } else if (route.query.naverLogin) {
+    // 네이버 기존 사용자 로그인 흐름인 경우 로그인 API 호출
+    // 비밀번호는 네이버 로그인에서는 필요 없으므로 제거
+    const { password, ...loginData } = form.value;
+    loginData.loginType = 'NAVER'; // 네이버 로그인임을 명시
+    const { success: loginSuccess } = await loginAndHandle(loginData);
+    success = loginSuccess;
+  } else {
+    // 일반 로컬 로그인 흐름인 경우 로그인 API 호출
+    const { success: loginSuccess } = await loginAndHandle(form.value);
+    success = loginSuccess;
+  }
 
   if (success) {
     result.value = "success";
+    console.log('Redirecting with authStore.role:', authStore.role); // 추가된 로그
     // 리디렉션은 useAuthStore에서 처리하므로 여기서는 별도 처리하지 않음
   } else {
     result.value = "fail";
   }
+};
+
+const handleNaverLogin = () => {
+  const clientId = "D265km6WSuQZmdGq5rGz";
+  const redirectUri = "http://localhost:5173/oauth/naver/callback"; // 프론트엔드 콜백 URL로 변경
+  const state = "RANDOM_STATE"; // CSRF 공격을 방지하기 위한 임의의 문자열입니다.
+  const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}`;
+  window.location.href = naverAuthUrl;
 };
 </script>
 
@@ -67,7 +153,7 @@ const handleLogin = async () => {
       variant="status"
     />
     <div class="mt-10 flex w-full justify-center">
-      <BaseButton @click="authStore.role === 'trainer' ? router.push('/trainer/mypage') : router.push('/trainee/mypage')">홈으로 가기</BaseButton>
+      <BaseButton @click="authStore.role === 'TRAINER' ? router.push('/trainer/mypage') : router.push('/trainee/mypage')">홈으로 가기</BaseButton>
     </div>
   </div>
 
@@ -121,7 +207,8 @@ const handleLogin = async () => {
           <img
             src="@/assets/images/naverLogin.png"
             alt="네이버 로그인"
-            class="h-12 w-12 rounded-full"
+            class="h-12 w-12 rounded-full cursor-pointer"
+            @click="handleNaverLogin"
           />
           <img
             src="@/assets/images/kakaoLogin.png"
@@ -137,36 +224,21 @@ const handleLogin = async () => {
           어떤 유형으로 가입하시겠어요?
         </p>
         <div class="mt-8 space-y-4">
-          <!-- 트레이너 카드 -->
+          <!-- 역할 카드 -->
           <div
-            @click="handleRoleSelection('trainer')"
-            :class="{ 'border-4 border-yellow-500': selectedRole === 'trainer' }"
+            v-for="role in (availableRolesFromNaver.length > 0 ? availableRolesFromNaver : ['TRAINER', 'TRAINEE'])"
+            :key="role"
+            @click="handleRoleSelection(role)"
+            :class="{ 'border-4 border-yellow-500': selectedRole === role }"
             class="flex cursor-pointer items-center justify-between rounded-xl bg-white px-4 py-4 shadow"
           >
             <div>
-              <p class="font-bold text-black">트레이너</p>
-              <p class="text-sm text-gray-500">회원을 찾고 있어요.</p>
+              <p class="font-bold text-black">{{ role === 'TRAINER' ? '트레이너' : '회원' }}</p>
+              <p class="text-sm text-gray-500">{{ role === 'TRAINER' ? '회원을 찾고 있어요.' : '트레이너를 찾고 있어요.' }}</p>
             </div>
             <img
-              src="@/assets/images/trainer-icon.png"
-              alt="트레이너 아이콘"
-              class="h-12 w-12"
-            />
-          </div>
-
-          <!-- 회원 카드 -->
-          <div
-            @click="handleRoleSelection('trainee')"
-            :class="{ 'border-4 border-yellow-500': selectedRole === 'trainee' }"
-            class="flex cursor-pointer items-center justify-between rounded-xl bg-white px-4 py-4 shadow"
-          >
-            <div>
-              <p class="font-bold text-black">회원</p>
-              <p class="text-sm text-gray-500">트레이너를 찾고 있어요.</p>
-            </div>
-            <img
-              src="@/assets/images/trainee-icon.png"
-              alt="회원 아이콘"
+              :src="role === 'TRAINER' ? '/src/assets/images/trainer-icon.png' : '/src/assets/images/trainee-icon.png'"
+              :alt="role === 'TRAINER' ? '트레이너 아이콘' : '회원 아이콘'"
               class="h-12 w-12"
             />
           </div>
