@@ -27,7 +27,7 @@ const ROUTINE_SECTIONS = [
 
 // 라우터 및 상태 (Router & State)
 const router = useRouter();
-const step = ref(1); // 초기 단계를 1로 설정
+const step = ref(1);
 
 // 1단계 데이터
 const selectedCategory = ref(null);
@@ -71,7 +71,6 @@ const isNextButtonDisabled = computed(() => {
     );
   }
   if (step.value === 3) return !thumbnail.value;
-  // 4단계에서는 버튼이 없으므로 항상 true 반환
   return step.value >= 4;
 });
 
@@ -129,10 +128,9 @@ const handleNextStep = async () => {
     try {
       console.log("API로 보낼 데이터 (이미지 제외):", finalData);
       await createTraining(finalData);
-      step.value = 4; // 성공 시 4단계로 이동
+      step.value = 4;
     } catch (error) {
       console.error("트레이닝 등록 실패:", error);
-      // alert() 대신 console.error 사용 또는 사용자에게 보여줄 에러 메시지 컴포넌트 사용 권장
     }
   }
 };
@@ -250,15 +248,7 @@ const triggerFileInput = () => {
                   @click.stop="handleOpenRoutineModal(section.key)"
                   class="flex h-6 w-6 items-center justify-center rounded-full bg-primary"
                 >
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path
-                      d="M6 1V11M1 6H11"
-                      stroke="#090909"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
+                  <img src="@/assets/images/plus.svg" alt="추가 버튼" />
                 </button>
               </div>
               <div v-if="expandedSections[section.key]" class="mt-2.5">
@@ -360,3 +350,5 @@ const triggerFileInput = () => {
     />
   </div>
 </template>
+
+<style scoped></style>
