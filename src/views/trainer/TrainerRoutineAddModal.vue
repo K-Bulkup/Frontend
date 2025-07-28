@@ -46,84 +46,80 @@ const handleSave = () => {
 </script>
 
 <template>
-  <div class="fixed inset-0 z-50 bg-black bg-opacity-50">
-    <div
-      class="flex h-full w-full flex-col justify-between overflow-y-auto bg-realBlack px-6 py-10"
-    >
-      <div>
-        <BaseHeader title="루틴 추가" @back="handleClose" />
+  <div
+    class="absolute inset-0 z-50 flex h-full w-full flex-col justify-between overflow-y-auto bg-realBlack px-6 py-10"
+  >
+    <div>
+      <BaseHeader title="루틴 추가" @back="handleClose" />
 
-        <main>
-          <BaseStatusMessage
-            class="mb-8 text-left"
-            title="수행할 루틴을 알려주세요"
-            subtitle="회원에게 제공할 루틴을 추가해주세요"
-          />
+      <main>
+        <BaseStatusMessage
+          class="mb-8 text-left"
+          title="수행할 루틴을 알려주세요"
+          subtitle="회원에게 제공할 루틴을 추가해주세요"
+        />
 
-          <div class="flex flex-col space-y-6">
-            <div>
-              <label class="mb-2 block text-subtext text-gray-50"
-                >루틴 제목</label
+        <div class="flex flex-col space-y-6">
+          <div>
+            <label class="mb-2 block text-subtext text-gray-50"
+              >루틴 제목</label
+            >
+            <input
+              v-model="routineTitle"
+              type="text"
+              placeholder="루틴 제목을 입력해주세요"
+              class="w-full rounded-xl border-none bg-gray-100 p-4 text-body text-black outline-none placeholder:text-gray-700"
+            />
+          </div>
+
+          <div>
+            <label class="mb-2 block text-subtext text-gray-50">영상 URL</label>
+            <input
+              v-model="routineUrl"
+              type="text"
+              placeholder="영상 URL을 입력해주세요"
+              class="w-full rounded-xl border-none bg-gray-100 p-4 text-body text-black outline-none placeholder:text-gray-700"
+            />
+          </div>
+
+          <div>
+            <label class="mb-2 block text-subtext text-gray-50"
+              >루틴 내용</label
+            >
+            <textarea
+              v-model="routineContent"
+              placeholder="루틴 내용을 입력해주세요"
+              rows="4"
+              class="w-full resize-none rounded-xl border-none bg-gray-100 p-4 text-body text-black outline-none placeholder:text-gray-700"
+            ></textarea>
+          </div>
+
+          <div>
+            <div class="mb-4 text-subtext text-gray-50">루틴 유형</div>
+            <div class="flex items-center gap-2.5">
+              <button
+                v-for="type in ROUTINE_TYPES"
+                :key="type"
+                :class="[
+                  'flex-1 rounded-xl py-3 text-center text-subtext transition-colors',
+                  selectedRoutineType === type
+                    ? 'bg-primary text-black'
+                    : 'bg-gray-100 text-black hover:bg-gray-200',
+                ]"
+                @click="selectedRoutineType = type"
               >
-              <input
-                v-model="routineTitle"
-                type="text"
-                placeholder="루틴 제목을 입력해주세요"
-                class="w-full rounded-xl border-none bg-gray-100 p-4 text-body text-black outline-none placeholder:text-gray-700"
-              />
-            </div>
-
-            <div>
-              <label class="mb-2 block text-subtext text-gray-50"
-                >영상 URL</label
-              >
-              <input
-                v-model="routineUrl"
-                type="text"
-                placeholder="영상 URL을 입력해주세요"
-                class="w-full rounded-xl border-none bg-gray-100 p-4 text-body text-black outline-none placeholder:text-gray-700"
-              />
-            </div>
-
-            <div>
-              <label class="mb-2 block text-subtext text-gray-50"
-                >루틴 내용</label
-              >
-              <textarea
-                v-model="routineContent"
-                placeholder="루틴 내용을 입력해주세요"
-                rows="4"
-                class="w-full resize-none rounded-xl border-none bg-gray-100 p-4 text-body text-black outline-none placeholder:text-gray-700"
-              ></textarea>
-            </div>
-
-            <div>
-              <div class="mb-4 text-subtext text-gray-50">루틴 유형</div>
-              <div class="flex items-center gap-2.5">
-                <button
-                  v-for="type in ROUTINE_TYPES"
-                  :key="type"
-                  :class="[
-                    'flex-1 rounded-xl py-3 text-center text-subtext transition-colors',
-                    selectedRoutineType === type
-                      ? 'bg-primary text-black'
-                      : 'bg-gray-100 text-black hover:bg-gray-200',
-                  ]"
-                  @click="selectedRoutineType = type"
-                >
-                  {{ type }}
-                </button>
-              </div>
+                {{ type }}
+              </button>
             </div>
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
+    </div>
 
-      <div class="mt-10">
-        <BaseButton :isDisabled="isSaveButtonDisabled" @click="handleSave">
-          완료
-        </BaseButton>
-      </div>
+    <div class="mt-10">
+      <BaseButton :isDisabled="isSaveButtonDisabled" @click="handleSave">
+        완료
+      </BaseButton>
     </div>
   </div>
 </template>

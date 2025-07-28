@@ -46,7 +46,7 @@ const navigateToTrainerPtHistory = () => {
 
 <template>
   <nav
-    class="fixed bottom-0 left-0 right-0 flex h-16 items-center justify-around border-t border-gray-700 bg-realBlack"
+    class="absolute bottom-0 left-0 right-0 flex h-16 items-center justify-around border-t border-gray-700 bg-realBlack"
   >
     <template v-if="userType === 'trainee'">
       <div

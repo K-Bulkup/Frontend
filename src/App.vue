@@ -16,11 +16,16 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-realBlack text-white">
-    <div class="mx-auto max-w-screen-md px-4">
-      <RouterView />
+  <div class="flex min-h-screen items-center justify-center bg-realBlack">
+    <div
+      class="relative flex h-[852px] w-[393px] flex-col overflow-hidden bg-realBlack shadow-2xl"
+    >
+      <main class="flex-1 overflow-y-auto">
+        <RouterView />
+      </main>
+
+      <NavigationBar />
     </div>
-    <NavigationBar v-if="!$route.meta.hideNavbar" />
   </div>
 </template>
 

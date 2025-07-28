@@ -11,7 +11,7 @@ defineProps({
   <button
     :class="[
       'w-full rounded-xl text-heading font-medium',
-      'bg-black hover:opacity-80',
+      'bg-black text-white hover:opacity-80',
       isDisabled ? 'cursor-not-allowed' : '',
       'border-gray100 border',
       'py-[12px]',
