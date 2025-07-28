@@ -8,6 +8,8 @@ import RoutineAddModal from "./TrainerRoutineAddModal.vue";
 
 // 상수 (Constants)
 const FINANCE_CATEGORIES = [
+// 상수 (Constants)
+const FINANCE_CATEGORIES = [
   "재무설계",
   "현금관리",
   "신용과 부채관리",
@@ -16,6 +18,14 @@ const FINANCE_CATEGORIES = [
   "세금설계",
   "기타",
 ];
+const DIFFICULTY_LEVELS = ["초급", "중급", "고급"];
+const ROUTINE_SECTIONS = [
+  { key: "stretching", title: "스트레칭" },
+  { key: "strength", title: "근력" },
+  { key: "cardio", title: "유산소" },
+];
+
+// 라우터 및 상태 (Router & State)
 const DIFFICULTY_LEVELS = ["초급", "중급", "고급"];
 const ROUTINE_SECTIONS = [
   { key: "stretching", title: "스트레칭" },
