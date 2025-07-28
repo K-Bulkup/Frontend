@@ -218,15 +218,7 @@ const handleNextStep = () => {
                 @click.stop="handleAddRoutine(section.key)"
                 class="flex h-6 w-6 items-center justify-center rounded-full bg-primary"
               >
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path
-                    d="M6 1V11M1 6H11"
-                    stroke="#090909"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
+                <img src="@/assets/images/plus.svg" alt="추가 버튼" />
               </button>
             </div>
 
