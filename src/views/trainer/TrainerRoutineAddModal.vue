@@ -82,7 +82,7 @@ const handleSave = () => {
                 v-model="routineTitle"
                 type="text"
                 placeholder="루틴 제목을 입력해주세요"
-                class="w-full rounded-xl border-none bg-gray-100 p-4 text-body text-black outline-none placeholder:text-gray-700"
+                class="w-full rounded-md border-none bg-gray-100 p-4 text-body text-black outline-none placeholder:text-gray-700"
               />
             </div>
 
@@ -94,7 +94,7 @@ const handleSave = () => {
                 v-model="routineUrl"
                 type="text"
                 placeholder="영상 URL을 입력해주세요"
-                class="w-full rounded-xl border-none bg-gray-100 p-4 text-body text-black outline-none placeholder:text-gray-700"
+                class="w-full rounded-md border-none bg-gray-100 p-4 text-body text-black outline-none placeholder:text-gray-700"
               />
             </div>
 
@@ -106,7 +106,7 @@ const handleSave = () => {
                 v-model="routineContent"
                 placeholder="루틴 내용을 입력해주세요"
                 rows="4"
-                class="w-full resize-none rounded-xl border-none bg-gray-100 p-4 text-body text-black outline-none placeholder:text-gray-700"
+                class="w-full resize-none rounded-md border-none bg-gray-100 p-4 text-body text-black outline-none placeholder:text-gray-700"
               ></textarea>
             </div>
 
@@ -116,13 +116,13 @@ const handleSave = () => {
                 <button
                   v-for="type in ROUTINE_TYPES"
                   :key="type"
+                  @click="selectedRoutineType = type"
                   :class="[
-                    'flex-1 rounded-xl py-3 text-center text-subtext transition-colors',
+                    'flex-1 rounded-md py-3 text-center text-subtext transition-colors',
                     selectedRoutineType === type
                       ? 'bg-primary text-black'
                       : 'bg-gray-100 text-black hover:bg-gray-200',
                   ]"
-                  @click="selectedRoutineType = type"
                 >
                   {{ type }}
                 </button>

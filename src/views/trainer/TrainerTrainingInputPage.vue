@@ -45,7 +45,7 @@ const expandedSections = ref({
   cardio: true,
 });
 
-// 모달의 표시 여부와 현재 카테고리를 관리할 상태 추가
+// 모달 상태
 const isModalVisible = ref(false);
 const currentCategory = ref(null);
 
@@ -76,6 +76,7 @@ const nextButtonText = computed(() => {
 const handleCategorySelect = (category) => {
   selectedCategory.value = category;
 };
+
 const handleGoBack = () => {
   if (step.value === 2) {
     step.value = 1;
@@ -83,17 +84,16 @@ const handleGoBack = () => {
     router.back();
   }
 };
+
 const handleSectionToggle = (sectionKey) => {
   expandedSections.value[sectionKey] = !expandedSections.value[sectionKey];
 };
 
-// '+' 버튼 클릭 시 모달을 열도록 함수를 수정
 const handleOpenRoutineModal = (category) => {
-  currentCategory.value = category; // 어떤 카테고리인지 저장
-  isModalVisible.value = true; // 모달 열기
+  currentCategory.value = category;
+  isModalVisible.value = true;
 };
 
-// 모달에서 저장 이벤트가 발생했을 때 실행될 함수 추가
 const onRoutineSaved = (newRoutine) => {
   if (currentCategory.value) {
     routines.value[currentCategory.value].push({
@@ -101,7 +101,7 @@ const onRoutineSaved = (newRoutine) => {
       name: newRoutine.name,
     });
   }
-  isModalVisible.value = false; // 모달 닫기
+  isModalVisible.value = false;
 };
 
 const handleNextStep = () => {
@@ -118,7 +118,7 @@ const handleNextStep = () => {
       routines: routines.value,
     };
     console.log("최종 커리큘럼 데이터:", curriculumData);
-    alert("트레이닝 생성이 완료되었습니다!");
+    console.log("트레이닝 생성이 완료되었습니다!");
   }
 };
 </script>
@@ -150,13 +150,13 @@ const handleNextStep = () => {
           <button
             v-for="category in FINANCE_CATEGORIES"
             :key="category"
+            @click="handleCategorySelect(category)"
             :class="[
               'w-full rounded-md border-2 border-solid py-3 text-center text-body transition-colors',
               selectedCategory === category
                 ? 'border-primary bg-primary text-black'
                 : 'border-gray-100 bg-gray-100 text-black hover:bg-gray-200',
             ]"
-            @click="handleCategorySelect(category)"
           >
             {{ category }}
           </button>
@@ -199,13 +199,13 @@ const handleNextStep = () => {
             <button
               v-for="level in DIFFICULTY_LEVELS"
               :key="level"
+              @click="selectedDifficulty = level"
               :class="[
                 'flex-1 rounded-md py-3 text-center text-subtext transition-colors',
                 selectedDifficulty === level
                   ? 'bg-primary text-black'
                   : 'bg-gray-100 text-black hover:bg-gray-200',
               ]"
-              @click="selectedDifficulty = level"
             >
               {{ level }}
             </button>
@@ -234,6 +234,7 @@ const handleNextStep = () => {
                     stroke="#090909"
                     stroke-width="2"
                     stroke-linecap="round"
+                    stroke-linejoin="round"
                   />
                 </svg>
               </button>
@@ -246,7 +247,7 @@ const handleNextStep = () => {
                 <div
                   v-for="routine in routines[section.key]"
                   :key="routine.id"
-                  class="flex items-center justify-between rounded-md border border-gray-300 bg-white p-4"
+                  class="flex items-center justify-between rounded-md border border-gray-200 bg-white p-4"
                 >
                   <span class="flex-1 text-body text-black">{{
                     routine.name
@@ -256,7 +257,7 @@ const handleNextStep = () => {
               </div>
               <div
                 v-else
-                class="rounded-md bg-gray-800 p-4 text-center text-subtext text-gray-400"
+                class="rounded-md bg-gray-800 p-4 text-center text-subtext text-gray-700"
               >
                 루틴을 추가해주세요
               </div>
