@@ -37,7 +37,7 @@ const isPasswordConfirmed = () =>
 
 const isUsernameValid = (username) => /^[^\s]{1,12}$/.test(username);
 
-const isBirthdateValid = (birthdate) => /^\d{6}$/.test(birthdate);
+const isBirthdateValid = (birthdate) => /^\d{8}$/.test(birthdate);
 
 const goNext = () => {
   if (step.value === 1) {
