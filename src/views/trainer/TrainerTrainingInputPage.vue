@@ -8,8 +8,6 @@ import RoutineAddModal from "./TrainerRoutineAddModal.vue";
 
 // 상수 (Constants)
 const FINANCE_CATEGORIES = [
-// 상수 (Constants)
-const FINANCE_CATEGORIES = [
   "재무설계",
   "현금관리",
   "신용과 부채관리",
@@ -17,12 +15,6 @@ const FINANCE_CATEGORIES = [
   "투자설계",
   "세금설계",
   "기타",
-];
-const DIFFICULTY_LEVELS = ["초급", "중급", "고급"];
-const ROUTINE_SECTIONS = [
-  { key: "stretching", title: "스트레칭" },
-  { key: "strength", title: "근력" },
-  { key: "cardio", title: "유산소" },
 ];
 
 // 라우터 및 상태 (Router & State)
@@ -238,15 +230,7 @@ const handleNextStep = () => {
                 @click.stop="handleOpenRoutineModal(section.key)"
                 class="flex h-6 w-6 items-center justify-center rounded-full bg-primary"
               >
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path
-                    d="M6 1V11M1 6H11"
-                    stroke="#090909"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
+                <img src="@/assets/images/plus.svg" alt="추가 버튼" />
               </button>
             </div>
             <div v-if="expandedSections[section.key]" class="mt-2.5">
