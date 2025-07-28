@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 
 import BaseButton from "@/components/common/BaseButton.vue";
 import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
+import RoutineAddModal from "./TrainerRoutineAddModal.vue";
 
 // 상수 (Constants)
 const FINANCE_CATEGORIES = [
@@ -15,6 +16,8 @@ const FINANCE_CATEGORIES = [
   "세금설계",
   "기타",
 ];
+
+// 라우터 및 상태 (Router & State)
 const DIFFICULTY_LEVELS = ["초급", "중급", "고급"];
 const ROUTINE_SECTIONS = [
   { key: "stretching", title: "스트레칭" },
@@ -24,7 +27,7 @@ const ROUTINE_SECTIONS = [
 
 // 라우터 및 상태 (Router & State)
 const router = useRouter();
-const step = ref(1); // 1: 카테고리 선택, 2: 커리큘럼 작성
+const step = ref(1);
 
 // --- 1단계 데이터
 const selectedCategory = ref(null);
@@ -44,6 +47,10 @@ const expandedSections = ref({
   cardio: true,
 });
 
+// 모달 상태
+const isModalVisible = ref(false);
+const currentCategory = ref(null);
+
 // 계산된 속성 (Computed)
 const isNextButtonDisabled = computed(() => {
   if (step.value === 1) {
@@ -54,7 +61,6 @@ const isNextButtonDisabled = computed(() => {
       routines.value.stretching.length === 0 &&
       routines.value.strength.length === 0 &&
       routines.value.cardio.length === 0;
-
     return (
       !trainerName.value.trim() ||
       !trainingDescription.value.trim() ||
@@ -64,9 +70,8 @@ const isNextButtonDisabled = computed(() => {
   }
   return true;
 });
-
 const nextButtonText = computed(() => {
-  return step.value === 4 ? "트레이닝 오픈하기" : "다음";
+  return step.value === 3 ? "트레이닝 오픈하기" : "다음";
 });
 
 // 메서드 (Methods)
@@ -86,11 +91,19 @@ const handleSectionToggle = (sectionKey) => {
   expandedSections.value[sectionKey] = !expandedSections.value[sectionKey];
 };
 
-const handleAddRoutine = (category) => {
-  routines.value[category].push({ id: Date.now(), name: "", points: 1 });
-  if (!expandedSections.value[category]) {
-    expandedSections.value[category] = true;
+const handleOpenRoutineModal = (category) => {
+  currentCategory.value = category;
+  isModalVisible.value = true;
+};
+
+const onRoutineSaved = (newRoutine) => {
+  if (currentCategory.value) {
+    routines.value[currentCategory.value].push({
+      id: Date.now(),
+      name: newRoutine.name,
+    });
   }
+  isModalVisible.value = false;
 };
 
 const handleNextStep = () => {
@@ -106,9 +119,8 @@ const handleNextStep = () => {
       difficulty: selectedDifficulty.value,
       routines: routines.value,
     };
-
     console.log("최종 커리큘럼 데이터:", curriculumData);
-    // router.push('/trainer/dashboard');
+    console.log("트레이닝 생성이 완료되었습니다!");
   }
 };
 </script>
@@ -201,9 +213,9 @@ const handleNextStep = () => {
             </button>
           </div>
         </div>
+
         <div class="mb-6">
           <div class="mb-4 text-subtext text-gray-50">루틴</div>
-
           <div
             v-for="section in ROUTINE_SECTIONS"
             :key="section.key"
@@ -215,13 +227,12 @@ const handleNextStep = () => {
             >
               <span class="text-body text-black">{{ section.title }}</span>
               <button
-                @click.stop="handleAddRoutine(section.key)"
+                @click.stop="handleOpenRoutineModal(section.key)"
                 class="flex h-6 w-6 items-center justify-center rounded-full bg-primary"
               >
                 <img src="@/assets/images/plus.svg" alt="추가 버튼" />
               </button>
             </div>
-
             <div v-if="expandedSections[section.key]" class="mt-2.5">
               <div
                 v-if="routines[section.key].length > 0"
@@ -232,11 +243,9 @@ const handleNextStep = () => {
                   :key="routine.id"
                   class="flex items-center justify-between rounded-md border border-gray-200 bg-white p-4"
                 >
-                  <input
-                    v-model="routine.name"
-                    placeholder="루틴 제목을 입력하세요"
-                    class="flex-1 border-none bg-transparent text-body text-black outline-none"
-                  />
+                  <span class="flex-1 text-body text-black">{{
+                    routine.name
+                  }}</span>
                   <span class="text-caption text-gray-700">+1P</span>
                 </div>
               </div>
@@ -252,11 +261,19 @@ const handleNextStep = () => {
       </main>
     </div>
 
-    <div class="mt-auto">
+    <!-- 하단 버튼 영역 -->
+    <div class="mt-10">
       <BaseButton :isDisabled="isNextButtonDisabled" @click="handleNextStep">
         {{ nextButtonText }}
       </BaseButton>
     </div>
+
+    <!-- 모달 컴포넌트 -->
+    <RoutineAddModal
+      v-if="isModalVisible"
+      @close="isModalVisible = false"
+      @save="onRoutineSaved"
+    />
   </div>
 </template>
 
