@@ -5,6 +5,7 @@ import { useRouter } from "vue-router";
 import BaseButton from "@/components/common/BaseButton.vue";
 import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
 import RoutineAddModal from "./TrainerRoutineAddModal.vue";
+import { createTraining } from "@/plugins/axios";
 
 // 상수 (Constants)
 const FINANCE_CATEGORIES = [
@@ -108,7 +109,7 @@ const onRoutineSaved = (newRoutine) => {
   isModalVisible.value = false;
 };
 
-const handleNextStep = () => {
+const handleNextStep = async () => {
   if (isNextButtonDisabled.value) return;
 
   if (step.value < 3) {
@@ -121,12 +122,19 @@ const handleNextStep = () => {
       description: trainingDescription.value,
       difficulty: selectedDifficulty.value,
       routines: routines.value,
-      thumbnail: thumbnail.value,
+      // thumbnail: thumbnail.value,
     };
-    console.log("최종 제출 데이터:", finalData);
 
-    // 데이터 처리 후 4단계(완료 화면)로 이동
-    step.value = 4;
+    try {
+      console.log("API로 보낼 데이터 (이미지 제외):", finalData);
+      // FormData 대신 일반 JSON 객체를 전송
+      await createTraining(finalData);
+
+      step.value = 4;
+    } catch (error) {
+      console.error("트레이닝 등록 실패:", error);
+      alert("트레이닝 등록에 실패했습니다. 다시 시도해주세요.");
+    }
   }
 };
 
