@@ -67,7 +67,14 @@ const handleLogin = async () => {
       variant="status"
     />
     <div class="mt-10 flex w-full justify-center">
-      <BaseButton @click="authStore.role === 'trainer' ? router.push('/trainer/mypage') : router.push('/trainee/mypage')">홈으로 가기</BaseButton>
+      <BaseButton
+        @click="
+          authStore.role === 'trainer'
+            ? router.push('/trainer/mypage')
+            : router.push('/trainee/mypage')
+        "
+        >홈으로 가기</BaseButton
+      >
     </div>
   </div>
 
@@ -83,13 +90,19 @@ const handleLogin = async () => {
       variant="status"
     />
     <div class="mt-10 flex w-full justify-center">
-      <BaseButton @click="result = null; step = 1;">다시 시도</BaseButton>
+      <BaseButton
+        @click="
+          result = null;
+          step = 1;
+        "
+        >다시 시도</BaseButton
+      >
     </div>
   </div>
 
   <!-- 로그인 입력 화면 -->
   <div v-else class="flex min-h-screen flex-col justify-center px-4 py-12">
-    <div class="mx-auto w-full max-w-md">
+    <div class="mx-auto w-full">
       <div v-if="step === 1">
         <h2 class="text-center text-4xl font-extrabold text-white">K-Bulkup</h2>
         <div class="mt-8 space-y-6">
@@ -98,7 +111,7 @@ const handleLogin = async () => {
             v-model="form.password"
             placeholder="비밀번호"
             type="password"
-            class="rounded-full"
+            class=""
           />
           <BaseButton
             @click="goNext"
@@ -140,7 +153,9 @@ const handleLogin = async () => {
           <!-- 트레이너 카드 -->
           <div
             @click="handleRoleSelection('trainer')"
-            :class="{ 'border-4 border-yellow-500': selectedRole === 'trainer' }"
+            :class="{
+              'border-4 border-yellow-500': selectedRole === 'trainer',
+            }"
             class="flex cursor-pointer items-center justify-between rounded-xl bg-white px-4 py-4 shadow"
           >
             <div>
@@ -157,7 +172,9 @@ const handleLogin = async () => {
           <!-- 회원 카드 -->
           <div
             @click="handleRoleSelection('trainee')"
-            :class="{ 'border-4 border-yellow-500': selectedRole === 'trainee' }"
+            :class="{
+              'border-4 border-yellow-500': selectedRole === 'trainee',
+            }"
             class="flex cursor-pointer items-center justify-between rounded-xl bg-white px-4 py-4 shadow"
           >
             <div>
@@ -173,7 +190,9 @@ const handleLogin = async () => {
         </div>
 
         <div class="mt-10">
-          <BaseButton @click="handleLogin" class="w-full bg-[#2D2D40] py-3 text-white"
+          <BaseButton
+            @click="handleLogin"
+            class="w-full bg-[#2D2D40] py-3 text-white"
             >다음</BaseButton
           >
         </div>
