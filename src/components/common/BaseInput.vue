@@ -40,7 +40,7 @@ const inputAttrs = useAttrs();
           @input="(e) => emit('update:modelValue', e.target.value)"
           :type="type"
           :placeholder="placeholder"
-          class="placeholder-gray700 ml-2 flex-1 bg-transparent text-subtext text-black outline-none rounded-full"
+          class="placeholder-gray700 ml-2 flex-1 bg-transparent text-subtext text-black outline-none"
         />
       </div>
     </div>
