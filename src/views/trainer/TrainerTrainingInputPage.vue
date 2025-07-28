@@ -281,3 +281,5 @@ const handleNextStep = () => {
     />
   </div>
 </template>
+
+<style scoped></style>
