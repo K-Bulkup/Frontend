@@ -31,15 +31,20 @@ const availableRolesFromNaver = ref([]); // 네이버 콜백에서 받은 역할
 const isNaverSignupFlow = ref(false); // 네이버 신규 가입 흐름인지 여부
 const naverProfileData = ref(null); // 네이버 프로필 데이터 저장
 
+const availableRolesFromKakao = ref([]); // 카카오 콜백에서 받은 역할 목록
+const isKakaoSignupFlow = ref(false); // 카카오 신규 가입 흐름인지 여부
+const kakaoProfileData = ref(null); // 카카오 프로필 데이터 저장
+
 onMounted(() => {
   console.log('LoginPage received query:', route.query); // 디버깅을 위한 로그 추가
+  console.log('route.query.kakaoSignup:', route.query.kakaoSignup);
   // 네이버 소셜 로그인 콜백 처리
   if (route.query.naverSignup || route.query.naverLogin) {
     step.value = 2; // step을 2로 설정하여 역할 선택 화면으로 이동
     console.log('step.value set to:', step.value); // 추가된 로그
 
     if (route.query.naverSignup) {
-      // 신규 사용자 (회원가입 유도)
+      // 네이버 신규 사용자 (회원가입 유도)
       isNaverSignupFlow.value = true; // 신규 가입 흐름 설정
       try {
         const naverProfile = JSON.parse(route.query.naverProfile);
@@ -58,6 +63,39 @@ onMounted(() => {
         console.log('availableRolesFromNaver:', availableRolesFromNaver.value); // 추가된 로그
         form.value.email = route.query.email; // 이메일 미리 채우기
         form.value.logintype = "NAVER"; // 로그인 타입 설정
+        // availableRoles를 사용하여 역할 선택 UI를 구성해야 함
+        // 현재는 form.value.role과 selectedRole을 초기화하지 않음 (사용자가 선택하도록)
+      } catch (e) {
+        console.error("Failed to parse availableRoles:", e);
+      }
+    }
+  }
+
+  // 카카오 소셜 로그인 콜백 처리
+  if (route.query.kakaoSignup || route.query.kakaoLogin) {
+    step.value = 2; // step을 2로 설정하여 역할 선택 화면으로 이동
+    console.log('step.value set to:', step.value); // 추가된 로그
+
+    if (route.query.kakaoSignup) {
+      // 카카오 신규 사용자 (회원가입 유도)
+      isKakaoSignupFlow.value = true; // 신규 가입 흐름 설정
+      try {
+        const kakaoProfile = JSON.parse(route.query.kakaoProfile);
+        kakaoProfileData.value = kakaoProfile; // 카카오 프로필 데이터 저장
+        console.log('kakaoProfileData:', kakaoProfileData.value); // 추가된 로그
+        form.value.email = kakaoProfile.email; // 이메일 미리 채우기
+        form.value.logintype = "KAKAO"; // 로그인 타입 설정
+        availableRolesFromKakao.value = JSON.parse(route.query.availableRoles); // availableRoles 파싱
+      } catch (e) {
+        console.error("Failed to parse kakaoProfile or availableRoles:", e);
+      }
+    } else if (route.query.kakaoLogin) {
+      // 기존 사용자 (로그인 유도)
+      try {
+        availableRolesFromKakao.value = JSON.parse(route.query.availableRoles);
+        console.log('availableRolesFromKakao:', availableRolesFromKakao.value); // 추가된 로그
+        form.value.email = route.query.email; // 이메일 미리 채우기
+        form.value.logintype = "KAKAO"; // 로그인 타입 설정
         // availableRoles를 사용하여 역할 선택 UI를 구성해야 함
         // 현재는 form.value.role과 selectedRole을 초기화하지 않음 (사용자가 선택하도록)
       } catch (e) {
@@ -91,15 +129,18 @@ const handleLogin = async () => {
 
   let success = false;
 
-  if (isNaverSignupFlow.value) {
-    // 네이버 신규 가입 흐름인 경우 social-signup-complete API 호출
+  if (isNaverSignupFlow.value || isKakaoSignupFlow.value) {
+    // 네이버/카카오 신규 가입 흐름인 경우 social-signup-complete API 호출
     try {
+      const profileData = isNaverSignupFlow.value ? naverProfileData.value : kakaoProfileData.value;
+      const loginType = isNaverSignupFlow.value ? "NAVER" : "KAKAO";
+
       const response = await apiClient.post('/api/common/auth/social-signup-complete', {
-        email: naverProfileData.value.email,
-        name: naverProfileData.value.name, // 네이버 프로필에서 이름 가져오기
-        providerId: naverProfileData.value.id, // 네이버 프로필에서 providerId 가져오기
+        email: profileData.email,
+        name: profileData.name, // 프로필에서 이름 가져오기
+        providerId: profileData.id, // 프로필에서 providerId 가져오기
         selectedRole: form.value.role,
-        // password: form.value.password // 백엔드 요청에 따라 제거
+        loginType: loginType // 네이버 또는 카카오 로그인 타입 명시
       });
       authStore.setToken(response.data.accessToken);
       authStore.setRole(form.value.role);
@@ -109,11 +150,10 @@ const handleLogin = async () => {
       alert('회원가입 중 오류가 발생했습니다.');
       success = false;
     }
-  } else if (route.query.naverLogin) {
-    // 네이버 기존 사용자 로그인 흐름인 경우 로그인 API 호출
-    // 비밀번호는 네이버 로그인에서는 필요 없으므로 제거
+  } else if (route.query.naverLogin || route.query.kakaoLogin) {
+    // 네이버/카카오 기존 사용자 로그인 흐름인 경우 로그인 API 호출
     const { password, ...loginData } = form.value;
-    loginData.loginType = 'NAVER'; // 네이버 로그인임을 명시
+    loginData.loginType = route.query.naverLogin ? 'NAVER' : 'KAKAO'; // 네이버 또는 카카오 로그인임을 명시
     const { success: loginSuccess } = await loginAndHandle(loginData);
     success = loginSuccess;
   } else {
@@ -137,6 +177,13 @@ const handleNaverLogin = () => {
   const state = "RANDOM_STATE"; // CSRF 공격을 방지하기 위한 임의의 문자열입니다.
   const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}`;
   window.location.href = naverAuthUrl;
+};
+
+const handleKakaoLogin = () => {
+  const clientId = "61ee9696cda074066f295852b601105a"; // 카카오 클라이언트 ID 직접 설정
+  const redirectUri = "http://localhost:5173/oauth/kakao/callback"; // 프론트엔드 콜백 URL로 변경
+  const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}`;
+  window.location.href = kakaoAuthUrl;
 };
 </script>
 
@@ -213,7 +260,8 @@ const handleNaverLogin = () => {
           <img
             src="@/assets/images/kakaoLogin.png"
             alt="카카오 로그인"
-            class="h-12 w-12 rounded-full"
+            class="h-12 w-12 rounded-full cursor-pointer"
+            @click="handleKakaoLogin"
           />
         </div>
       </div>
@@ -226,7 +274,7 @@ const handleNaverLogin = () => {
         <div class="mt-8 space-y-4">
           <!-- 역할 카드 -->
           <div
-            v-for="role in (availableRolesFromNaver.length > 0 ? availableRolesFromNaver : ['TRAINER', 'TRAINEE'])"
+            v-for="role in (availableRolesFromNaver.length > 0 ? availableRolesFromNaver : (availableRolesFromKakao.length > 0 ? availableRolesFromKakao : ['TRAINER', 'TRAINEE']))"
             :key="role"
             @click="handleRoleSelection(role)"
             :class="{ 'border-4 border-yellow-500': selectedRole === role }"
