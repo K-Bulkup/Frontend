@@ -5,6 +5,7 @@ import { useRouter } from "vue-router";
 import BaseButton from "@/components/common/BaseButton.vue";
 import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
 import RoutineAddModal from "./TrainerRoutineAddModal.vue";
+import BaseHeader from "@/components/common/BaseHeader.vue";
 import { createTraining } from "@/plugins/axios";
 
 // 상수 (Constants)
@@ -26,7 +27,7 @@ const ROUTINE_SECTIONS = [
 
 // 라우터 및 상태 (Router & State)
 const router = useRouter();
-const step = ref(1);
+const step = ref(1); // 초기 단계를 1로 설정
 
 // 1단계 데이터
 const selectedCategory = ref(null);
@@ -46,11 +47,11 @@ const expandedSections = ref({
   cardio: true,
 });
 
-// thumbnail과 thumbnailUrl 상태 변수 선언
+// 3단계 데이터
 const thumbnail = ref(null);
 const thumbnailUrl = ref(null);
 
-// 모달의 표시 여부와 현재 카테고리를 관리할 상태
+// 모달 상태
 const isModalVisible = ref(false);
 const currentCategory = ref(null);
 
@@ -70,7 +71,8 @@ const isNextButtonDisabled = computed(() => {
     );
   }
   if (step.value === 3) return !thumbnail.value;
-  return true;
+  // 4단계에서는 버튼이 없으므로 항상 true 반환
+  return step.value >= 4;
 });
 
 const nextButtonText = computed(() => {
@@ -115,30 +117,26 @@ const handleNextStep = async () => {
   if (step.value < 3) {
     step.value++;
   } else if (step.value === 3) {
-    // 3단계에서 '트레이닝 오픈하기'를 누르면 최종 데이터 처리
     const finalData = {
       category: selectedCategory.value,
       trainerName: trainerName.value,
       description: trainingDescription.value,
       difficulty: selectedDifficulty.value,
       routines: routines.value,
-      // thumbnail: thumbnail.value,
+      // thumbnail: thumbnail.value, // FormData로 이미지를 보내려면 별도 처리가 필요합니다.
     };
 
     try {
       console.log("API로 보낼 데이터 (이미지 제외):", finalData);
-      // FormData 대신 일반 JSON 객체를 전송
       await createTraining(finalData);
-
-      step.value = 4;
+      step.value = 4; // 성공 시 4단계로 이동
     } catch (error) {
       console.error("트레이닝 등록 실패:", error);
-      alert("트레이닝 등록에 실패했습니다. 다시 시도해주세요.");
+      // alert() 대신 console.error 사용 또는 사용자에게 보여줄 에러 메시지 컴포넌트 사용 권장
     }
   }
 };
 
-// 4단계 완료 화면에서 '확인' 버튼을 눌렀을 때 실행될 함수
 const handleCompletion = () => {
   router.push("/trainer/mypage/training");
 };
@@ -159,21 +157,7 @@ const triggerFileInput = () => {
 <template>
   <div class="flex min-h-screen flex-col bg-realBlack px-6 pb-20 pt-10">
     <div>
-      <header class="mb-6 flex h-10 items-center justify-between">
-        <button @click="handleGoBack" class="text-white">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M15 18L9 12L15 6"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </button>
-        <h2 class="text-heading text-white">트레이닝 오픈</h2>
-        <div class="w-6"></div>
-      </header>
+      <BaseHeader v-if="step < 4" title="트레이닝 오픈" @back="handleGoBack" />
 
       <div v-if="step === 1" class="flex flex-1 flex-col justify-between">
         <div>
@@ -186,13 +170,13 @@ const triggerFileInput = () => {
             <button
               v-for="category in FINANCE_CATEGORIES"
               :key="category"
+              @click="handleCategorySelect(category)"
               :class="[
                 'w-full rounded-md border-2 border-solid py-3 text-center text-body transition-colors',
                 selectedCategory === category
                   ? 'border-primary bg-primary text-black'
                   : 'border-gray-100 bg-gray-100 text-black hover:bg-gray-200',
               ]"
-              @click="handleCategorySelect(category)"
             >
               {{ category }}
             </button>
@@ -237,13 +221,13 @@ const triggerFileInput = () => {
               <button
                 v-for="level in DIFFICULTY_LEVELS"
                 :key="level"
+                @click="selectedDifficulty = level"
                 :class="[
                   'flex-1 rounded-md py-3 text-center text-subtext transition-colors',
                   selectedDifficulty === level
                     ? 'bg-primary text-black'
                     : 'bg-gray-100 text-black hover:bg-gray-200',
                 ]"
-                @click="selectedDifficulty = level"
               >
                 {{ level }}
               </button>
@@ -272,6 +256,7 @@ const triggerFileInput = () => {
                       stroke="#090909"
                       stroke-width="2"
                       stroke-linecap="round"
+                      stroke-linejoin="round"
                     />
                   </svg>
                 </button>
@@ -284,7 +269,7 @@ const triggerFileInput = () => {
                   <div
                     v-for="routine in routines[section.key]"
                     :key="routine.id"
-                    class="flex items-center justify-between rounded-md border border-gray-300 bg-white p-4"
+                    class="flex items-center justify-between rounded-md border border-gray-200 bg-white p-4"
                   >
                     <span class="flex-1 text-body text-black">{{
                       routine.name
@@ -294,7 +279,7 @@ const triggerFileInput = () => {
                 </div>
                 <div
                   v-else
-                  class="rounded-md bg-gray-800 p-4 text-center text-subtext text-gray-400"
+                  class="rounded-md bg-gray-800 p-4 text-center text-subtext text-gray-700"
                 >
                   루틴을 추가해주세요
                 </div>
@@ -310,14 +295,13 @@ const triggerFileInput = () => {
           subtitle="커버 이미지를 등록하고 회원을 모집해주세요"
         />
 
-        <!-- 이미지 업로드 영역 -->
         <div class="mt-12 flex flex-col items-center">
           <input
-            type="file"
             id="thumbnailInput"
-            @change="onFileChange"
+            type="file"
             class="hidden"
             accept="image/*"
+            @change="onFileChange"
           />
           <div
             @click="triggerFileInput"
@@ -329,20 +313,11 @@ const triggerFileInput = () => {
               class="h-full w-full rounded-md object-cover"
             />
             <div v-else class="text-center text-gray-700">
-              <svg
+              <img
+                src="@/assets/images/image-square.svg"
+                alt="이미지 업로드"
                 class="mx-auto h-12 w-12"
-                stroke="currentColor"
-                fill="none"
-                viewBox="0 0 48 48"
-                aria-hidden="true"
-              >
-                <path
-                  d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
+              />
               <p class="mt-2 text-subtext">클릭하여 이미지 업로드</p>
             </div>
           </div>
@@ -351,24 +326,12 @@ const triggerFileInput = () => {
 
       <div
         v-else-if="step === 4"
-        class="flex flex-1 flex-col items-center justify-center pt-24"
+        class="flex flex-1 flex-col items-center pt-48"
       >
         <div
-          class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white"
+          class="mb-4 flex h-16 w-16 items-center justify-center rounded-full"
         >
-          <svg
-            class="h-8 w-8 text-black"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            stroke-width="3"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
+          <img src="@/assets/images/check-mark.svg" alt="체크마크" />
         </div>
 
         <BaseStatusMessage
@@ -384,7 +347,7 @@ const triggerFileInput = () => {
 
     <!-- 하단 버튼 영역 -->
     <div v-if="step < 4" class="mt-10">
-      <BaseButton :isDisabled="isNextButtonDisabled" @click="handleNextStep">
+      <BaseButton @click="handleNextStep" :isDisabled="isNextButtonDisabled">
         {{ nextButtonText }}
       </BaseButton>
     </div>

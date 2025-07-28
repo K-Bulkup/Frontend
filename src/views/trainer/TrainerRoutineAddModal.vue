@@ -2,6 +2,7 @@
 import { ref, computed } from "vue";
 import BaseButton from "@/components/common/BaseButton.vue";
 import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
+import BaseHeader from "@/components/common/BaseHeader.vue";
 
 // 상수
 const ROUTINE_TYPES = ["실천형", "주관식", "OX"];
@@ -50,21 +51,7 @@ const handleSave = () => {
       class="flex h-full w-full flex-col justify-between overflow-y-auto bg-realBlack px-6 py-10"
     >
       <div>
-        <header class="mb-6 flex items-center justify-between">
-          <button @click="handleClose" class="text-white">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M15 18L9 12L15 6"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </button>
-          <h2 class="text-heading text-white">루틴 추가</h2>
-          <div class="w-6"></div>
-        </header>
+        <BaseHeader title="루틴 추가" @back="handleClose" />
 
         <main>
           <BaseStatusMessage
