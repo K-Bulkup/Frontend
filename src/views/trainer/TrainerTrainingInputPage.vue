@@ -304,7 +304,7 @@ const triggerFileInput = () => {
             />
             <div v-else class="text-center text-gray-700">
               <img
-                src="@/assets/images/image-square.svg"
+                src="@/assets/images/Image_Square_gray.svg"
                 alt="이미지 업로드"
                 class="mx-auto h-12 w-12"
               />
