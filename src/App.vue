@@ -26,7 +26,7 @@ onMounted(async () => {
         <RouterView />
       </main>
 
-      <NavigationBar />
+      <NavigationBar v-if="!$route.meta.hideNavbar" />
     </div>
   </div>
 </template>
