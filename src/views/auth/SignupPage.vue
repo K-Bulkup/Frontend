@@ -67,7 +67,7 @@ const submit = async () => {
     email: form.value.email,
     password: form.value.password,
     username: form.value.username,
-    birthdate: form.value.birthdate,
+    birthdate: form.value.birthdate+'000000',
     role: form.value.role,
     loginType: form.value.loginType,
   });

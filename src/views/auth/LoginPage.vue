@@ -25,7 +25,7 @@ const selectedRole = ref(null); // 새로 추가: 선택된 역할을 저장
 
 const goNext = () => {
   if (form.value.email && form.value.password) {
-    form.value.logintype = "LOCAL";
+    form.value.loginType = "LOCAL";
     step.value++;
   }
 };
