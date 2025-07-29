@@ -1,5 +1,4 @@
 <script setup>
-// [제거] icon, iconActive prop을 제거합니다.
 defineProps({
   text: String,
   disabled: Boolean,
