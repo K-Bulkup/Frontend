@@ -4,7 +4,6 @@ import { useRouter, useRoute } from "vue-router";
 
 import apiClient from "@/plugins/axios";
 import { useLogin } from "@/composables/user/useLogin";
-import { useSignup } from "@/composables/user/useSignup"; // useSignup import 추가
 import { useAuthStore } from "@/stores/auth";
 import BaseButton from "@/components/common/BaseButton.vue";
 import BaseInput from "@/components/common/BaseInput.vue";
@@ -14,101 +13,54 @@ const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 const { loginAndHandle } = useLogin();
-const { signupAndHandle } = useSignup(); // signupAndHandle 추가
 const step = ref(1);
 
 const form = ref({
   email: "",
   password: "",
-  logintype: "",
+  loginType: "",
   role: "",
 });
 
 const result = ref(null);
 const selectedRole = ref(null); // 새로 추가: 선택된 역할을 저장
 
-const availableRolesFromNaver = ref([]); // 네이버 콜백에서 받은 역할 목록
-const isNaverSignupFlow = ref(false); // 네이버 신규 가입 흐름인지 여부
 const naverProfileData = ref(null); // 네이버 프로필 데이터 저장
+const isNaverSignupFlow = ref(false); // 네이버 신규 가입 흐름인지 여부
 
-const availableRolesFromKakao = ref([]); // 카카오 콜백에서 받은 역할 목록
-const isKakaoSignupFlow = ref(false); // 카카오 신규 가입 흐름인지 여부
 const kakaoProfileData = ref(null); // 카카오 프로필 데이터 저장
+const isKakaoSignupFlow = ref(false); // 카카오 신규 가입 흐름인지 여부
 
 onMounted(() => {
   console.log('LoginPage received query:', route.query); // 디버깅을 위한 로그 추가
-  console.log('route.query.kakaoSignup:', route.query.kakaoSignup);
-  // 네이버 소셜 로그인 콜백 처리
-  if (route.query.naverSignup || route.query.naverLogin) {
-    step.value = 2; // step을 2로 설정하여 역할 선택 화면으로 이동
-    console.log('step.value set to:', step.value); // 추가된 로그
+  console.log('Current step on mount:', step.value); // 현재 step 값 로깅 추가
 
-    if (route.query.naverSignup) {
-      // 네이버 신규 사용자 (회원가입 유도)
-      isNaverSignupFlow.value = true; // 신규 가입 흐름 설정
-      try {
-        const naverProfile = JSON.parse(route.query.naverProfile);
-        naverProfileData.value = naverProfile; // 네이버 프로필 데이터 저장
-        console.log('naverProfileData:', naverProfileData.value); // 추가된 로그
-        form.value.email = naverProfile.email; // 이메일 미리 채우기
-        form.value.logintype = "NAVER"; // 로그인 타입 설정
-        availableRolesFromNaver.value = JSON.parse(route.query.availableRoles); // availableRoles 파싱
-      } catch (e) {
-        console.error("Failed to parse naverProfile or availableRoles:", e);
-      }
-    } else if (route.query.naverLogin) {
-      // 기존 사용자 (로그인 유도)
-      try {
-        availableRolesFromNaver.value = JSON.parse(route.query.availableRoles);
-        console.log('availableRolesFromNaver:', availableRolesFromNaver.value); // 추가된 로그
-        form.value.email = route.query.email; // 이메일 미리 채우기
-        form.value.logintype = "NAVER"; // 로그인 타입 설정
-        // availableRoles를 사용하여 역할 선택 UI를 구성해야 함
-        // 현재는 form.value.role과 selectedRole을 초기화하지 않음 (사용자가 선택하도록)
-      } catch (e) {
-        console.error("Failed to parse availableRoles:", e);
-      }
-    }
-  }
+  const { accessToken, role, isNewUser, email, providerId, name, loginType } = route.query;
 
-  // 카카오 소셜 로그인 콜백 처리
-  if (route.query.kakaoSignup || route.query.kakaoLogin) {
-    step.value = 2; // step을 2로 설정하여 역할 선택 화면으로 이동
-    console.log('step.value set to:', step.value); // 추가된 로그
-
-    if (route.query.kakaoSignup) {
-      // 카카오 신규 사용자 (회원가입 유도)
-      isKakaoSignupFlow.value = true; // 신규 가입 흐름 설정
-      try {
-        const kakaoProfile = JSON.parse(route.query.kakaoProfile);
-        kakaoProfileData.value = kakaoProfile; // 카카오 프로필 데이터 저장
-        console.log('kakaoProfileData:', kakaoProfileData.value); // 추가된 로그
-        form.value.email = kakaoProfile.email; // 이메일 미리 채우기
-        form.value.logintype = "KAKAO"; // 로그인 타입 설정
-        availableRolesFromKakao.value = JSON.parse(route.query.availableRoles); // availableRoles 파싱
-      } catch (e) {
-        console.error("Failed to parse kakaoProfile or availableRoles:", e);
-      }
-    } else if (route.query.kakaoLogin) {
-      // 기존 사용자 (로그인 유도)
-      try {
-        availableRolesFromKakao.value = JSON.parse(route.query.availableRoles);
-        console.log('availableRolesFromKakao:', availableRolesFromKakao.value); // 추가된 로그
-        form.value.email = route.query.email; // 이메일 미리 채우기
-        form.value.logintype = "KAKAO"; // 로그인 타입 설정
-        // availableRoles를 사용하여 역할 선택 UI를 구성해야 함
-        // 현재는 form.value.role과 selectedRole을 초기화하지 않음 (사용자가 선택하도록)
-      } catch (e) {
-        console.error("Failed to parse availableRoles:", e);
-      }
-    }
+  if (accessToken && role) {
+    authStore.setToken(accessToken);
+    authStore.setRole(role);
+    result.value = "success"; // 로그인 성공 화면 표시
+  } else if (isNewUser === 'true') {
+    step.value = 2; // 역할 선택 화면으로 이동
+    form.value.email = email; // 이메일 미리 채우기
+    form.value.loginType = loginType; // 신규 사용자일 때 loginType 설정
+    // 신규 사용자 가입을 위한 추가 데이터 저장
+    naverProfileData.value = { providerId, name }; // 네이버 프로필 데이터 저장 (재활용)
+    kakaoProfileData.value = { providerId, name }; // 카카오 프로필 데이터 저장 (재활용)
+    isNaverSignupFlow.value = (loginType === 'NAVER');
+    isKakaoSignupFlow.value = (loginType === 'KAKAO');
+  } else if (loginType) { // 기존 소셜 사용자일 경우 loginType 설정
+    form.value.loginType = loginType;
+  } else if (loginType) { // 기존 소셜 사용자일 경우 loginType 설정
+    form.value.loginType = loginType;
   }
 });
 
 
 const goNext = () => {
   if (form.value.email && form.value.password) {
-    form.value.logintype = "LOCAL";
+    form.value.loginType = "LOCAL";
     step.value++;
   }
 };
@@ -130,17 +82,15 @@ const handleLogin = async () => {
   let success = false;
 
   if (isNaverSignupFlow.value || isKakaoSignupFlow.value) {
+    console.log("Sending social signup complete request with form data:", form.value); // 로그 추가
     // 네이버/카카오 신규 가입 흐름인 경우 social-signup-complete API 호출
     try {
       const profileData = isNaverSignupFlow.value ? naverProfileData.value : kakaoProfileData.value;
       const loginType = isNaverSignupFlow.value ? "NAVER" : "KAKAO";
 
       const response = await apiClient.post('/api/common/auth/social-signup-complete', {
-        email: profileData.email,
-        name: profileData.name, // 프로필에서 이름 가져오기
-        providerId: profileData.id, // 프로필에서 providerId 가져오기
-        selectedRole: form.value.role,
-        loginType: loginType // 네이버 또는 카카오 로그인 타입 명시
+        tempAccessToken: route.query.accessToken, // 백엔드에서 받은 accessToken을 tempAccessToken으로 사용
+        role: form.value.role // 사용자가 선택한 역할
       });
       authStore.setToken(response.data.accessToken);
       authStore.setRole(form.value.role);
@@ -150,14 +100,12 @@ const handleLogin = async () => {
       alert('회원가입 중 오류가 발생했습니다.');
       success = false;
     }
-  } else if (route.query.naverLogin || route.query.kakaoLogin) {
-    // 네이버/카카오 기존 사용자 로그인 흐름인 경우 로그인 API 호출
-    const { password, ...loginData } = form.value;
-    loginData.loginType = route.query.naverLogin ? 'NAVER' : 'KAKAO'; // 네이버 또는 카카오 로그인임을 명시
-    const { success: loginSuccess } = await loginAndHandle(loginData);
-    success = loginSuccess;
   } else {
+    console.log("Sending local login request with form data:", form.value); // 로그 추가
     // 일반 로컬 로그인 흐름인 경우 로그인 API 호출
+    if (!form.value.loginType) {
+      form.value.loginType = "LOCAL"; // loginType이 설정되지 않은 경우 LOCAL로 명시
+    }
     const { success: loginSuccess } = await loginAndHandle(form.value);
     success = loginSuccess;
   }
@@ -172,18 +120,13 @@ const handleLogin = async () => {
 };
 
 const handleNaverLogin = () => {
-  const clientId = "D265km6WSuQZmdGq5rGz";
-  const redirectUri = "http://localhost:5173/oauth/naver/callback"; // 프론트엔드 콜백 URL로 변경
-  const state = "RANDOM_STATE"; // CSRF 공격을 방지하기 위한 임의의 문자열입니다.
-  const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}`;
-  window.location.href = naverAuthUrl;
+  console.log("네이버 로그인 시작: 백엔드 엔드포인트로 리다이렉트");
+  window.location.href = "/api/common/auth/naver/start"; // 정확한 경로로 변경
 };
 
 const handleKakaoLogin = () => {
-  const clientId = "61ee9696cda074066f295852b601105a"; // 카카오 클라이언트 ID 직접 설정
-  const redirectUri = "http://localhost:5173/oauth/kakao/callback"; // 프론트엔드 콜백 URL로 변경
-  const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}`;
-  window.location.href = kakaoAuthUrl;
+  console.log("카카오 로그인 시작: 백엔드 엔드포인트로 리다이렉트");
+  window.location.href = "/api/common/auth/kakao/start"; // 정확한 경로로 변경
 };
 </script>
 
@@ -274,7 +217,7 @@ const handleKakaoLogin = () => {
         <div class="mt-8 space-y-4">
           <!-- 역할 카드 -->
           <div
-            v-for="role in (availableRolesFromNaver.length > 0 ? availableRolesFromNaver : (availableRolesFromKakao.length > 0 ? availableRolesFromKakao : ['TRAINER', 'TRAINEE']))"
+            v-for="role in ['TRAINER', 'TRAINEE']"
             :key="role"
             @click="handleRoleSelection(role)"
             :class="{ 'border-4 border-yellow-500': selectedRole === role }"
