@@ -18,7 +18,7 @@ defineProps({
 
     <h2
       :class="[
-        'font-bold',
+        'font-bold text-white',
         variant === 'status' ? 'text-title' : 'text-heading',
       ]"
     >
