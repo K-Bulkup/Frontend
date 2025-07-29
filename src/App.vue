@@ -16,7 +16,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex min-h-screen items-center justify-center bg-realBlack">
+  <div
+    class="flex min-h-screen items-center justify-center bg-realBlack text-white"
+  >
     <div
       class="relative flex h-[852px] w-[393px] flex-col overflow-hidden bg-realBlack shadow-2xl"
     >
