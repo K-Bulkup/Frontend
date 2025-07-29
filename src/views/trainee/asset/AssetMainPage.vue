@@ -1,5 +1,6 @@
 <script setup>
 import { useRouter } from "vue-router";
+import BaseHeader from "@/components/common/BaseHeader.vue";
 
 const router = useRouter();
 
@@ -15,10 +16,12 @@ const goToAiChat = () => {
 <template>
   <div class="min-h-screen bg-realBlack pb-20">
     <!-- Header -->
+    <!--
     <div class="flex justify-center py-4">
       <h1 class="text-body font-semibold text-white">자산 관리</h1>
     </div>
-
+    -->
+    <BaseHeader title="자산 관리" />
     <!-- Main Content -->
     <div class="space-y-6 px-6">
       <!-- Total Assets Section -->

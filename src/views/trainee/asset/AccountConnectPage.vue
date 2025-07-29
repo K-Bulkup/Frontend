@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import { useAccountConnect } from "@/composables/asset/useCreateAsset";
 import AccountConnectSuccessModal from "@/components/common/AccountConnectSuccessModal.vue";
 import AccountConnectFailureModal from "@/components/common/AccountConnectFailureModal.vue";
+import BaseHeader from "@/components/common/BaseHeader.vue";
 
 const router = useRouter();
 const { connectAccount } = useAccountConnect();
@@ -57,8 +58,10 @@ const cancel = () => {
   router.back();
 };
 
+const userId = 1; //test
+
 const onClickConnect = async () => {
-  const result = await connectAccount(selectedBank.value);
+  const result = await connectAccount(userId, selectedBank.value);
 
   if (!result.success) {
     showFailureModal.value = true;
@@ -81,29 +84,7 @@ const handleSuccessClose = () => {
 <template>
   <div class="flex min-h-screen flex-col bg-realBlack px-6 pb-20 pt-10">
     <!-- Header -->
-    <div class="mb-8 flex items-center">
-      <button
-        @click="goBack"
-        class="mr-4 flex h-6 w-6 items-center justify-center"
-      >
-        <svg
-          width="26"
-          height="27"
-          viewBox="0 0 26 27"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M15.7144 19.6677L9.42871 13.1118L15.7144 6.55591"
-            stroke="white"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </button>
-      <h1 class="text-body font-semibold text-white">계좌 정보 입력</h1>
-    </div>
+    <BaseHeader title="계좌 정보 입력" @back="goBack" />
 
     <!-- Main Content -->
     <div class="flex-1">
@@ -114,7 +95,8 @@ const handleSuccessClose = () => {
             안전한 계좌 연결
           </h2>
           <p class="text-subtext text-gray-50">
-            자산 정보를 불러오기 위해 계좌 정보를 입력해주세요
+            자산 정보를 불러오기 위해<br />
+            계좌 정보를 입력해주세요
           </p>
         </div>
 
