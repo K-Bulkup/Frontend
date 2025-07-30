@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-
 import { useSignup } from "@/composables/user/useSignup";
 import BaseButton from "@/components/common/BaseButton.vue";
 import BaseInput from "@/components/common/BaseInput.vue";
@@ -126,25 +125,25 @@ const submit = async () => {
     <div>
       <BaseStatusMessage
         :title="
-            step === 1
-              ? '회원가입을 진행해주세요.'
-              : (step === 2
-                ? '이름을 입력해주세요.'
-                : (step === 3
-                  ? '생년월일을 입력해주세요.'
-                  : '어떤 유형으로 가입하시겠어요?'))
-          "
-          :subtitle="
-            step === 1
-              ? '이메일과 비밀번호를 입력해주세요'
-              : (step === 2
-                ? '이름은 공백 없이 12자 이하만 가능합니다.'
-                : (step === 3
-                  ? '응답하신 생년월일은 공개되지 않습니다.'
-                  : '트레이너 또는 회원 중 선택해주세요.'))
-          "
-          variant="guide"
-        />
+          step === 1
+            ? '회원가입을 진행해주세요.'
+            : step === 2
+              ? '이름을 입력해주세요.'
+              : step === 3
+                ? '생년월일을 입력해주세요.'
+                : '어떤 유형으로 가입하시겠어요?'
+        "
+        :subtitle="
+          step === 1
+            ? '이메일과 비밀번호를 입력해주세요'
+            : step === 2
+              ? '이름은 공백 없이 12자 이하만 가능합니다.'
+              : step === 3
+                ? '응답하신 생년월일은 공개되지 않습니다.'
+                : '트레이너 또는 회원 중 선택해주세요.'
+        "
+        variant="guide"
+      />
 
       <div class="mt-6 flex flex-col items-center space-y-4">
         <template v-if="step === 1">
@@ -225,11 +224,23 @@ const submit = async () => {
               class="flex cursor-pointer items-center justify-between rounded-xl bg-white px-4 py-4 shadow"
             >
               <div>
-                <p class="font-bold text-black">{{ role === 'TRAINER' ? '트레이너' : '회원' }}</p>
-                <p class="text-sm text-gray-500">{{ role === 'TRAINER' ? '회원을 찾고 있어요.' : '트레이너를 찾고 있어요.' }}</p>
+                <p class="font-bold text-black">
+                  {{ role === "TRAINER" ? "트레이너" : "회원" }}
+                </p>
+                <p class="text-sm text-gray-500">
+                  {{
+                    role === "TRAINER"
+                      ? "회원을 찾고 있어요."
+                      : "트레이너를 찾고 있어요."
+                  }}
+                </p>
               </div>
               <img
-                :src="role === 'TRAINER' ? '/src/assets/images/trainer-icon.png' : '/src/assets/images/trainee-icon.png'"
+                :src="
+                  role === 'TRAINER'
+                    ? '/src/assets/images/trainer-icon.png'
+                    : '/src/assets/images/trainee-icon.png'
+                "
                 :alt="role === 'TRAINER' ? '트레이너 아이콘' : '회원 아이콘'"
                 class="h-12 w-12"
               />
@@ -268,11 +279,7 @@ const submit = async () => {
         다음
       </BaseButton>
 
-      <BaseButton
-        v-if="step === 4"
-        @click="submit"
-        :isDisabled="!form.role"
-      >
+      <BaseButton v-if="step === 4" @click="submit" :isDisabled="!form.role">
         가입완료
       </BaseButton>
     </div>
