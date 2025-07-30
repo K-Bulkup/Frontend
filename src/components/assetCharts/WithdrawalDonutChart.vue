@@ -77,7 +77,16 @@ const chartOptions = {
       },
     },
     datalabels: {
-      display: false, // 차트 위 라벨은 숨기기
+      display: true,
+      color: "#383838", // 글자색 (배경색에 따라 조정)
+      font: {
+        weight: "bold",
+        size: 12,
+      },
+      formatter: (value) => {
+        if (value === 0) return null; // 0이면 숨기기
+        return `₩${value.toLocaleString()}`;
+      },
     },
   },
 };
