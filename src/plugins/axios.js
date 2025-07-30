@@ -12,7 +12,7 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     const authStore = useAuthStore();
-    const token = authStore.accessToken;
+    const token = authStore.tokenZ;
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

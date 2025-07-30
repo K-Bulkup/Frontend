@@ -24,9 +24,7 @@ export const useAuthStore = defineStore("auth", {
 
     async fetchUserInfo() {
       try {
-        const res = await apiClient.get("/api/common/users/me", {
-          headers: { Authorization: `Bearer ${this.token}` },
-        });
+        const res = await apiClient.get("/api/common/users/me");
         const userData = res.data.data;
 
         this.setUserId(userData.userId);
