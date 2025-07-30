@@ -6,7 +6,7 @@ defineProps({
   isExpanded: Boolean,
 });
 
-const emit = defineEmits(["toggle"]);
+const emit = defineEmits(["toggle", "routine-click"]);
 </script>
 
 <template>
@@ -45,7 +45,8 @@ const emit = defineEmits(["toggle"]);
         <div
           v-for="quest in quests"
           :key="quest.id"
-          class="flex items-center justify-between rounded-xl border border-gray-200 p-4"
+          @click="emit('routine-click', quest.id)"
+          class="flex cursor-pointer items-center justify-between rounded-xl border border-gray-200 p-4 transition-colors duration-200 hover:border-gray-500"
           :class="quest.completed ? 'bg-white' : 'bg-gray-200'"
         >
           <span class="flex-1 text-body text-black">{{ quest.name }}</span>

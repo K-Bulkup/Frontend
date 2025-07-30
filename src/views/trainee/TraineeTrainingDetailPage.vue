@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseBadge from "@/components/common/BaseBadge.vue";
@@ -11,6 +11,7 @@ import DoughnutChart from "@/components/training/DoughnutChart.vue";
 // 상태 (State)
 
 const router = useRouter();
+const route = useRoute();
 
 // 가상의 트레이닝 상세 데이터
 const trainingData = ref({
@@ -44,6 +45,12 @@ const expandedSections = ref({
   strength: false,
   cardio: false,
 });
+
+// 페이지 이동 메서드
+const goToRoutineDetail = (routineId) => {
+  const trainingId = route.params.id;
+  router.push(`/trainee/mypage/training/${trainingId}/routine/${routineId}`);
+};
 
 // 계산된 속성 (Computed)
 
@@ -154,6 +161,7 @@ const isSectionLocked = (sectionKey) => {
           :is-locked="isSectionLocked('stretching')"
           :is-expanded="expandedSections.stretching"
           @toggle="toggleSection('stretching')"
+          @routine-click="goToRoutineDetail"
         />
         <RoutineSection
           title="근력"
@@ -161,6 +169,7 @@ const isSectionLocked = (sectionKey) => {
           :is-locked="isSectionLocked('strength')"
           :is-expanded="expandedSections.strength"
           @toggle="toggleSection('strength')"
+          @routine-click="goToRoutineDetail"
         />
         <RoutineSection
           title="유산소"
@@ -168,6 +177,7 @@ const isSectionLocked = (sectionKey) => {
           :is-locked="isSectionLocked('cardio')"
           :is-expanded="expandedSections.cardio"
           @toggle="toggleSection('cardio')"
+          @routine-click="goToRoutineDetail"
         />
       </div>
 
