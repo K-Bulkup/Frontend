@@ -105,7 +105,7 @@ const isAssetFetched = computed(() => !!assetData.value);
         </div>
         <!-- AI 채팅 버튼: 메인 화면 기준 오른쪽 하단 고정 -->
         <div
-          class="fixed bottom-[100px] z-50"
+          class="fixed bottom-[120px] z-50"
           style="right: max(1rem, calc(50vw - 180px))"
         >
           <button
