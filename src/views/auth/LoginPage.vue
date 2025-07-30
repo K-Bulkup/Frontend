@@ -37,24 +37,26 @@ onMounted(() => {
 
   const { accessToken, role, isNewUser, email, providerId, name, loginType } = route.query;
 
-  if (accessToken && role) {
+  // Case 1: Social login redirect that requires role selection (HIGHEST PRIORITY)
+  if (loginType && isNewUser === 'true') {
+    step.value = 2; // Move to role selection
+    form.value.email = email; // Pre-fill email if available
+    form.value.loginType = loginType; // Set loginType
+
+    // Store profile data for social signup/login completion
+    naverProfileData.value = { providerId, name }; // 네이버 프로필 데이터 저장 (재활용)
+    kakaoProfileData.value = { providerId, name }; // 카카오 프로필 데이터 저장 (재활용)
+
+    // Set flags for social signup flow
+    isNaverSignupFlow.value = (loginType === 'NAVER');
+    isKakaoSignupFlow.value = (loginType === 'KAKAO');
+  } else if (accessToken && role) {
+    // Case 2: Fully logged in (accessToken and role present, and isNewUser is not 'true')
     authStore.setToken(accessToken);
     authStore.setRole(role);
     result.value = "success"; // 로그인 성공 화면 표시
-  } else if (isNewUser === 'true') {
-    step.value = 2; // 역할 선택 화면으로 이동
-    form.value.email = email; // 이메일 미리 채우기
-    form.value.loginType = loginType; // 신규 사용자일 때 loginType 설정
-    // 신규 사용자 가입을 위한 추가 데이터 저장
-    naverProfileData.value = { providerId, name }; // 네이버 프로필 데이터 저장 (재활용)
-    kakaoProfileData.value = { providerId, name }; // 카카오 프로필 데이터 저장 (재활용)
-    isNaverSignupFlow.value = (loginType === 'NAVER');
-    isKakaoSignupFlow.value = (loginType === 'KAKAO');
-  } else if (loginType) { // 기존 소셜 사용자일 경우 loginType 설정
-    form.value.loginType = loginType;
-  } else if (loginType) { // 기존 소셜 사용자일 경우 loginType 설정
-    form.value.loginType = loginType;
   }
+  // If neither of the above, step remains 1 (local login screen)
 });
 
 
@@ -106,6 +108,13 @@ const handleLogin = async () => {
     if (!form.value.loginType) {
       form.value.loginType = "LOCAL"; // loginType이 설정되지 않은 경우 LOCAL로 명시
     }
+
+    // 로컬 로그인 시 이메일과 비밀번호 유효성 검사 추가
+    if (form.value.loginType === "LOCAL" && (!form.value.email || !form.value.password)) {
+      alert("이메일과 비밀번호를 입력해주세요.");
+      return; // 로그인 시도 중단
+    }
+
     const { success: loginSuccess } = await loginAndHandle(form.value);
     success = loginSuccess;
   }

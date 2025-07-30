@@ -12,7 +12,7 @@ export const useLogin = () => {
       if (data.accessToken) {
         console.log("setToken에 전달될 accessToken:", data.accessToken); // 이 줄을 추가합니다.
         authStore.setToken(data.accessToken); // 토큰 설정
-        authStore.setRole(data.roles[0]); // 역할 설정 (roles 배열의 첫 번째 요소 사용)
+        authStore.setRole(formData.role); // 역할 설정 (사용자 선택 역할 사용)
 
         return { success: true, error: null };
       } else {
