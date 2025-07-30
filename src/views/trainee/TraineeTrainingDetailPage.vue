@@ -102,7 +102,7 @@ const isSectionLocked = (sectionKey) => {
       </div>
 
       <div
-        class="my-6 flex flex-col items-center justify-center rounded-md border border-white p-6"
+        class="my-6 flex flex-col items-center justify-center rounded-xl border border-white p-6"
       >
         <div class="relative h-24 w-24">
           <DoughnutChart :progress="trainingData.progress" />

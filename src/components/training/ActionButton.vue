@@ -12,7 +12,7 @@ defineProps({
 <template>
   <button
     :disabled="disabled"
-    class="flex w-full items-center justify-center gap-2 rounded-md py-3.5 text-body font-bold transition-colors"
+    class="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-body font-bold transition-colors"
     :class="[
       disabled
         ? 'bg-gray-800 text-gray-700'
