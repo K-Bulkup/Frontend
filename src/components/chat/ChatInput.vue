@@ -7,6 +7,10 @@ const props = defineProps({
     type: String,
     default: "메시지를 입력하세요...",
   },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(["send"]);
@@ -29,6 +33,7 @@ const sendMessage = () => {
           v-model="inputMessage"
           type="text"
           :placeholder="placeholder"
+          :disabled="disabled"
           class="w-full rounded-full bg-gray-800 px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-gray-600"
           @keypress.enter="sendMessage"
         />
