@@ -53,7 +53,6 @@ const chartOptions = {
       display: false,
     },
     datalabels: {
-      /*
       color: "#383838", // Tailwind gray-700
       anchor: "center",
       align: "center",
@@ -67,8 +66,8 @@ const chartOptions = {
         const percentage = ((value / total) * 100).toFixed(1);
         return `${percentage}%`;
       },
-      */
-      display: false,
+
+      display: true,
     },
   },
 };
