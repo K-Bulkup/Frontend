@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-
 import { useSignup } from "@/composables/user/useSignup";
 import BaseButton from "@/components/common/BaseButton.vue";
 import BaseInput from "@/components/common/BaseInput.vue";
@@ -17,16 +16,11 @@ const form = ref({
   passwordConfirm: "",
   username: "",
   birthdate: "",
-  role: "", // 역할 추가
-  loginType: "LOCAL", // loginType으로 변경
+  role: "",
+  loginType: "LOCAL",
 });
 
-const selectedRole = ref(null); // 새로 추가: 선택된 역할을 저장
-
-const handleRoleSelection = (role) => {
-  form.value.role = role.toUpperCase(); // 역할 대문자로 변환
-  selectedRole.value = role; // 선택된 역할 업데이트
-};
+const selectedRole = ref(null); // 선택된 역할을 저장
 
 const isEmailValid = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -52,22 +46,42 @@ const goNext = () => {
     step.value++;
   } else if (step.value === 3) {
     if (!isBirthdateValid(form.value.birthdate)) return;
-    step.value++;
+    step.value++; // 4단계로 이동
   }
+};
+
+// 역할 카드 클릭 시 호출될 함수
+const handleRoleSelection = (role) => {
+  form.value.role = role;
+  selectedRole.value = role; // 선택된 역할 업데이트
 };
 
 const result = ref(null);
 
 const submit = async () => {
-  if (!form.value.role) {
-    alert("역할을 선택해주세요.");
-    return;
-  }
+  // 8자리 숫자 형식의 생년월일 (예: 19900101)
+  const rawBirthdate = form.value.birthdate;
+
+  // YYYY-MM-DD 형식으로 변환
+  const year = rawBirthdate.substring(0, 4);
+  const month = rawBirthdate.substring(4, 6);
+  const day = rawBirthdate.substring(6, 8);
+  const formattedBirthdate = `${rawBirthdate}000000`; // 8자리 날짜 뒤에 000000 붙이기
+
+  console.log("Sending signup request with form data:", {
+    email: form.value.email,
+    password: form.value.password,
+    username: form.value.username,
+    birthdate: formattedBirthdate,
+    role: form.value.role,
+    loginType: form.value.loginType,
+  });
+
   const { success } = await signupAndHandle({
     email: form.value.email,
     password: form.value.password,
     username: form.value.username,
-    birthdate: form.value.birthdate+'000000',
+    birthdate: formattedBirthdate,
     role: form.value.role,
     loginType: form.value.loginType,
   });
@@ -107,10 +121,7 @@ const submit = async () => {
     </div>
   </div>
 
-  <div
-    v-else
-    class="flex min-h-screen w-full flex-col justify-between px-1 py-20"
-  >
+  <div v-else class="flex min-h-screen flex-col justify-between px-1 py-20">
     <div>
       <BaseStatusMessage
         :title="
@@ -129,7 +140,7 @@ const submit = async () => {
               ? '이름은 공백 없이 12자 이하만 가능합니다.'
               : step === 3
                 ? '응답하신 생년월일은 공개되지 않습니다.'
-                : '트레이너 또는 회원 유형을 선택해주세요.'
+                : '트레이너 또는 회원 중 선택해주세요.'
         "
         variant="guide"
       />
@@ -198,47 +209,39 @@ const submit = async () => {
             :is-invalid="
               form.birthdate !== '' && !isBirthdateValid(form.birthdate)
             "
-            error-message="6자리 숫자(990101 형식)로 입력해주세요"
+            error-message="8자리 숫자(19990101 형식)로 입력해주세요"
           />
         </template>
 
-        <!-- 역할 선택 화면 -->
         <template v-else-if="step === 4">
-          <div class="mt-8 w-full space-y-4">
-            <!-- 트레이너 카드 -->
+          <div class="mt-8 space-y-4">
+            <!-- 역할 카드 -->
             <div
-              @click="handleRoleSelection('trainer')"
-              :class="{
-                'border-4 border-yellow-500': selectedRole === 'trainer',
-              }"
-              class="flex w-full cursor-pointer items-center justify-between rounded-xl bg-white px-4 py-4 shadow"
+              v-for="role in ['TRAINER', 'TRAINEE']"
+              :key="role"
+              @click="handleRoleSelection(role)"
+              :class="{ 'border-4 border-yellow-500': selectedRole === role }"
+              class="flex cursor-pointer items-center justify-between rounded-xl bg-white px-4 py-4 shadow"
             >
               <div>
-                <p class="font-bold text-black">트레이너</p>
-                <p class="text-sm text-gray-500">회원을 찾고 있어요.</p>
+                <p class="font-bold text-black">
+                  {{ role === "TRAINER" ? "트레이너" : "회원" }}
+                </p>
+                <p class="text-sm text-gray-500">
+                  {{
+                    role === "TRAINER"
+                      ? "회원을 찾고 있어요."
+                      : "트레이너를 찾고 있어요."
+                  }}
+                </p>
               </div>
               <img
-                src="@/assets/images/trainer-icon.png"
-                alt="트레이너 아이콘"
-                class="h-12 w-12"
-              />
-            </div>
-
-            <!-- 회원 카드 -->
-            <div
-              @click="handleRoleSelection('trainee')"
-              :class="{
-                'border-4 border-yellow-500': selectedRole === 'trainee',
-              }"
-              class="flex w-full cursor-pointer items-center justify-between rounded-xl bg-white px-4 py-4 shadow"
-            >
-              <div>
-                <p class="font-bold text-black">회원</p>
-                <p class="text-sm text-gray-500">트레이너를 찾고 있어요.</p>
-              </div>
-              <img
-                src="@/assets/images/trainee-icon.png"
-                alt="회원 아이콘"
+                :src="
+                  role === 'TRAINER'
+                    ? '/src/assets/images/trainer-icon.png'
+                    : '/src/assets/images/trainee-icon.png'
+                "
+                :alt="role === 'TRAINER' ? '트레이너 아이콘' : '회원 아이콘'"
                 class="h-12 w-12"
               />
             </div>
@@ -276,11 +279,7 @@ const submit = async () => {
         다음
       </BaseButton>
 
-      <BaseButton
-        v-else-if="step === 4"
-        @click="submit"
-        :isDisabled="!selectedRole"
-      >
+      <BaseButton v-if="step === 4" @click="submit" :isDisabled="!form.role">
         가입완료
       </BaseButton>
     </div>
