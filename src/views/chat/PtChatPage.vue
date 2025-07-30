@@ -4,7 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import dayjs from "dayjs";
 import "dayjs/locale/ko";
 
-import { useAuthStore } from "@/stores/auth";
+import { awaitUserReady } from "@/composables/user/awaitUserReady";
 import {
   getChatHistory,
   readMessages,
@@ -22,21 +22,19 @@ const route = useRoute();
 const router = useRouter();
 const roomId = route.params.roomId;
 
-const authStore = useAuthStore();
-const userId = 2;
-
-const messages = ref([]);
 const userName = ref("");
 const userProfileUrl = ref(null);
 const status = ref("");
 const expiresAt = ref(null);
+const userId = ref(null);
+
+const messages = ref([]);
 const messageContainer = ref(null);
 
-const { subscribeRoom, unsubscribeRoom, sendMessage, connectSocket } =
-  useChatSocket();
+const { safeSubsribeRoom, unsubscribeRoom, sendMessage } = useChatSocket();
 
 const handleSendMessage = (text) => {
-  sendMessage(roomId, text, userId);
+  sendMessage(roomId, text, userId.value);
 };
 
 const scrollToBottom = () => {
@@ -67,37 +65,41 @@ const groupedMessages = computed(() => groupByDate(messages.value));
 
 onMounted(async () => {
   try {
-    const response = await getChatHistory(roomId, userId);
-    messages.value = response.data?.data?.map((msg) => {
-      const [y, m, d, h, min, s] = msg.sendAt;
+    userId.value = await awaitUserReady();
+
+    const response = await getChatHistory(roomId, userId.value);
+    const chatList = response.data?.data || [];
+
+    messages.value = chatList.map((msg) => {
+      const [year, month, day, hour, minute, second] = msg.sendAt;
       return {
         id: msg.id,
         text: msg.message,
-        isOwn: String(msg.senderId) === String(userId),
-        sendAt: new Date(y, m - 1, d, h, min, s),
+        isOwn: String(msg.senderId) === String(userId.value),
+        sendAt: new Date(year, month - 1, day, hour, minute, second),
       };
     });
 
-    const detailRes = await getCounselingDetail(roomId, userId);
+    const detailRes = await getCounselingDetail(roomId, userId.value);
     const detail = detailRes.data?.data;
     status.value = detail.status;
     userName.value = detail.userName;
     userProfileUrl.value = detail.userProfileUrl;
-    const [ey, em, ed, eh, emin, es] = detail.expiresAt;
-    expiresAt.value = new Date(ey, em - 1, ed, eh, emin, es);
 
-    await connectSocket();
-    subscribeRoom(roomId, async (payload) => {
+    const [year, month, day, hour, minute, second] = detail.expiresAt;
+    expiresAt.value = new Date(year, month - 1, day, hour, minute, second);
+
+    safeSubsribeRoom(roomId, async (payload) => {
       messages.value.push({
         id: Date.now(),
         text: payload.message,
-        isOwn: String(payload.senderId) === String(userId),
+        isOwn: String(payload.senderId) === String(userId.value),
         sendAt: new Date(payload.sendAt),
       });
 
-      if (String(payload.senderId) !== String(userId)) {
+      if (String(payload.senderId) !== String(userId.value)) {
         try {
-          await readMessages(roomId, userId);
+          await readMessages(roomId, userId.value);
         } catch (err) {
           console.error("읽음 처리 실패:", err);
         }
@@ -123,7 +125,7 @@ onBeforeUnmount(() => {
       :user-name="userName"
       :user-profile-url="userProfileUrl"
       :expires-at="expiresAt"
-      @back="router.push('/trainee/mypage/pt-history')"
+      @back="router.push('/common/pt-history')"
     />
 
     <div ref="messageContainer" class="flex-1 overflow-y-auto p-4">

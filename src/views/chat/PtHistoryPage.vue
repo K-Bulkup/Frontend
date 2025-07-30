@@ -4,17 +4,15 @@ import { useRouter } from "vue-router";
 import { ChevronLeftIcon, MessageCircleIcon } from "lucide-vue-next";
 import dayjs from "dayjs";
 
-import { useAuthStore } from "@/stores/auth";
 import { getCounselingList } from "@/composables/api/useCounselingApi";
 import { useChatSocket } from "@/composables/chat/useChatSocket";
 
 import ChatListItem from "@/components/chat/ChatListItem.vue";
+import { awaitUserReady } from "@/composables/user/awaitUserReady";
 
 const router = useRouter();
 const chatList = ref([]);
-
-const authStore = useAuthStore();
-const userId = 1;
+const userId = ref(null);
 
 const { subscribeUserQueue, unsubscribeUserQueue, connectSocket } =
   useChatSocket();
@@ -42,7 +40,7 @@ const handleBack = () => {
 };
 
 const handleChatClick = (chatData) => {
-  router.push(`/trainer/mypage/pt-chat/${chatData.roomId}`);
+  router.push(`/common/pt-chat/${chatData.roomId}`);
 };
 
 const fetchChatList = async () => {
@@ -87,7 +85,7 @@ const fetchChatList = async () => {
 
       return {
         id: index + 1,
-        userName: item.traineeName,
+        userName: item.opponentName,
         remainingDays: remainingLabel,
         courseTitle: item.trainingTitle,
         lastMessage: item.latestMessage ?? "(대화 없음)",
@@ -103,10 +101,12 @@ const fetchChatList = async () => {
 };
 
 onMounted(async () => {
+  userId.value = await awaitUserReady();
+
   await connectSocket();
   await fetchChatList();
 
-  subscribeUserQueue(userId, (summary) => {
+  subscribeUserQueue(userId.value, (summary) => {
     const index = chatList.value.findIndex(
       (chat) => chat.roomId === summary.roomId,
     );
@@ -125,8 +125,8 @@ onMounted(async () => {
   });
 });
 
-onBeforeUnmount(() => {
-  unsubscribeUserQueue(userId);
+onBeforeUnmount(async () => {
+  unsubscribeUserQueue(userId.value);
 });
 </script>
 

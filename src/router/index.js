@@ -8,7 +8,6 @@ import TrainingDetailPage from "@/views/training/TrainingDetailPage.vue";
 
 //trainee
 import TraineeMyPage from "@/views/trainee/TraineeMyPage.vue";
-import TraineePtChatPage from "@/views/trainee/TraineePtChatPage.vue";
 import TraineeReviewPage from "@/views/trainee/TraineeReviewPage.vue";
 import TraineeRoutineDetailPage from "@/views/trainee/TraineeRoutineDetailPage.vue";
 import TraineeTrainingDetailPage from "@/views/trainee/TraineeTrainingDetailPage.vue";
@@ -21,10 +20,11 @@ import AssetAiChatPage from "@/views/trainee/asset/AssetAiChatPage.vue";
 import TrainerMyPage from "@/views/trainer/TrainerMyPage.vue";
 import TrainerVerifyPage from "@/views/trainer/TrainerVerifyPage.vue";
 import TrainerTrainingPage from "@/views/trainer/TrainerTrainingPage.vue";
-import TrainerPtHistoryPage from "@/views/trainer/TrainerPtHistoryPage.vue";
-import TrainerPtChatPage from "@/views/trainer/TrainerPtChatPage.vue";
-import TraineePtHistoryPage from "@/views/trainee/TraineePtHistoryPage.vue";
 import TrainingInputPage from "@/views/trainer/TrainerTrainingInputPage.vue";
+
+//chat
+import PtChatPage from "@/views/chat/PtChatPage.vue";
+import PtHistoryPage from "@/views/chat/PtHistoryPage.vue";
 
 import { createRouter, createWebHistory } from "vue-router";
 
@@ -43,12 +43,6 @@ const router = createRouter({
     //trainee
     { path: "/trainee/mypage", component: TraineeMyPage },
     { path: "/trainee/mypage/review", component: TraineeReviewPage },
-    { path: "/trainee/mypage/pt-history", component: TraineePtHistoryPage },
-    {
-      path: "/trainee/mypage/pt-chat/:roomId",
-      component: TraineePtChatPage,
-      meta: { hideNavbar: true },
-    },
     {
       path: "/trainee/mypage/training/:trainingId",
       component: TraineeTrainingDetailPage,
@@ -69,13 +63,15 @@ const router = createRouter({
     { path: "/trainer/mypage", component: TrainerMyPage },
     { path: "/trainer/mypage/verify", component: TrainerVerifyPage },
     { path: "/trainer/mypage/training", component: TrainerTrainingPage },
-    { path: "/trainer/mypage/pt-history", component: TrainerPtHistoryPage },
+    { path: "/trainer/training/input", component: TrainingInputPage },
+
+    //chat
+    { path: "/common/pt-history", component: PtHistoryPage },
     {
-      path: "/trainer/mypage/pt-chat/:roomId",
-      component: TrainerPtChatPage,
+      path: "/common/pt-chat/:roomId",
+      component: PtChatPage,
       meta: { hideNavbar: true },
     },
-    { path: "/trainer/training/input", component: TrainingInputPage },
   ],
 });
 
