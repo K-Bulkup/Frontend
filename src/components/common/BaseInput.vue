@@ -27,7 +27,7 @@ const inputAttrs = useAttrs();
     <div
       class="flex flex-col gap-1 rounded-xl border bg-gray-100 px-4 py-3"
       :class="[
-        isInvalid ? 'border-error' : 'border-gray200',
+        isInvalid ? 'border-error' : 'border-gray-200',
         'transition duration-200',
       ]"
     >

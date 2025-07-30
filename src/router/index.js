@@ -2,7 +2,6 @@
 import SplashPage from "@/views/auth/SplashPage.vue";
 import SignupPage from "@/views/auth/SignupPage.vue";
 import LoginPage from "@/views/auth/LoginPage.vue";
-
 //training
 import TrainingListPage from "@/views/training/TrainingListPage.vue";
 import TrainingDetailPage from "@/views/training/TrainingDetailPage.vue";

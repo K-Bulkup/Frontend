@@ -7,6 +7,7 @@ export const useLogin = () => {
   const authStore = useAuthStore();
 
   const loginAndHandle = async (formData) => {
+    console.log("로그인 타입:", formData.loginType); // 추가된 콘솔 로그
     try {
       const { data } = await postLogin(formData);
       if (data.accessToken) {
