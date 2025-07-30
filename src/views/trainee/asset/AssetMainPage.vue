@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
-import BaseHeader from "@/components/common/BaseHeader.vue";
+import BaseHeader from "@/components/common/BaseHeaderWithoutBack.vue";
 import { useTraineeAsset } from "@/composables/asset/useFetchAsset.js";
 import BalanceLineChart from "@/components/assetCharts/BalanceLineChart.vue";
 import CompositionDonutChart from "@/components/assetCharts/CompositionDonutChart.vue";
