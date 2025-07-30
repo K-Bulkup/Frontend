@@ -33,9 +33,9 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     //auth
-    { path: "/splash", component: SplashPage },
-    { path: "/login", component: LoginPage },
-    { path: "/signup", component: SignupPage },
+    { path: "/splash", component: SplashPage, meta: { hideNavbar: true } },
+    { path: "/login", component: LoginPage, meta: { hideNavbar: true } },
+    { path: "/signup", component: SignupPage, meta: { hideNavbar: true } },
 
     //training
     { path: "/training", component: TrainingListPage },
@@ -44,8 +44,12 @@ const router = createRouter({
     //trainee
     { path: "/trainee/mypage", component: TraineeMyPage },
     { path: "/trainee/mypage/review", component: TraineeReviewPage },
-    { path: "/trainee/mypage/pt-history", component: TraineePtChatPage },
-    { path: "/trainee/mypage/pt-chat", component: TraineePtHistoryPage },
+    { path: "/trainee/mypage/pt-history", component: TraineePtHistoryPage },
+    {
+      path: "/trainee/mypage/pt-chat/:roomId",
+      component: TraineePtChatPage,
+      meta: { hideNavbar: true },
+    },
     {
       path: "/trainee/mypage/training/:trainingId",
       component: TraineeTrainingDetailPage,
@@ -67,7 +71,11 @@ const router = createRouter({
     { path: "/trainer/mypage/verify", component: TrainerVerifyPage },
     { path: "/trainer/mypage/training", component: TrainerTrainingPage },
     { path: "/trainer/mypage/pt-history", component: TrainerPtHistoryPage },
-    { path: "/trainer/mypage/pt-chat", component: TrainerPtChatPage },
+    {
+      path: "/trainer/mypage/pt-chat/:roomId",
+      component: TrainerPtChatPage,
+      meta: { hideNavbar: true },
+    },
     { path: "/trainer/training/input", component: TrainingInputPage },
   ],
 });
