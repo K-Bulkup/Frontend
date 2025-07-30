@@ -23,6 +23,6 @@ const hideNavBar = computed(() => route.path.includes("chat"));
     <div class="mx-auto max-w-screen-md px-4">
       <RouterView />
     </div>
-    <NavigationBar v-if="!hideNavBar" />
+    <NavigationBar v-if="!$route.meta.hideNavbar" />
   </div>
 </template>
