@@ -7,7 +7,7 @@ const userStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 
-const userType = computed(() => userStore.role || "trainee");
+const userType = computed(() => userStore.role?.toLowerCase() || "trainee");
 
 const activeTab = computed(() => {
   const path = route.path;
@@ -35,7 +35,7 @@ const navItems = {
       id: "pt-history",
       icon: "comments",
       label: "1:1 PT",
-      path: "/trainer/mypage/pt-history",
+      path: "/common/pt-history",
     },
   ],
 };
