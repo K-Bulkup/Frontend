@@ -4,7 +4,7 @@ import { useRouter, useRoute } from "vue-router";
 
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseBadge from "@/components/common/BaseBadge.vue";
-import RoutineSection from "@/components/trainee/training/RoutineSection.vue";
+import TraineeRoutineSection from "@/components/trainee/training/TraineeRoutineSection.vue";
 import ActionButton from "@/components/trainee/training/ActionButton.vue";
 import DoughnutChart from "@/components/trainee/training/DoughnutChart.vue";
 
@@ -155,7 +155,7 @@ const isSectionLocked = (sectionKey) => {
       </h2>
 
       <div class="space-y-2.5">
-        <RoutineSection
+        <TraineeRoutineSection
           title="스트레칭"
           :quests="trainingData.routines.stretching"
           :is-locked="isSectionLocked('stretching')"
@@ -163,7 +163,7 @@ const isSectionLocked = (sectionKey) => {
           @toggle="toggleSection('stretching')"
           @routine-click="goToRoutineDetail"
         />
-        <RoutineSection
+        <TraineeRoutineSection
           title="근력"
           :quests="trainingData.routines.strength"
           :is-locked="isSectionLocked('strength')"
@@ -171,7 +171,7 @@ const isSectionLocked = (sectionKey) => {
           @toggle="toggleSection('strength')"
           @routine-click="goToRoutineDetail"
         />
-        <RoutineSection
+        <TraineeRoutineSection
           title="유산소"
           :quests="trainingData.routines.cardio"
           :is-locked="isSectionLocked('cardio')"

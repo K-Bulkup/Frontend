@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
 import BaseFormField from "@/components/common/BaseFormField.vue";
+import TrainerRoutineSection from "./TrainerRoutineSection.vue";
 
 const trainerName = defineModel("trainerName");
 const description = defineModel("description");
@@ -76,47 +77,15 @@ const handleSectionToggle = (sectionKey) => {
 
       <div>
         <div class="mb-4 text-subtext text-gray-50">루틴</div>
-        <div
+        <TrainerRoutineSection
           v-for="section in ROUTINE_SECTIONS"
           :key="section.key"
-          class="mb-2.5"
-        >
-          <div
-            @click="handleSectionToggle(section.key)"
-            class="flex cursor-pointer items-center justify-between rounded-xl bg-gray-100 p-4"
-          >
-            <span class="text-body text-black">{{ section.title }}</span>
-            <button
-              @click.stop="emit('open-routine-modal', section.key)"
-              class="flex h-6 w-6 items-center justify-center rounded-full bg-primary"
-            >
-              <img src="@/assets/images/plus.svg" alt="추가 버튼" />
-            </button>
-          </div>
-          <div v-if="expandedSections[section.key]" class="mt-2.5">
-            <div
-              v-if="routines[section.key].length > 0"
-              class="flex flex-col gap-2.5 rounded-xl bg-gray-100 p-4"
-            >
-              <div
-                v-for="routine in routines[section.key]"
-                :key="routine.id"
-                class="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4"
-              >
-                <span class="flex-1 text-body text-black">{{
-                  routine.name
-                }}</span>
-                <span class="text-caption text-gray-700">+1P</span>
-              </div>
-            </div>
-            <div
-              v-else
-              class="rounded-xl bg-gray-800 p-4 text-center text-subtext text-gray-700"
-            >
-              루틴을 추가해주세요
-            </div>
-          </div>
-        </div>
+          :title="section.title"
+          :routines="routines[section.key]"
+          :is-expanded="expandedSections[section.key]"
+          @toggle="handleSectionToggle(section.key)"
+          @add-routine="emit('open-routine-modal', section.key)"
+        />
       </div>
     </main>
   </div>
