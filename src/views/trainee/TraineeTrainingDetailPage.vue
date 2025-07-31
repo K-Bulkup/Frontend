@@ -4,9 +4,9 @@ import { useRouter, useRoute } from "vue-router";
 
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseBadge from "@/components/common/BaseBadge.vue";
-import RoutineSection from "@/components/training/RoutineSection.vue";
-import ActionButton from "@/components/training/ActionButton.vue";
-import DoughnutChart from "@/components/training/DoughnutChart.vue";
+import RoutineSection from "@/components/trainee/training/RoutineSection.vue";
+import ActionButton from "@/components/trainee/training/ActionButton.vue";
+import DoughnutChart from "@/components/trainee/training/DoughnutChart.vue";
 
 // 상태 (State)
 

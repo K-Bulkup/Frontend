@@ -5,10 +5,10 @@ import axios from "axios";
 
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseBadge from "@/components/common/BaseBadge.vue";
-import RoutineSubmitBar from "@/components/training/RoutineSubmitBar.vue";
-import RoutineChat from "@/components/training/RoutineChat.vue";
-import RoutineVideo from "@/components/training/RoutineVideo.vue";
-import RoutineResultModal from "@/components/training/RoutineResultModal.vue";
+import RoutineSubmitBar from "@/components/trainee/training/RoutineSubmitBar.vue";
+import RoutineChat from "@/components/trainee/training/RoutineChat.vue";
+import RoutineVideo from "@/components/trainee/training/RoutineVideo.vue";
+import RoutineResultModal from "@/components/trainee/training/RoutineResultModal.vue";
 
 const router = useRouter();
 
