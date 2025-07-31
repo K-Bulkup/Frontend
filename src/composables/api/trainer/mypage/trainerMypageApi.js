@@ -71,10 +71,17 @@ export const trainerMyPageApi = {
     }
   },
 
-  // 자격증 정보 조회
-  async getCertifications() {
+  async getCertifications(data) {
     try {
-      const response = await apiClient.get("/trainer/certifications");
+      const response = await apiClient.post(
+        "/api/trainer/certificates/verification/1",
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json", // JSON으로 변경
+          },
+        },
+      );
       return response.data;
     } catch (error) {
       console.error("자격증 정보 조회 실패:", error);
