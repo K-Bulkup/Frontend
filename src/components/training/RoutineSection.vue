@@ -6,14 +6,14 @@ defineProps({
   isExpanded: Boolean,
 });
 
-const emit = defineEmits(["toggle"]);
+const emit = defineEmits(["toggle", "routine-click"]);
 </script>
 
 <template>
   <div>
     <div
       @click="emit('toggle')"
-      class="flex items-center justify-between rounded-md p-4"
+      class="flex items-center justify-between rounded-xl p-4"
       :class="{
         'cursor-pointer bg-gray-100': !isLocked,
         'bg-gray-800 text-gray-700': isLocked,
@@ -41,11 +41,12 @@ const emit = defineEmits(["toggle"]);
     </div>
 
     <div v-if="isExpanded && !isLocked" class="mt-2.5">
-      <div class="flex flex-col gap-2.5 rounded-md bg-gray-100 p-4">
+      <div class="flex flex-col gap-2.5 rounded-xl bg-gray-100 p-4">
         <div
           v-for="quest in quests"
           :key="quest.id"
-          class="flex items-center justify-between rounded-md border border-gray-200 p-4"
+          @click="emit('routine-click', quest.id)"
+          class="flex cursor-pointer items-center justify-between rounded-xl border border-gray-200 p-4 transition-colors duration-200 hover:border-gray-500"
           :class="quest.completed ? 'bg-white' : 'bg-gray-200'"
         >
           <span class="flex-1 text-body text-black">{{ quest.name }}</span>

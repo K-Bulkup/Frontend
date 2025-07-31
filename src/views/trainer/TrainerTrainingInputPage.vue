@@ -170,7 +170,7 @@ const triggerFileInput = () => {
               :key="category"
               @click="handleCategorySelect(category)"
               :class="[
-                'w-full rounded-md border-2 border-solid py-3 text-center text-body transition-colors',
+                'w-full rounded-xl border-2 border-solid py-3 text-center text-body transition-colors',
                 selectedCategory === category
                   ? 'border-primary bg-primary text-black'
                   : 'border-gray-100 bg-gray-100 text-black hover:bg-gray-200',
@@ -199,7 +199,7 @@ const triggerFileInput = () => {
               v-model="trainerName"
               type="text"
               placeholder="트레이닝명을 입력해주세요"
-              class="w-full rounded-md border-none bg-gray-100 p-4 text-body text-black outline-none"
+              class="w-full rounded-xl border-none bg-gray-100 p-4 text-body text-black outline-none"
             />
           </div>
           <div class="mb-8">
@@ -210,7 +210,7 @@ const triggerFileInput = () => {
               v-model="trainingDescription"
               placeholder="트레이닝에 대한 소개를 입력해주세요"
               rows="4"
-              class="w-full resize-none rounded-md border-none bg-gray-100 p-4 text-body text-black outline-none"
+              class="w-full resize-none rounded-xl border-none bg-gray-100 p-4 text-body text-black outline-none"
             ></textarea>
           </div>
           <div class="mb-8">
@@ -221,7 +221,7 @@ const triggerFileInput = () => {
                 :key="level"
                 @click="selectedDifficulty = level"
                 :class="[
-                  'flex-1 rounded-md py-3 text-center text-subtext transition-colors',
+                  'flex-1 rounded-xl py-3 text-center text-subtext transition-colors',
                   selectedDifficulty === level
                     ? 'bg-primary text-black'
                     : 'bg-gray-100 text-black hover:bg-gray-200',
@@ -241,7 +241,7 @@ const triggerFileInput = () => {
             >
               <div
                 @click="handleSectionToggle(section.key)"
-                class="flex cursor-pointer items-center justify-between rounded-md bg-gray-100 p-4"
+                class="flex cursor-pointer items-center justify-between rounded-xl bg-gray-100 p-4"
               >
                 <span class="text-body text-black">{{ section.title }}</span>
                 <button
@@ -254,12 +254,12 @@ const triggerFileInput = () => {
               <div v-if="expandedSections[section.key]" class="mt-2.5">
                 <div
                   v-if="routines[section.key].length > 0"
-                  class="flex flex-col gap-2.5 rounded-md bg-gray-100 p-4"
+                  class="flex flex-col gap-2.5 rounded-xl bg-gray-100 p-4"
                 >
                   <div
                     v-for="routine in routines[section.key]"
                     :key="routine.id"
-                    class="flex items-center justify-between rounded-md border border-gray-200 bg-white p-4"
+                    class="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4"
                   >
                     <span class="flex-1 text-body text-black">{{
                       routine.name
@@ -269,7 +269,7 @@ const triggerFileInput = () => {
                 </div>
                 <div
                   v-else
-                  class="rounded-md bg-gray-800 p-4 text-center text-subtext text-gray-700"
+                  class="rounded-xl bg-gray-800 p-4 text-center text-subtext text-gray-700"
                 >
                   루틴을 추가해주세요
                 </div>
@@ -295,12 +295,12 @@ const triggerFileInput = () => {
           />
           <div
             @click="triggerFileInput"
-            class="flex h-64 w-full cursor-pointer items-center justify-center rounded-md bg-gray-100 transition-colors hover:bg-gray-200"
+            class="flex h-64 w-full cursor-pointer items-center justify-center rounded-xl bg-gray-100 transition-colors hover:bg-gray-200"
           >
             <img
               v-if="thumbnailUrl"
               :src="thumbnailUrl"
-              class="h-full w-full rounded-md object-cover"
+              class="h-full w-full rounded-xl object-cover"
             />
             <div v-else class="text-center text-gray-700">
               <img
