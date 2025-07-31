@@ -6,6 +6,7 @@ import BaseButton from "@/components/common/BaseButton.vue";
 import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
 import RoutineAddModal from "./TrainerRoutineAddModal.vue";
 import BaseHeader from "@/components/common/BaseHeader.vue";
+import BaseFormField from "@/components/common/BaseFormField.vue";
 import { createTraining } from "@/plugins/axios";
 
 // 상수 (Constants)
@@ -192,27 +193,22 @@ const triggerFileInput = () => {
 
         <main class="flex-1">
           <div class="mb-6">
-            <label class="mb-2 block text-subtext text-gray-50"
-              >트레이닝명</label
-            >
-            <input
-              v-model="trainerName"
-              type="text"
+            <BaseFormField
+              label="트레이닝명"
               placeholder="트레이닝명을 입력해주세요"
-              class="w-full rounded-xl border-none bg-gray-100 p-4 text-body text-black outline-none"
+              v-model="trainerName"
             />
           </div>
           <div class="mb-8">
-            <label class="mb-2 block text-subtext text-gray-50"
-              >트레이닝 소개</label
-            >
-            <textarea
-              v-model="trainingDescription"
+            <BaseFormField
+              label="트레이닝 소개"
               placeholder="트레이닝에 대한 소개를 입력해주세요"
-              rows="4"
-              class="w-full resize-none rounded-xl border-none bg-gray-100 p-4 text-body text-black outline-none"
-            ></textarea>
+              v-model="trainingDescription"
+              :isTextarea="true"
+              :rows="4"
+            />
           </div>
+
           <div class="mb-8">
             <div class="mb-4 text-subtext text-gray-50">난이도</div>
             <div class="flex items-center gap-2.5">

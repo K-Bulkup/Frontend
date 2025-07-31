@@ -34,7 +34,7 @@ defineEmits(["update:modelValue"]);
       @input="$emit('update:modelValue', $event.target.value)"
       :placeholder="placeholder"
       :rows="rows"
-      class="w-full resize-none rounded-xl border-none bg-gray-100 p-4 text-body text-black outline-none placeholder:text-gray-700"
+      class="w-full resize-none rounded-xl border-none bg-gray-100 p-4 text-body text-black outline-none placeholder:text-gray-400"
     ></textarea>
     <input
       v-else
@@ -42,7 +42,7 @@ defineEmits(["update:modelValue"]);
       :value="modelValue"
       @input="$emit('update:modelValue', $event.target.value)"
       :placeholder="placeholder"
-      class="w-full rounded-xl border-none bg-gray-100 p-4 text-body text-black outline-none placeholder:text-gray-700"
+      class="w-full rounded-xl border-none bg-gray-100 p-4 text-body text-black outline-none placeholder:text-gray-400"
     />
   </div>
 </template>
