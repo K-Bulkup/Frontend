@@ -26,10 +26,10 @@ const handlePlayClick = () => {
         class="h-full w-full object-cover"
       />
 
-      <!-- 썸네일이 없는 경우 fallback UI -->
+      <!-- 썸네일이 없는 경우 -->
       <div v-else class="flex h-full w-full items-center justify-center">
         <img
-          src="@/assets/images/youtube_white.svg"
+          src="@/assets/images/trainee/training/youtube_white.svg"
           alt="유튜브 아이콘"
           class="h-12 w-12"
         />

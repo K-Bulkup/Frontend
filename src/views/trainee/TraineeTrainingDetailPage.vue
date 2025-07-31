@@ -189,7 +189,7 @@ const isSectionLocked = (sectionKey) => {
         >
           <template #icon>
             <img
-              src="@/assets/images/Chat_Circle.svg"
+              src="@/assets/images/trainee/training/Chat_Circle.svg"
               alt="채팅"
               class="h-5 w-5"
             />
@@ -203,7 +203,7 @@ const isSectionLocked = (sectionKey) => {
         >
           <template #icon>
             <img
-              src="@/assets/images/Chat_Circle_Dots.svg"
+              src="@/assets/images/trainee/training/Chat_Circle_Dots.svg"
               alt="리뷰"
               class="h-5 w-5"
             />

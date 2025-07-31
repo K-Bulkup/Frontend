@@ -27,7 +27,7 @@ const emit = defineEmits(["toggle", "routine-click"]);
       </span>
       <img
         v-if="isLocked"
-        src="@/assets/images/lock.svg"
+        src="@/assets/images/trainee/training/lock.svg"
         alt="잠금"
         class="h-5 w-5"
       />
@@ -56,7 +56,7 @@ const emit = defineEmits(["toggle", "routine-click"]);
             class="flex items-center gap-2 text-subtext font-semibold text-[#28A745]"
           >
             <img
-              src="@/assets/images/Check_Green.svg"
+              src="@/assets/images/trainee/training/Check_Green.svg"
               alt="완료"
               class="h-4 w-4"
             />
