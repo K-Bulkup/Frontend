@@ -2,8 +2,8 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAccountConnect } from "@/composables/asset/useCreateAsset";
-import AccountConnectSuccessModal from "@/components/common/AccountConnectSuccessModal.vue";
-import AccountConnectFailureModal from "@/components/common/AccountConnectFailureModal.vue";
+import ConnectSuccessModal from "@/components/common/ConnectSuccessModal.vue";
+import ConnectFailureModal from "@/components/common/ConnectFailureModal.vue";
 import BaseHeader from "@/components/common/BaseHeader.vue";
 
 const router = useRouter();
@@ -169,10 +169,7 @@ const handleSuccessClose = () => {
     </div>
 
     <!-- 모달 -->
-    <AccountConnectSuccessModal
-      v-if="showSuccessModal"
-      @close="handleSuccessClose"
-    />
-    <AccountConnectFailureModal v-if="showFailureModal" @retry="handleRetry" />
+    <ConnectSuccessModal v-if="showSuccessModal" @close="handleSuccessClose" />
+    <ConnectFailureModal v-if="showFailureModal" @retry="handleRetry" />
   </div>
 </template>
