@@ -4,9 +4,9 @@ import { useRouter, useRoute } from "vue-router";
 
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseBadge from "@/components/common/BaseBadge.vue";
-import RoutineSection from "@/components/training/RoutineSection.vue";
-import ActionButton from "@/components/training/ActionButton.vue";
-import DoughnutChart from "@/components/training/DoughnutChart.vue";
+import TraineeRoutineSection from "@/components/trainee/training/TraineeRoutineSection.vue";
+import ActionButton from "@/components/trainee/training/ActionButton.vue";
+import DoughnutChart from "@/components/trainee/training/DoughnutChart.vue";
 
 // 상태 (State)
 
@@ -47,8 +47,10 @@ const expandedSections = ref({
 });
 
 // 페이지 이동 메서드
-const goToRoutineDetail = (routineId) => {
+const goToRoutineDetail = (quest) => {
   const trainingId = route.params.id;
+  const routineId = quest.id;
+
   router.push(`/trainee/mypage/training/${trainingId}/routine/${routineId}`);
 };
 
@@ -155,7 +157,7 @@ const isSectionLocked = (sectionKey) => {
       </h2>
 
       <div class="space-y-2.5">
-        <RoutineSection
+        <TraineeRoutineSection
           title="스트레칭"
           :quests="trainingData.routines.stretching"
           :is-locked="isSectionLocked('stretching')"
@@ -163,7 +165,7 @@ const isSectionLocked = (sectionKey) => {
           @toggle="toggleSection('stretching')"
           @routine-click="goToRoutineDetail"
         />
-        <RoutineSection
+        <TraineeRoutineSection
           title="근력"
           :quests="trainingData.routines.strength"
           :is-locked="isSectionLocked('strength')"
@@ -171,7 +173,7 @@ const isSectionLocked = (sectionKey) => {
           @toggle="toggleSection('strength')"
           @routine-click="goToRoutineDetail"
         />
-        <RoutineSection
+        <TraineeRoutineSection
           title="유산소"
           :quests="trainingData.routines.cardio"
           :is-locked="isSectionLocked('cardio')"
@@ -189,7 +191,7 @@ const isSectionLocked = (sectionKey) => {
         >
           <template #icon>
             <img
-              src="@/assets/images/Chat_Circle.svg"
+              src="@/assets/images/trainee/training/Chat_Circle.svg"
               alt="채팅"
               class="h-5 w-5"
             />
@@ -203,7 +205,7 @@ const isSectionLocked = (sectionKey) => {
         >
           <template #icon>
             <img
-              src="@/assets/images/Chat_Circle_Dots.svg"
+              src="@/assets/images/trainee/training/Chat_Circle_Dots.svg"
               alt="리뷰"
               class="h-5 w-5"
             />

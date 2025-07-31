@@ -32,19 +32,16 @@ const removeSelectedImage = () => {
   }
 };
 
-const submitCertification = () => {
+const handleSubmit = () => {
   if (!canSubmit.value) return;
 
-  const newCertification = {
-    id: Date.now(),
-    description: newCertificationText.value,
+  emit("submit", {
+    text: newCertificationText.value,
+    imageFile: selectedImageFile.value,
     imageUrl: selectedImageUrl.value,
-    timestamp: new Date(),
-  };
+  });
 
-  emit("submit", newCertification);
-
-  // 입력 폼 초기화
+  // 제출 후 입력 필드 초기화
   newCertificationText.value = "";
   removeSelectedImage();
 };
@@ -65,10 +62,10 @@ const submitCertification = () => {
           type="text"
           placeholder="과제 결과를 입력해주세요..."
           class="flex-1 bg-transparent text-body text-black outline-none placeholder:text-gray-500"
-          @keypress.enter.prevent="submitCertification"
+          @keypress.enter.prevent="handleSubmit"
         />
         <button
-          @click="submitCertification"
+          @click="handleSubmit"
           :disabled="!canSubmit"
           :class="[
             'rounded-lg px-4 py-2 text-subtext font-medium transition-colors',
@@ -91,7 +88,10 @@ const submitCertification = () => {
             @click="removeSelectedImage"
             class="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600"
           >
-            <img src="@/assets/images/close_white.svg" alt="이미지 삭제" />
+            <img
+              src="@/assets/images/trainee/training/close_white.svg"
+              alt="이미지 삭제"
+            />
           </button>
         </div>
       </div>
