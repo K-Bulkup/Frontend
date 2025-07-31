@@ -3,6 +3,7 @@ import { ref, computed } from "vue";
 import BaseButton from "@/components/common/BaseButton.vue";
 import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
 import BaseHeader from "@/components/common/BaseHeader.vue";
+import BaseFormField from "@/components/common/BaseFormField.vue";
 
 // 상수
 const ROUTINE_TYPES = ["실천형", "주관식", "OX"];
@@ -14,6 +15,7 @@ const emit = defineEmits(["close", "save"]);
 const routineTitle = ref("");
 const routineUrl = ref("");
 const routineContent = ref("");
+const routineAnswer = ref("");
 const selectedRoutineType = ref("");
 
 // 계산된 속성
@@ -22,6 +24,7 @@ const isSaveButtonDisabled = computed(() => {
     !routineTitle.value.trim() ||
     !routineUrl.value.trim() ||
     !routineContent.value.trim() ||
+    !routineAnswer.value.trim() ||
     !selectedRoutineType.value
   );
 });
@@ -47,7 +50,7 @@ const handleSave = () => {
 
 <template>
   <div
-    class="absolute inset-0 z-50 flex h-full w-full flex-col justify-between overflow-y-auto bg-realBlack px-6 py-10"
+    class="absolute inset-0 z-50 flex h-full w-full flex-col justify-between overflow-y-auto bg-realBlack px-6 py-10 scrollbar-hide"
   >
     <div>
       <BaseHeader title="루틴 추가" @back="handleClose" />
@@ -60,39 +63,22 @@ const handleSave = () => {
         />
 
         <div class="flex flex-col space-y-6">
-          <div>
-            <label class="mb-2 block text-subtext text-gray-50"
-              >루틴 제목</label
-            >
-            <input
-              v-model="routineTitle"
-              type="text"
-              placeholder="루틴 제목을 입력해주세요"
-              class="w-full rounded-xl border-none bg-gray-100 p-4 text-body text-black outline-none placeholder:text-gray-700"
-            />
-          </div>
-
-          <div>
-            <label class="mb-2 block text-subtext text-gray-50">영상 URL</label>
-            <input
-              v-model="routineUrl"
-              type="text"
-              placeholder="영상 URL을 입력해주세요"
-              class="w-full rounded-xl border-none bg-gray-100 p-4 text-body text-black outline-none placeholder:text-gray-700"
-            />
-          </div>
-
-          <div>
-            <label class="mb-2 block text-subtext text-gray-50"
-              >루틴 내용</label
-            >
-            <textarea
-              v-model="routineContent"
-              placeholder="루틴 내용을 입력해주세요"
-              rows="4"
-              class="w-full resize-none rounded-xl border-none bg-gray-100 p-4 text-body text-black outline-none placeholder:text-gray-700"
-            ></textarea>
-          </div>
+          <BaseFormField
+            label="루틴 제목"
+            placeholder="루틴 제목을 입력해주세요"
+            v-model="routineTitle"
+          />
+          <BaseFormField
+            label="영상 URL"
+            placeholder="영상 URL을 입력해주세요"
+            v-model="routineUrl"
+          />
+          <BaseFormField
+            label="루틴 내용"
+            placeholder="루틴 내용을 입력해주세요"
+            v-model="routineContent"
+            :isTextarea="true"
+          />
 
           <div>
             <div class="mb-4 text-subtext text-gray-50">루틴 유형</div>
@@ -112,6 +98,13 @@ const handleSave = () => {
               </button>
             </div>
           </div>
+
+          <BaseFormField
+            label="루틴 답안"
+            placeholder="루틴 답안을 입력해주세요"
+            v-model="routineAnswer"
+            :isTextarea="true"
+          />
         </div>
       </main>
     </div>
