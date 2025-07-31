@@ -45,7 +45,7 @@ const emit = defineEmits(["toggle", "routine-click"]);
         <div
           v-for="quest in quests"
           :key="quest.id"
-          @click="emit('routine-click', quest.id)"
+          @click="emit('routine-click', quest)"
           class="flex cursor-pointer items-center justify-between rounded-xl border border-gray-200 p-4 transition-colors duration-200 hover:border-gray-500"
           :class="quest.completed ? 'bg-white' : 'bg-gray-200'"
         >
@@ -62,7 +62,9 @@ const emit = defineEmits(["toggle", "routine-click"]);
             />
             <span>완료</span>
           </div>
-          <span v-else class="text-caption text-gray-700">+2P</span>
+          <span v-else class="text-caption text-gray-700"
+            >+{{ quest.reward }}P</span
+          >
         </div>
       </div>
     </div>

@@ -47,8 +47,10 @@ const expandedSections = ref({
 });
 
 // 페이지 이동 메서드
-const goToRoutineDetail = (routineId) => {
+const goToRoutineDetail = (quest) => {
   const trainingId = route.params.id;
+  const routineId = quest.id;
+
   router.push(`/trainee/mypage/training/${trainingId}/routine/${routineId}`);
 };
 

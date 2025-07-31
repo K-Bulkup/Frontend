@@ -9,10 +9,9 @@ import TrainingStep1Category from "@/components/trainer/training/TrainingStep1Ca
 import TrainingStep2Curriculum from "@/components/trainer/training/TrainingStep2Curriculum.vue";
 import TrainingStep3Thumbnail from "@/components/trainer/training/TrainingStep3Thumbnail.vue";
 import TrainingStep4Complete from "@/components/trainer/training/TrainingStep4Complete.vue";
+import RoutineAddModal from "@/components/trainer/training/TrainerRoutineAddModal.vue";
 
 import { createTraining } from "@/plugins/axios";
-
-import RoutineAddModal from "./TrainerRoutineAddModal.vue";
 
 // 라우터 및 상태 (Router & State)
 const router = useRouter();
