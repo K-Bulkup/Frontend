@@ -1,6 +1,21 @@
 <script setup>
 import { defineEmits } from "vue";
 
+defineProps({
+  title: {
+    type: String,
+    default: "실패하였습니다",
+  },
+  subtitle: {
+    type: String,
+    default: "",
+  },
+  retryButtonText: {
+    type: String,
+    default: "다시 시도",
+  },
+});
+
 const emit = defineEmits(["retry"]);
 
 const handleRetry = () => {
@@ -46,17 +61,25 @@ const handleRetry = () => {
         </svg>
       </div>
 
-      <!-- Failure Message -->
-      <h2 class="mb-16 text-center text-title font-bold text-gray-50">
-        자산 연동이 실패하였습니다
+      <!-- Title -->
+      <h2 class="mb-4 text-center text-title font-bold text-gray-50">
+        {{ title }}
       </h2>
+
+      <!-- Subtitle (optional) -->
+      <p v-if="subtitle" class="mb-16 text-center text-body text-gray-400">
+        {{ subtitle }}
+      </p>
+
+      <!-- Spacing when no subtitle -->
+      <div v-else class="mb-12"></div>
 
       <!-- Retry Button -->
       <button
         @click="handleRetry"
         class="h-12 w-full rounded-xl border border-gray-100 bg-black text-heading font-semibold text-white transition-opacity hover:opacity-80"
       >
-        다시 시도
+        {{ retryButtonText }}
       </button>
     </div>
   </div>
