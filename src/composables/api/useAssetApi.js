@@ -8,3 +8,7 @@ export const postConnectAccount = async (id, bankName) => {
     },
   );
 };
+
+export const getTraineeAsset = async (id) => {
+  return await apiClient.get(`http://localhost:8080/api/trainee/assets/${id}`);
+};
