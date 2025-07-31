@@ -1,4 +1,4 @@
-import apiClient from '@/plugins/axios';
+import apiClient from "@/plugins/axios";
 
 export async function postSignup(data) {
   return await apiClient.post("/api/common/auth/signup", data);
