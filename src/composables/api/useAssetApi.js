@@ -1,14 +1,14 @@
 import apiClient from "@/plugins/axios";
 
-export const postConnectAccount = async (id, bankName) => {
+export const postConnectAccount = async (bankName) => {
   return await apiClient.post(
-    `http://localhost:8080/api/trainee/assets/account/${id}`,
+    `http://localhost:8080/api/trainee/assets/account`,
     {
       bank: bankName,
     },
   );
 };
 
-export const getTraineeAsset = async (id) => {
-  return await apiClient.get(`http://localhost:8080/api/trainee/assets/${id}`);
+export const getTraineeAsset = async () => {
+  return await apiClient.get(`http://localhost:8080/api/trainee/assets`);
 };

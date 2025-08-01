@@ -4,9 +4,9 @@ import { postConnectAccount } from "@/composables/api/useAssetApi";
 export const useAccountConnect = () => {
   const router = useRouter();
 
-  const connectAccount = async (id, selectedBank) => {
+  const connectAccount = async (selectedBank) => {
     try {
-      const response = await postConnectAccount(id, selectedBank.name);
+      const response = await postConnectAccount(selectedBank.name);
 
       return {
         success: true,
