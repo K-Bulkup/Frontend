@@ -39,11 +39,11 @@ const handleConfirm = () => {
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <circle cx="30" cy="30" r="30" fill="#4CAF50" />
+          <circle cx="30" cy="30" r="30" fill="white" />
           <path
-            d="M25 30L28 33L35 26"
-            stroke="white"
-            stroke-width="3"
+            d="M20 31L27 38L42 23"
+            stroke="black"
+            stroke-width="4"
             stroke-linecap="round"
             stroke-linejoin="round"
           />
