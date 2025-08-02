@@ -4,7 +4,10 @@ import { useRouter } from "vue-router";
 import { useSignup } from "@/composables/user/useSignup";
 import BaseButton from "@/components/common/BaseButton.vue";
 import BaseInput from "@/components/common/BaseInput.vue";
+import BaseSelectRole from "@/components/common/BaseSelectRole.vue";
 import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
+import ConnectSuccessModal from "@/components/common/ConnectSuccessModal.vue";
+import ConnectFailureModal from "@/components/common/ConnectFailureModal.vue";
 
 const router = useRouter();
 const step = ref(1);
@@ -58,6 +61,26 @@ const handleRoleSelection = (role) => {
 
 const result = ref(null);
 
+const resetForm = () => {
+  step.value = 1;
+  form.value = {
+    email: "",
+    password: "",
+    passwordConfirm: "",
+    username: "",
+    birthdate: "",
+    role: "",
+    loginType: "LOCAL",
+  };
+  selectedRole.value = null;
+  result.value = null;
+};
+
+const handleSubmit = async () => {
+  if (!form.value.role) return;
+
+  await submit();
+};
 const submit = async () => {
   // 8자리 숫자 형식의 생년월일 (예: 19900101)
   const rawBirthdate = form.value.birthdate;
@@ -77,7 +100,7 @@ const submit = async () => {
     loginType: form.value.loginType,
   });
 
-  const { success } = await signupAndHandle({
+  const response = await signupAndHandle({
     email: form.value.email,
     password: form.value.password,
     username: form.value.username,
@@ -86,7 +109,12 @@ const submit = async () => {
     loginType: form.value.loginType,
   });
 
-  result.value = success ? "success" : "fail";
+  console.log('Signup response in component:', response); // 디버깅 로그
+  console.log('Value of response.success:', response.success); // 값 확인
+  console.log('Type of response.success:', typeof response.success); // 타입 확인
+
+  result.value = response.success ? "success" : "fail";
+  console.log('result.value is set to:', result.value); // 최종 결과 확인
 };
 </script>
 
@@ -95,30 +123,14 @@ const submit = async () => {
     v-if="result === 'success'"
     class="flex min-h-screen flex-col justify-between px-1 py-20"
   >
-    <BaseStatusMessage
-      icon="✅"
-      title="회원가입이 완료되었습니다"
-      subtitle="K-Bulkup과 함께 건강한 습관을 시작해보세요"
-      variant="status"
-    />
-    <div class="mt-10 flex w-full justify-center">
-      <BaseButton @click="router.push('/login')">홈으로 가기</BaseButton>
-    </div>
+    <ConnectSuccessModal @close="router.push('/login')" />
   </div>
 
   <div
     v-else-if="result === 'fail'"
     class="flex min-h-screen flex-col justify-between px-1 py-20"
   >
-    <BaseStatusMessage
-      icon="⚠️"
-      title="회원가입에 실패했습니다"
-      subtitle="입력한 정보를 다시 한 번 확인해주세요"
-      variant="status"
-    />
-    <div class="mt-10 flex w-full justify-center">
-      <BaseButton @click="result = null">다시 시도</BaseButton>
-    </div>
+    <ConnectFailureModal @retry="resetForm" />
   </div>
 
   <div v-else class="flex min-h-screen flex-col justify-between px-1 py-20">
@@ -214,38 +226,10 @@ const submit = async () => {
         </template>
 
         <template v-else-if="step === 4">
-          <div class="mt-8 space-y-4">
-            <!-- 역할 카드 -->
-            <div
-              v-for="role in ['TRAINER', 'TRAINEE']"
-              :key="role"
-              @click="handleRoleSelection(role)"
-              :class="{ 'border-4 border-yellow-500': selectedRole === role }"
-              class="flex cursor-pointer items-center justify-between rounded-xl bg-white px-4 py-4 shadow"
-            >
-              <div>
-                <p class="font-bold text-black">
-                  {{ role === "TRAINER" ? "트레이너" : "회원" }}
-                </p>
-                <p class="text-sm text-gray-500">
-                  {{
-                    role === "TRAINER"
-                      ? "회원을 찾고 있어요."
-                      : "트레이너를 찾고 있어요."
-                  }}
-                </p>
-              </div>
-              <img
-                :src="
-                  role === 'TRAINER'
-                    ? '/src/assets/images/trainer-icon.png'
-                    : '/src/assets/images/trainee-icon.png'
-                "
-                :alt="role === 'TRAINER' ? '트레이너 아이콘' : '회원 아이콘'"
-                class="h-12 w-12"
-              />
-            </div>
-          </div>
+          <BaseSelectRole
+            :selected="selectedRole"
+            @select="handleRoleSelection"
+          />
         </template>
       </div>
     </div>
@@ -279,7 +263,11 @@ const submit = async () => {
         다음
       </BaseButton>
 
-      <BaseButton v-if="step === 4" @click="submit" :isDisabled="!form.role">
+      <BaseButton
+        v-if="step === 4"
+        @click="handleSubmit"
+        :isDisabled="!form.role"
+      >
         가입완료
       </BaseButton>
     </div>
