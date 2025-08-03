@@ -15,6 +15,14 @@ const props = defineProps({
     type: [Date, null],
     default: null,
   },
+  remainingChats: {
+    type: Number,
+    default: 0,
+  },
+});
+
+const remainingChats = computed(() => {
+  return Math.max(0, props.remainingChats);
 });
 
 defineEmits(["back"]);
@@ -65,12 +73,16 @@ const badgeClass = computed(() => {
       <div class="flex items-center space-x-2">
         <span class="font-medium">{{ userName }}</span>
         <span
+          v-if="expiresAt"
           class="rounded-full px-2 py-1 text-xs text-white"
           :class="badgeClass"
         >
           {{ remainingPeriodText }}
         </span>
       </div>
+    </div>
+    <div class="mr-5 text-xs text-gray-500">
+      오늘 남은 채팅 횟수: {{ remainingChats }}회
     </div>
   </div>
 </template>
