@@ -57,7 +57,11 @@ const router = createRouter({
     },
     { path: "/trainee/asset", component: AssetMainPage },
     { path: "/trainee/asset/account", component: AccountConnectPage },
-    { path: "/trainee/asset/ai-chat", component: AssetAiChatPage },
+    {
+      path: "/trainee/asset/ai-chat",
+      component: AssetAiChatPage,
+      meta: { hideNavbar: true },
+    },
 
     //trainer
     { path: "/trainer/mypage", component: TrainerMyPage },
