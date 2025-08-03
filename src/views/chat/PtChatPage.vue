@@ -67,7 +67,7 @@ onMounted(async () => {
   try {
     userId.value = await awaitUserReady();
 
-    const response = await getChatHistory(roomId, userId.value);
+    const response = await getChatHistory(roomId);
     const chatList = response.data?.data || [];
 
     messages.value = chatList.map((msg) => {
@@ -80,7 +80,7 @@ onMounted(async () => {
       };
     });
 
-    const detailRes = await getCounselingDetail(roomId, userId.value);
+    const detailRes = await getCounselingDetail(roomId);
     const detail = detailRes.data?.data;
     status.value = detail.status;
     userName.value = detail.userName;
