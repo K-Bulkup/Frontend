@@ -138,7 +138,7 @@ const retrySubmission = () => {
 
 <template>
   <div class="flex h-screen flex-col bg-realBlack">
-    <header class="flex-shrink-0 px-6 pt-10">
+    <header class="flex-shrink-0 px-6 pt-4">
       <BaseHeader title="루틴 상세" @back="handleGoBack" />
     </header>
 
