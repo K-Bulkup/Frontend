@@ -19,6 +19,10 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  isAiChat: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const remainingChats = computed(() => {
@@ -81,7 +85,7 @@ const badgeClass = computed(() => {
         </span>
       </div>
     </div>
-    <div class="mr-5 text-xs text-gray-500">
+    <div v-if="isAiChat" class="mr-5 text-xs text-gray-500">
       오늘 남은 채팅 횟수: {{ remainingChats }}회
     </div>
   </div>

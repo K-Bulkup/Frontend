@@ -149,6 +149,7 @@ onMounted(async () => {
       user-name="금육이"
       :user-profile-url="profileImg"
       :remaining-chats="remainingChats"
+      isAiChat="true,"
       @back="router.push('/trainee/asset')"
     />
 
