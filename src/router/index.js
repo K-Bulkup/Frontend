@@ -124,6 +124,10 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
 
+  if (to.path === "/login") {
+    authStore.logout();
+  }
+
   const requiresAuth = to.meta.requiresAuth;
   const requiredRoles = to.meta.roles;
   const isAuthenticated = !!authStore.token;
@@ -139,7 +143,7 @@ router.beforeEach(async (to, from, next) => {
         return next();
       } else {
         alert("접근 권한이 없습니다.");
-        return next("/");
+        return next("/login");
       }
     }
     return next();
