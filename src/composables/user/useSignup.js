@@ -9,9 +9,9 @@ export const useSignup = () => {
     try {
       const res = await postSignup(formData);
       user.value = res.data;
-      return { success: true, data: res.data };
+      return res.data; // API 응답 데이터를 직접 반환
     } catch (e) {
-      return { success: false, error: e };
+      return { success: false, error: e }; // 실패 시 일관된 객체 반환
     }
   };
 
