@@ -23,7 +23,7 @@ const RoutineData = ref({
   level: "초급",
   category: "투자입문",
   reward: 2,
-  videoUrl: "https://www.youtube.com/watch?v=c2v2NyDQhnw",
+  videoUrl: "https://youtu.be/M2WTUoy4y6E?si=wICQQuJ2Jf5kzKqv",
   completed: false,
 });
 const currentRoutine = ref(RoutineData.value);
@@ -154,11 +154,11 @@ const retrySubmission = () => {
       <RoutineVideo :video-url="currentRoutine.videoUrl" @play="openVideo" />
 
       <h3 class="mb-4 mt-8 text-heading text-white">현재 루틴</h3>
-      <div class="mb-6 rounded-xl bg-gray-900 p-4">
-        <h3 class="mb-2 text-body font-bold text-white">
+      <div class="mb-6 rounded-xl bg-white p-4">
+        <h3 class="mb-2 text-body font-bold text-realBlack">
           {{ currentRoutine.title }}
         </h3>
-        <p class="text-subtext leading-relaxed text-gray-400">
+        <p class="text-subtext leading-relaxed text-gray-700">
           {{ currentRoutine.description }}
         </p>
       </div>
