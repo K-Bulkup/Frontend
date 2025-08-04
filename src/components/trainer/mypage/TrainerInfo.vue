@@ -3,7 +3,7 @@ import { reactive, ref, onMounted, computed } from "vue";
 
 import ImageUploadModal from "./ImageUploadModal.vue";
 import TrainerCareer from "@/components/trainer/mypage/TrainerCareer.vue";
-import { trainerMyPageApi } from "@/composables/api/trainer/mypage/trainerMypageApi";
+import { trainerMyPageApi } from "@/composables/api/useTrainerMypageApi";
 
 import badgeIcon from "@/assets/images/trainer/mypage/badge.png";
 import starIcon from "@/assets/images/star.svg";

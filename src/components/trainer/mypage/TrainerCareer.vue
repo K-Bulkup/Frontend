@@ -1,6 +1,6 @@
 <script setup>
 import { ref, nextTick, watch } from "vue"; // watch 추가
-import { trainerMyPageApi } from "@/composables/api/trainer/mypage/trainerMypageApi";
+import { trainerMyPageApi } from "@/composables/api/useTrainerMypageApi";
 import careerMIcon from "@/assets/images/trainer/mypage/trainerCareerModify.svg";
 
 const props = defineProps({
