@@ -62,12 +62,6 @@ const openFileDialog = () => {
   fileInput.value?.click();
 };
 
-// 카메라 열기 (실제 구현은 브라우저 지원에 따라)
-const openCamera = () => {
-  // 카메라 접근 로직
-  console.log("카메라 기능은 실제 앱에서 구현됩니다.");
-};
-
 // 미리보기 제거
 const removePreview = () => {
   previewImage.value = null;
