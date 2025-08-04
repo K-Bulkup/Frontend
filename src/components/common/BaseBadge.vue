@@ -13,6 +13,7 @@ defineProps({
     :class="{
       'border border-gray-200 bg-white text-gray-800': variant === 'secondary',
       'border border-gray-200 bg-primary text-gray-800': variant === 'primary',
+      'border border-gray-200 bg-gray-50 text-gray-600': variant === 'outline',
     }"
   >
     <slot />
