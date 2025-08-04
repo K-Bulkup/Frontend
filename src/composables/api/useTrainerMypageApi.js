@@ -26,8 +26,8 @@ export const trainerMyPageApi = {
   // 프로필 이미지 업로드
   async uploadProfileImage(formData) {
     try {
-      const response = await apiClient.post(
-        "/trainer/profile-image",
+      const response = await apiClient.put(
+        "/api/trainer/profiles/profile-image",
         formData,
         {
           headers: {
@@ -52,16 +52,6 @@ export const trainerMyPageApi = {
       console.error("자격증 정보 조회 실패:", error);
     }
   },
-
-  // 트레이너 통계 조회
-  async getTrainerStats() {
-    try {
-      const response = await apiClient.get("/trainer/stats");
-      return response.data;
-    } catch (error) {
-      console.error("트레이너 통계 조회 실패:", error);
-    }
-  },
 };
 
 // 개별 함수들도 export (필요한 경우)
@@ -70,5 +60,4 @@ export const {
   updateIntroduction,
   uploadProfileImage,
   getCertifications,
-  getTrainerStats,
 } = trainerMyPageApi;
