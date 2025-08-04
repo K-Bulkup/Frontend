@@ -1,7 +1,8 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAccountConnect } from "@/composables/asset/useCreateAsset";
+import { awaitUserReady } from "@/composables/user/awaitUserReady";
 import ConnectSuccessModal from "@/components/common/ConnectSuccessModal.vue";
 import ConnectFailureModal from "@/components/common/ConnectFailureModal.vue";
 import BaseHeader from "@/components/common/BaseHeader.vue";
@@ -9,9 +10,17 @@ import BaseHeader from "@/components/common/BaseHeader.vue";
 const router = useRouter();
 const { connectAccount } = useAccountConnect();
 
-const selectedBank = ref(null);
+const selectedBanks = ref([]); // 다중 선택용
+const selectedBank = ref(null); // 마지막 클릭한 은행 1개
+
 const showSuccessModal = ref(false);
 const showFailureModal = ref(false);
+
+// ✅ userId 비동기로 가져오기
+const userId = ref(null);
+onMounted(async () => {
+  userId.value = await awaitUserReady();
+});
 
 const banks = [
   {
@@ -47,7 +56,20 @@ const banks = [
 ];
 
 const selectBank = (bank) => {
-  selectedBank.value = bank;
+  const index = selectedBanks.value.findIndex((b) => b.id === bank.id);
+
+  if (index >= 0) {
+    selectedBanks.value.splice(index, 1); // 이미 있으면 제거
+  } else {
+    selectedBanks.value.push(bank); // 없으면 추가
+  }
+
+  // ✅ 선택된 은행이 없으면 null 처리
+  if (selectedBanks.value.length === 0) {
+    selectedBank.value = null;
+  } else {
+    selectedBank.value = selectedBanks.value[selectedBanks.value.length - 1]; // 마지막 선택 은행
+  }
 };
 
 const goBack = () => {
@@ -58,10 +80,8 @@ const cancel = () => {
   router.back();
 };
 
-const userId = 1; //test
-
 const onClickConnect = async () => {
-  const result = await connectAccount(userId, selectedBank.value);
+  const result = await connectAccount(userId.value, selectedBank.value);
 
   if (!result.success) {
     showFailureModal.value = true;
@@ -107,7 +127,11 @@ const handleSuccessClose = () => {
             :key="bank.id"
             @click="selectBank(bank)"
             class="flex h-20 cursor-pointer flex-col items-center justify-center rounded-xl border border-gray-700 bg-white transition-all duration-200"
-            :class="{ 'ring-2 ring-primary': selectedBank?.id === bank.id }"
+            :class="{
+              'ring-2 ring-primary': selectedBanks.some(
+                (b) => b.id === bank.id,
+              ),
+            }"
           >
             <img
               :src="bank.logo"
@@ -129,12 +153,10 @@ const handleSuccessClose = () => {
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <g clip-path="url(#clip0_943_948)">
-                  <path
-                    d="M8 0C3.6 0 0 3.6 0 8C0 12.4 3.6 16 8 16C12.4 16 16 12.4 16 8C16 3.6 12.4 0 8 0ZM8 12C7.4 12 7 11.6 7 11C7 10.4 7.4 10 8 10C8.6 10 9 10.4 9 11C9 11.6 8.6 12 8 12ZM9 8.5C9 8.8 8.8 9 8.5 9H7.5C7.2 9 7 8.8 7 8.5V4.5C7 4.2 7.2 4 7.5 4H8.5C8.8 4 9 4.2 9 4.5V8.5Z"
-                    fill="#4CAF50"
-                  />
-                </g>
+                <path
+                  d="M8 0C3.6 0 0 3.6 0 8C0 12.4 3.6 16 8 16C12.4 16 16 12.4 16 8C16 3.6 12.4 0 8 0ZM8 12C7.4 12 7 11.6 7 11C7 10.4 7.4 10 8 10C8.6 10 9 10.4 9 11C9 11.6 8.6 12 8 12ZM9 8.5C9 8.8 8.8 9 8.5 9H7.5C7.2 9 7 8.8 7 8.5V4.5C7 4.2 7.2 4 7.5 4H8.5C8.8 4 9 4.2 9 4.5V8.5Z"
+                  fill="#4CAF50"
+                />
               </svg>
             </div>
             <h3 class="text-subtext font-semibold text-black">보안 안내</h3>
@@ -169,7 +191,15 @@ const handleSuccessClose = () => {
     </div>
 
     <!-- 모달 -->
-    <ConnectSuccessModal v-if="showSuccessModal" @close="handleSuccessClose" />
-    <ConnectFailureModal v-if="showFailureModal" @retry="handleRetry" />
+    <ConnectSuccessModal
+      v-if="showSuccessModal"
+      title="자산 연동에 성공했습니다"
+      @close="handleSuccessClose"
+    />
+    <ConnectFailureModal
+      v-if="showFailureModal"
+      title="자산 연동에 실패했습니다"
+      @retry="handleRetry"
+    />
   </div>
 </template>

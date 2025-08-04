@@ -8,10 +8,10 @@ export const useTraineeAsset = () => {
   const errorMessage = ref(null);
   const isLoading = ref(false);
 
-  const getTraineeAsset = async (id) => {
+  const getTraineeAsset = async () => {
     isLoading.value = true;
     try {
-      const response = await fetchTraineeAsset(id);
+      const response = await fetchTraineeAsset();
       assetData.value = response.data.data;
       return { success: true, data: response.data };
     } catch (error) {
