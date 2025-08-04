@@ -78,7 +78,7 @@ const routes = [
   {
     path: "/trainee/asset/ai-chat",
     component: AssetAiChatPage,
-    meta: { requiresAuth: true, roles: ["TRAINEE"] },
+    meta: { hideNavbar: true, requiresAuth: true },
   },
 
   //trainer
@@ -107,12 +107,15 @@ const routes = [
   {
     path: "/common/pt-history",
     component: PtHistoryPage,
-    meta: { requiresAuth: true, roles: ["TRAINER", "TRAINEE"] },
+    meta: { requiresAuth: true },
   },
   {
     path: "/common/pt-chat/:roomId",
     component: PtChatPage,
-    meta: { hideNavbar: true, requiresAuth: true, roles: ["TRAINER", "TRAINEE"] },
+    meta: {
+      hideNavbar: true,
+      requiresAuth: true,
+    },
   },
 ];
 
