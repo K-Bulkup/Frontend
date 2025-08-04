@@ -133,7 +133,7 @@ onMounted(async () => {
       v-if="isSuccessModalVisible"
       title="리뷰가 등록되었습니다"
       subtitle="소중한 후기 감사합니다!"
-      @close="isSuccessModalVisible = false"
+      @close="router.push('/trainee/mypage')"
     />
     <ReviewFailureModal
       v-if="isFailureModalVisible"
