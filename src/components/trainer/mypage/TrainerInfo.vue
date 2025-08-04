@@ -3,15 +3,16 @@ import { reactive, ref, onMounted, computed } from "vue";
 
 import ImageUploadModal from "./ImageUploadModal.vue";
 import TrainerCareer from "@/components/trainer/mypage/TrainerCareer.vue";
-import { trainerMyPageApi } from "@/composables/api/trainer/mypage/trainerMypageApi";
+import { trainerMyPageApi } from "@/composables/api/useTrainerMypageApi";
 
 import badgeIcon from "@/assets/images/trainer/mypage/badge.png";
 import starIcon from "@/assets/images/star.svg";
+import profileDefault from "@/assets/images/mascot/profile.png";
 
 // 반응형 데이터
 const trainerData = reactive({
   username: "",
-  userProfileUrl: null,
+  userProfileUrl: profileDefault,
   career: "",
   certificates: [], // API에서 자격증 정보에 따라 설정
   totalTraineeCount: 0,
@@ -26,7 +27,15 @@ const showTooltip = ref(false); // 툴팁 표시 상태
 const fetchTrainerInfo = async () => {
   try {
     const response = await trainerMyPageApi.getTrainerInfo();
-    Object.assign(trainerData, response.data);
+
+    const { userProfileUrl, ...otherData } = response.data;
+
+    if (userProfileUrl) {
+      trainerData.userProfileUrl = userProfileUrl;
+    }
+
+    Object.assign(trainerData, otherData);
+
     if (response.data.career) {
       introText.value = response.data.career;
     }
@@ -49,10 +58,10 @@ const closeImageModal = () => {
 const handleImageUpload = async (imageFile) => {
   try {
     const formData = new FormData();
-    formData.append("image", imageFile);
+    formData.append("profileImage", imageFile);
 
     const response = await trainerMyPageApi.uploadProfileImage(formData);
-    trainerData.userProfileUrl = response.data.imageUrl;
+    trainerData.userProfileUrl = response.data.profileImgUrl;
 
     closeImageModal();
   } catch (error) {
