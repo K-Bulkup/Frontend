@@ -1,14 +1,14 @@
 <template>
-  <div class="flex min-h-screen flex-col items-center bg-realBlack text-white">
+  <div class="flex min-h-screen flex-col items-center bg-realBlack text-black">
     <!-- ✅ Compact Floating SearchBar -->
     <div
-      class="fixed left-0 right-0 top-0 z-50 flex justify-center bg-realBlack py-3 shadow-md"
+      class="fixed left-0 right-0 top-6 z-50 flex justify-center bg-realBlack py-3 shadow-md"
     >
       <div
-        class="flex h-9 w-[85%] max-w-[360px] items-center rounded-full bg-gray-800 px-3"
+        class="flex h-9 w-[85%] max-w-[360px] items-center rounded-full border border-gray-800 bg-gray-800 px-3 shadow-sm"
       >
         <svg
-          class="mr-1 h-4 w-4 text-gray-200"
+          class="mr-1 h-4 w-4 text-gray-400"
           fill="none"
           stroke="currentColor"
           stroke-width="2"
@@ -23,8 +23,8 @@
         <input
           type="text"
           v-model="searchQuery"
-          placeholder="강의명 / 강사명 입력"
-          class="flex-1 bg-transparent text-subtext text-white placeholder-gray-400 focus:outline-none"
+          placeholder="  강의명 / 강사명 입력"
+          class="flex-1 bg-transparent text-body text-black placeholder-gray-400 focus:outline-none"
         />
       </div>
     </div>
@@ -36,38 +36,41 @@
       <div
         v-for="(training, index) in filteredTrainings"
         :key="index"
-        class="flex flex-col rounded-md bg-gray-800 p-2 shadow-md transition-all hover:shadow-[0_4px_12px_rgba(251,224,129,0.25)]"
+        class="flex flex-col rounded-md border border-gray-200 bg-gray-100 p-3 shadow-md transition-all hover:shadow-[0_4px_12px_rgba(251,224,129,0.25)]"
       >
         <!-- 썸네일 -->
         <div
-          class="flex h-24 w-full items-center justify-center rounded-md bg-gray-700"
+          class="flex h-24 w-full items-center justify-center rounded-md bg-gray-200"
         >
-          <span class="text-caption text-gray-400">이미지</span>
+          <span class="text-caption text-gray-500">이미지</span>
         </div>
 
         <!-- 강의 정보 -->
         <div class="mt-2 flex flex-col space-y-1">
-          <h3 class="truncate text-heading font-semibold">
+          <h3 class="truncate text-heading font-semibold text-black">
             {{ training.title }}
           </h3>
-          <p class="text-subtext text-gray-200">{{ training.trainer }}</p>
+          <p class="text-subtext text-gray-600">{{ training.trainer }}</p>
 
-          <div class="flex items-center space-x-1 text-caption text-yellow-400">
+          <div class="flex items-center space-x-1 text-caption text-yellow-500">
             ⭐ <span>{{ training.rating }}</span>
           </div>
-          <p class="text-body font-bold">
+          <p class="text-body font-bold text-black">
             {{ training.price.toLocaleString() }}원
           </p>
 
           <!-- 뱃지 -->
           <div class="mt-1 flex space-x-1">
-            <span class="rounded-md bg-gray-700 px-2 py-0.5 text-extra"
-              >재무설계</span
+            <span
+              class="rounded-md bg-gray-200 px-2 py-0.5 text-extra text-gray-700"
             >
+              재무설계
+            </span>
             <span
               class="rounded-md bg-primary px-2 py-0.5 text-extra text-black"
-              >중급</span
             >
+              중급
+            </span>
           </div>
         </div>
       </div>

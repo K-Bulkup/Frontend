@@ -1,7 +1,16 @@
 <template>
-  <div class="training-card">
-    <h3 class="title">{{ training.name }}</h3>
-    <p class="description">{{ training.description }}</p>
+  <div
+    class="mb-3 rounded-md border border-gray-200 bg-white p-4 shadow-md transition-all duration-300 hover:border-primary"
+  >
+    <h3 class="mb-1 text-heading font-semibold text-black">
+      {{ training.title }}
+    </h3>
+    <p class="mb-2 text-subtext text-gray-700">
+      {{ training.description }}
+    </p>
+    <span class="text-caption font-bold uppercase text-primary">
+      {{ training.level }}
+    </span>
   </div>
 </template>
 
@@ -9,36 +18,10 @@
 export default {
   name: "TrainingCard",
   props: {
-    training: { type: Object, required: true },
+    training: {
+      type: Object,
+      required: true,
+    },
   },
 };
 </script>
-
-<style scoped>
-.training-card {
-  background: #1e1e1e; /* ✅ 어두운 회색 카드 */
-  color: #fff; /* ✅ 텍스트 흰색 */
-  border-radius: 10px;
-  padding: 16px;
-  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.05);
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.training-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 15px rgba(255, 255, 255, 0.1);
-}
-
-.title {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-
-.description {
-  font-size: 0.9rem;
-  color: #ccc; /* ✅ 연한 회색 */
-}
-</style>
