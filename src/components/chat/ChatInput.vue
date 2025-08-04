@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { SendIcon } from "lucide-vue-next";
 
 const props = defineProps({
@@ -11,11 +11,21 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  remainingChats: {
+    type: Number,
+    default: 0,
+  },
+  isAiChat: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(["send"]);
 
 const inputMessage = ref("");
+
+const validRemainingChats = computed(() => Math.max(props.remainingChats, 0));
 
 const sendMessage = () => {
   if (inputMessage.value.trim()) {
@@ -27,6 +37,9 @@ const sendMessage = () => {
 
 <template>
   <div class="bottom-4 border-t border-gray-800 p-4">
+    <div v-if="isAiChat" class="mb-3 ml-1 text-xs text-gray-500">
+      오늘 남은 채팅 횟수: {{ validRemainingChats }}회
+    </div>
     <div class="flex items-center space-x-3">
       <div class="relative flex-1">
         <input
