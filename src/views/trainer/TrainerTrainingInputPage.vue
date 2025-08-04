@@ -90,17 +90,32 @@ const handleNextStep = async () => {
   if (step.value < 3) {
     step.value++;
   } else if (step.value === 3) {
-    // 파일 업로드를 위해 FormData 사용
+    const trainingDto = {
+      title: trainerName.value,
+      description: trainingDescription.value,
+      price: 0, // 실제 가격 데이터로 채우기 (수정 필요)
+      category: selectedCategory.value,
+      level: selectedDifficulty.value,
+      routines: [
+        ...routines.value.stretching,
+        ...routines.value.strength,
+        ...routines.value.cardio,
+      ],
+    };
+
     const formData = new FormData();
-    formData.append("category", selectedCategory.value);
-    formData.append("trainerName", trainerName.value);
-    formData.append("description", trainingDescription.value);
-    formData.append("difficulty", selectedDifficulty.value);
-    formData.append("routines", JSON.stringify(routines.value));
+
+    formData.append(
+      "dto",
+      new Blob([JSON.stringify(trainingDto)], { type: "application/json" }),
+    );
+
+    // 썸네일 파일 추가
     if (thumbnail.value) {
-      formData.append("thumbnail", thumbnail.value); // 파일 객체 추가
+      formData.append("thumbnail", thumbnail.value);
     }
 
+    // API 호출
     try {
       console.log("API로 FormData 전송:", ...formData.entries());
       await createTraining(formData);
