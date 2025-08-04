@@ -11,7 +11,7 @@ import TrainingStep3Thumbnail from "@/components/trainer/training/TrainingStep3T
 import TrainingStep4Complete from "@/components/trainer/training/TrainingStep4Complete.vue";
 import RoutineAddModal from "@/components/trainer/training/TrainerRoutineAddModal.vue";
 
-import { createTraining } from "@/plugins/axios";
+import { createTraining } from "@/composables/api/trainer/training/trainerTrainingAPI";
 
 // 라우터 및 상태 (Router & State)
 const router = useRouter();

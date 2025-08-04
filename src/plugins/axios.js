@@ -44,7 +44,3 @@ apiClient.interceptors.response.use(
 );
 
 export default apiClient;
-
-export const createTraining = (trainingFormData) => {
-  return apiClient.post("/api/trainer/trainings", trainingFormData);
-};
