@@ -1,6 +1,11 @@
 <script setup>
 import { computed } from "vue";
 import { ChevronLeftIcon, UserIcon } from "lucide-vue-next";
+import { useAuthStore } from "@/stores/auth";
+
+const authStore = useAuthStore();
+
+const isTrainer = computed(() => authStore.role === "TRAINER");
 
 const props = defineProps({
   userName: {
@@ -15,18 +20,22 @@ const props = defineProps({
     type: [Date, null],
     default: null,
   },
-  remainingChats: {
-    type: Number,
-    default: 0,
-  },
   isAiChat: {
     type: Boolean,
     default: false,
   },
-});
-
-const remainingChats = computed(() => {
-  return Math.max(0, props.remainingChats);
+  buttonText: {
+    type: String,
+    required: true,
+  },
+  buttonHandler: {
+    type: Function,
+    required: true,
+  },
+  buttonDisabled: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 defineEmits(["back"]);
@@ -85,8 +94,16 @@ const badgeClass = computed(() => {
         </span>
       </div>
     </div>
-    <div v-if="isAiChat" class="mr-5 text-xs text-gray-500">
-      오늘 남은 채팅 횟수: {{ remainingChats }}회
+
+    <div class="flex items-center justify-end">
+      <button
+        v-if="isAiChat"
+        @click="buttonHandler"
+        :disabled="buttonDisabled"
+        class="mr-6 mt-2 h-[30px] w-[91px] rounded-lg bg-black p-2 text-[11px]"
+      >
+        {{ buttonText }}
+      </button>
     </div>
   </div>
 </template>

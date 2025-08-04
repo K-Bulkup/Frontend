@@ -125,6 +125,7 @@ onBeforeUnmount(() => {
       :user-name="userName"
       :user-profile-url="userProfileUrl"
       :expires-at="expiresAt"
+      :room-id="roomId"
       @back="router.push('/common/pt-history')"
     />
 
