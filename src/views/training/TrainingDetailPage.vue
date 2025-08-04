@@ -47,10 +47,9 @@ const proceedToPayment = () => {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col bg-realBlack px-6 pt-4">
-    <BaseHeader title="트레이닝 상세" @back="goBack" />
-
-    <main class="flex-1 pb-10">
+  <div class="flex min-h-screen flex-col bg-realBlack pt-4">
+    <main class="flex-1 px-6">
+      <BaseHeader title="트레이닝 상세" @back="goBack" />
       <div class="mt-4 flex items-center gap-2">
         <BaseBadge>{{ trainingData.tags[0] }}</BaseBadge>
         <BaseBadge>{{ trainingData.tags[1] }}</BaseBadge>
@@ -101,20 +100,18 @@ const proceedToPayment = () => {
         {{ trainingData.description }}
       </p>
 
-      <div class="my-8 mb-4 h-px bg-gray-700"></div>
+      <div class="mb-4 mt-8 h-px bg-gray-700"></div>
 
-      <div class="mt-8 text-title font-bold text-white">
-        {{ formattedPrice }}원
+      <div class="text-title font-bold text-white">{{ formattedPrice }}원</div>
+
+      <div class="mt-12 pb-8">
+        <button
+          @click="proceedToPayment"
+          class="h-14 w-full rounded-xl bg-white text-lg font-bold text-black"
+        >
+          결제하기
+        </button>
       </div>
     </main>
-
-    <div class="mt-auto pb-8">
-      <button
-        @click="proceedToPayment"
-        class="h-14 w-full rounded-xl bg-white text-lg font-bold text-black"
-      >
-        결제하기
-      </button>
-    </div>
   </div>
 </template>
