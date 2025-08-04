@@ -1,11 +1,12 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
-import BaseHeader from "@/components/common/BaseHeaderWithoutBack.vue";
 import { useTraineeAsset } from "@/composables/asset/useFetchAsset.js";
+import { awaitUserReady } from "@/composables/user/awaitUserReady";
 import BalanceLineChart from "@/components/assetCharts/BalanceLineChart.vue";
 import CompositionDonutChart from "@/components/assetCharts/CompositionDonutChart.vue";
 import WithdrawalDonutChart from "@/components/assetCharts/WithdrawalDonutChart.vue";
+import BaseHeaderWithoutBack from "@/components/common/BaseHeaderWithoutBack.vue";
 
 const router = useRouter();
 const { getTraineeAsset, assetData, errorMessage, isLoading } =
@@ -21,8 +22,8 @@ const goToAiChat = () => {
 
 const balance = ref(0);
 
-const id = 1; //test
 onMounted(async () => {
+  const id = await awaitUserReady();
   const result = await getTraineeAsset(id);
 
   if (result.success && assetData.value?.snapshots?.length > 0) {
@@ -37,13 +38,7 @@ const isAssetFetched = computed(() => !!assetData.value);
 
 <template>
   <div>
-    <!-- Header -->
-    <!--
-    <div class="flex justify-center py-4">
-      <h1 class="text-body font-semibold text-white">자산 관리</h1>
-    </div>
-    -->
-    <BaseHeader title="자산 관리" />
+    <BaseHeaderWithoutBack title="자산 관리" />
 
     <!-- Main Content -->
     <div class="flex-1 overflow-y-auto px-6 pb-32 pt-10">
@@ -73,10 +68,9 @@ const isAssetFetched = computed(() => !!assetData.value);
         <div class="rounded-xl bg-gray-100 p-6 shadow-lg">
           <h3 class="mb-4 text-heading font-semibold text-black">자산 구성</h3>
           <div class="flex items-center justify-center">
-            <!-- <span class="text-subtext">도넛 차트</span> -->
             <CompositionDonutChart
-              v-if="assetData?.composition"
-              :composition="assetData.composition"
+              :composition="assetData?.composition ?? null"
+              :balance="balance"
             />
           </div>
         </div>
@@ -85,21 +79,25 @@ const isAssetFetched = computed(() => !!assetData.value);
         <div class="rounded-xl bg-gray-100 p-6 shadow-lg">
           <h3 class="mb-4 text-heading font-semibold text-black">자산 추이</h3>
           <div class="flex h-32 items-center justify-center text-gray-700">
-            <BalanceLineChart v-if="assetData" :assetData="assetData" />
-            <!-- <span class="text-subtext">선 그래프</span> -->
+            <template v-if="assetData?.snapshots?.length">
+              <BalanceLineChart :assetData="assetData" />
+            </template>
+            <template v-else>
+              <span class="text-sm text-subtext text-gray-500"
+                >자산 추이 데이터가 없습니다.</span
+              >
+            </template>
           </div>
         </div>
-        <!-- 지출 카테고리 -->
 
+        <!-- 지출 카테고리 -->
         <div class="rounded-xl bg-gray-100 p-6 shadow-lg">
           <h3 class="mb-4 text-heading font-semibold text-black">
             지출 카테고리
           </h3>
           <div class="flex items-center justify-center">
-            <!-- <span class="text-subtext">도넛 차트</span> -->
             <WithdrawalDonutChart
-              v-if="assetData?.transactions"
-              :transactions="assetData.transactions"
+              :transactions="assetData?.transactions ?? []"
             />
           </div>
         </div>
