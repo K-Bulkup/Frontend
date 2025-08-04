@@ -46,7 +46,7 @@ const routes = [
     meta: { requiresAuth: true, roles: ["TRAINEE"] },
   },
   {
-    path: "/trainee/mypage/review",
+    path: "/trainee/mypage/review/:trainingId",
     component: TraineeReviewPage,
     meta: { requiresAuth: true, roles: ["TRAINEE"] },
   },
@@ -112,7 +112,11 @@ const routes = [
   {
     path: "/common/pt-chat/:roomId",
     component: PtChatPage,
-    meta: { hideNavbar: true, requiresAuth: true, roles: ["TRAINER", "TRAINEE"] },
+    meta: {
+      hideNavbar: true,
+      requiresAuth: true,
+      roles: ["TRAINER", "TRAINEE"],
+    },
   },
 ];
 
