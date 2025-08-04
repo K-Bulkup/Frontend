@@ -20,13 +20,21 @@ const selectedRoutineType = ref("");
 
 // 계산된 속성
 const isSaveButtonDisabled = computed(() => {
-  return (
+  const hasRequiredInfo =
     !routineTitle.value.trim() ||
-    !routineUrl.value.trim() ||
     !routineContent.value.trim() ||
-    !routineAnswer.value.trim() ||
-    !selectedRoutineType.value
-  );
+    !selectedRoutineType.value;
+
+  // 기본 정보가 없으면 무조건 비활성화
+  if (hasRequiredInfo) {
+    return true;
+  }
+
+  if (selectedRoutineType.value !== "실천형") {
+    return !routineAnswer.value.trim(); // 답안이 없으면 비활성화
+  }
+
+  return false;
 });
 
 // 메서드
@@ -100,6 +108,7 @@ const handleSave = () => {
           </div>
 
           <BaseFormField
+            v-if="selectedRoutineType && selectedRoutineType !== '실천형'"
             label="루틴 답안"
             placeholder="루틴 답안을 입력해주세요"
             v-model="routineAnswer"
