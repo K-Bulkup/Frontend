@@ -2,9 +2,11 @@
 import { reactive, ref, onMounted, computed } from "vue";
 
 import ImageUploadModal from "./ImageUploadModal.vue";
-import badgeIcon from "@/assets/images/trainer/mypage/badge.png";
 import TrainerCareer from "@/components/trainer/mypage/TrainerCareer.vue";
 import { trainerMyPageApi } from "@/composables/api/trainer/mypage/trainerMypageApi";
+
+import badgeIcon from "@/assets/images/trainer/mypage/badge.png";
+import starIcon from "@/assets/images/star.svg";
 
 // 반응형 데이터
 const trainerData = reactive({
@@ -25,28 +27,11 @@ const fetchTrainerInfo = async () => {
   try {
     const response = await trainerMyPageApi.getTrainerInfo();
     Object.assign(trainerData, response.data);
-    // career 데이터를 introText에도 설정
     if (response.data.career) {
       introText.value = response.data.career;
     }
-    // API 응답에 username이 없거나 오류 발생 시 토큰에서 가져오는 fallback 로직 추가 고려
-    // (이전 대화에서 TrainerGreeting.vue에 있던 getUserInfoFromToken 로직을 여기에 통합할 수 있습니다.)
   } catch (error) {
     console.error("트레이너 정보 조회 실패:", error);
-    // ⭐ 여기에 토큰 fallback 로직을 추가하는 것이 더 좋습니다.
-    // 예를 들어:
-    // const token = localStorage.getItem("accessToken");
-    // if (token) {
-    //   try {
-    //     const payload = JSON.parse(atob(token.split(".")[1]));
-    //     trainerData.username = payload.username || payload.name || payload.sub || "사용자";
-    //   } catch (parseError) {
-    //     console.error("토큰 파싱 오류 (fallback):", parseError);
-    //     trainerData.username = "사용자";
-    //   }
-    // } else {
-    //   trainerData.username = "사용자";
-    // }
   }
 };
 
@@ -79,10 +64,9 @@ onMounted(() => {
   fetchTrainerInfo();
 });
 
-// ⭐ 이 부분을 수정해야 합니다: trainerData를 노출 목록에 추가
 defineExpose({
   fetchTrainerInfo,
-  trainerData, // <-- 이 줄을 추가!
+  trainerData,
 });
 </script>
 
@@ -160,7 +144,9 @@ defineExpose({
             </span>
             <span class="text-gray-400">|</span>
             <span class="flex items-center gap-1">
-              <span class="text-yellow-500">⭐️</span>
+              <span>
+                <img :src="starIcon" alt="별점" class="h-4 w-4" />
+              </span>
               <span class="font-medium text-gray-100">
                 {{ trainerData.totalAverageRating.toFixed(1) }}
               </span>
