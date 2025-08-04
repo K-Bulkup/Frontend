@@ -1,111 +1,60 @@
-<template>
-  <div class="flex min-h-screen flex-col items-center bg-realBlack text-black">
-    <!-- ✅ Compact Floating SearchBar -->
-    <div
-      class="fixed left-0 right-0 top-6 z-50 flex justify-center bg-realBlack py-3 shadow-md"
-    >
-      <div
-        class="flex h-9 w-[85%] max-w-[360px] items-center rounded-full border border-gray-800 bg-gray-800 px-3 shadow-sm"
-      >
-        <svg
-          class="mr-1 h-4 w-4 text-gray-400"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"
-          />
-        </svg>
-        <input
-          type="text"
-          v-model="searchQuery"
-          placeholder="  강의명 / 강사명 입력"
-          class="flex-1 bg-transparent text-body text-black placeholder-gray-400 focus:outline-none"
-        />
-      </div>
-    </div>
-
-    <!-- ✅ 2열 카드 그리드 -->
-    <div
-      class="grid w-full max-w-[460px] grid-cols-2 gap-3 overflow-y-auto px-3 pb-24 pt-20"
-    >
-      <div
-        v-for="(training, index) in filteredTrainings"
-        :key="index"
-        class="flex flex-col rounded-md border border-gray-200 bg-gray-100 p-3 shadow-md transition-all hover:shadow-[0_4px_12px_rgba(251,224,129,0.25)]"
-      >
-        <!-- 썸네일 -->
-        <div
-          class="flex h-24 w-full items-center justify-center rounded-md bg-gray-200"
-        >
-          <span class="text-caption text-gray-500">이미지</span>
-        </div>
-
-        <!-- 강의 정보 -->
-        <div class="mt-2 flex flex-col space-y-1">
-          <h3 class="truncate text-heading font-semibold text-black">
-            {{ training.title }}
-          </h3>
-          <p class="text-subtext text-gray-600">{{ training.trainer }}</p>
-
-          <div class="flex items-center space-x-1 text-caption text-yellow-500">
-            ⭐ <span>{{ training.rating }}</span>
-          </div>
-          <p class="text-body font-bold text-black">
-            {{ training.price.toLocaleString() }}원
-          </p>
-
-          <!-- 뱃지 -->
-          <div class="mt-1 flex space-x-1">
-            <span
-              class="rounded-md bg-gray-200 px-2 py-0.5 text-extra text-gray-700"
-            >
-              재무설계
-            </span>
-            <span
-              class="rounded-md bg-primary px-2 py-0.5 text-extra text-black"
-            >
-              중급
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ✅ 우측 하단 Floating Action Button -->
-    <button
-      class="fixed bottom-20 right-5 flex h-11 w-11 items-center justify-center rounded-full bg-primary shadow-lg"
-    >
-      <svg
-        class="h-5 w-5 text-black"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M12 4v16m8-8H4"
-        />
-      </svg>
-    </button>
-  </div>
-</template>
-
 <script setup>
 import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
+import TrainingCard from "@/components/trainee/training/TrainingCard.vue"; // ✅ 카드 컴포넌트 임포트
 
+const router = useRouter();
 const searchQuery = ref("");
+
 const trainings = ref([
-  { title: "예금관리의 기초", trainer: "김팀스", price: 21000, rating: 4.8 },
-  { title: "투자 입문 강좌", trainer: "박강사", price: 35000, rating: 4.7 },
-  { title: "주식 고급 과정", trainer: "이전문가", price: 50000, rating: 4.9 },
-  { title: "재무설계 실전편", trainer: "최재무", price: 42000, rating: 4.6 },
+  {
+    id: 1,
+    title: "예금관리의 기초",
+    trainerName: "김헬스",
+    price: 21000,
+    rating: 4.8,
+    tags: ["재무설계", "중급"],
+  },
+  {
+    id: 2,
+    title: "투자 입문 강좌",
+    trainerName: "박강사",
+    price: 35000,
+    rating: 4.7,
+    tags: ["투자입문", "초급"],
+  },
+  {
+    id: 3,
+    title: "주식 고급 과정",
+    trainerName: "이전문가",
+    price: 50000,
+    rating: 4.9,
+    tags: ["주식투자", "고급"],
+  },
+  {
+    id: 4,
+    title: "재무설계 실전편",
+    trainerName: "최재무",
+    price: 42000,
+    rating: 4.6,
+    tags: ["재무설계", "고급"],
+  },
+  {
+    id: 5,
+    title: "예금관리의 기초",
+    trainerName: "김헬스",
+    price: 21000,
+    rating: 4.8,
+    tags: ["재무설계", "중급"],
+  },
+  {
+    id: 6,
+    title: "예금관리의 기초",
+    trainerName: "김헬스",
+    price: 21000,
+    rating: 4.8,
+    tags: ["재무설계", "중급"],
+  },
 ]);
 
 const filteredTrainings = computed(() => {
@@ -113,7 +62,55 @@ const filteredTrainings = computed(() => {
   return trainings.value.filter(
     (t) =>
       t.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      t.trainer.toLowerCase().includes(searchQuery.value.toLowerCase()),
+      t.trainerName.toLowerCase().includes(searchQuery.value.toLowerCase()),
   );
 });
+
+const goToDetail = (trainingId) => {
+  router.push(`/training/${trainingId}`);
+};
+
+const goToPtPage = () => {
+  router.push("/trainee/mypage/pt");
+};
 </script>
+
+<template>
+  <div class="relative min-h-screen bg-realBlack px-4 pb-24 pt-4">
+    <div class="relative mb-6">
+      <input
+        type="text"
+        v-model="searchQuery"
+        placeholder="강의명 / 강사명 입력"
+        class="h-12 w-full rounded-3xl bg-gray-800 py-2 pl-10 pr-4 text-white placeholder-gray-200 focus:outline-none"
+      />
+      <img
+        src="@/assets/images/search.svg"
+        alt="검색"
+        class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2"
+      />
+    </div>
+
+    <main class="grid grid-cols-2 gap-4">
+      <TrainingCard
+        v-for="training in filteredTrainings"
+        :key="training.id"
+        :training="training"
+        @click="goToDetail(training.id)"
+        class="cursor-pointer"
+      />
+    </main>
+  </div>
+
+  <button
+    @click="goToPtPage"
+    class="fixed bottom-24 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg transition-transform hover:scale-105 active:scale-95"
+    style="right: max(1rem, calc(50vw - 180px))"
+  >
+    <img
+      src="@/assets/images/trainee/training/Chat_Circle.svg"
+      alt="채팅"
+      class="h-7 w-7"
+    />
+  </button>
+</template>
