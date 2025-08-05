@@ -5,6 +5,8 @@ defineProps({
     default: false,
   },
 });
+
+const emit = defineEmits(["click"]);
 </script>
 
 <template>
@@ -17,6 +19,7 @@ defineProps({
       'py-[12px]',
     ]"
     :disabled="isDisabled"
+    @click="emit('click', $event)"
   >
     <slot />
   </button>
