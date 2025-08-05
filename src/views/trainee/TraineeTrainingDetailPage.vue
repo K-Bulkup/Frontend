@@ -43,9 +43,7 @@ const loadTrainingData = async () => {
       totalWeeks: 8, // 응답에 없으므로 임시 값
       title: raw.title,
       progress: raw.progress,
-      totalReward: raw.routines
-        .filter((r) => r.completed)
-        .reduce((sum, r) => sum + r.rewardPoint, 0),
+      totalReward: raw.totalScore,
       routines: groupRoutines(raw.routines),
     };
   } catch (err) {
