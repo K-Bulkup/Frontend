@@ -10,6 +10,7 @@ import {
   readMessages,
   getCounselingDetail,
 } from "@/composables/api/useCounselingApi";
+import { getTraineeAssetByRoomId } from "@/composables/api/useAssetApi";
 import { useChatSocket } from "@/composables/chat/useChatSocket";
 
 import ChatHeader from "@/components/chat/ChatHeader.vue";
@@ -43,6 +44,171 @@ const scrollToBottom = () => {
       messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
     }
   });
+};
+
+const columnMappings = {
+  // Transactions 테이블 매핑 (ID 컬럼 제외)
+  transactions: {
+    transactionType: "거래유형",
+    amount: "금액",
+    transactionCategory: "거래분류",
+    tranDate: "거래일자",
+  },
+  // Snapshots 테이블 매핑 (ID 컬럼 제외)
+  snapshots: {
+    balance: "잔액",
+    snapshotDate: "스냅샷일자",
+  },
+  // Composition 매핑
+  composition: {
+    기타: "기타",
+    주식: "주식",
+    채권: "채권",
+    펀드: "펀드",
+    "현금 및 예금": "현금 및 예금",
+  },
+};
+
+// 제외할 컬럼 정의
+const excludeColumns = {
+  transactions: ["transactionId", "userId"],
+  snapshots: ["snapshotId", "userId"],
+};
+
+const jsonToCsv = (jsonArray, dataType) => {
+  if (!jsonArray || jsonArray.length === 0) {
+    return null;
+  }
+
+  // 원본 헤더 추출 및 제외할 컬럼 필터링
+  const allHeaders = Object.keys(jsonArray[0]);
+  const originalHeaders = allHeaders.filter(
+    (header) => !excludeColumns[dataType]?.includes(header),
+  );
+
+  // 한글 헤더로 변환
+  const koreanHeaders = originalHeaders.map((header) => {
+    return columnMappings[dataType]?.[header] || header;
+  });
+
+  // CSV 문자열 생성
+  const csvContent = [
+    koreanHeaders.join(","), // 한글 헤더 행
+    ...jsonArray.map((row) =>
+      originalHeaders
+        .map((header) => {
+          let value = row[header];
+
+          // 배열 데이터 처리 (날짜 배열의 경우)
+          if (Array.isArray(value)) {
+            if (header.includes("Date") || header.includes("date")) {
+              // 날짜 배열을 YYYY-MM-DD 형식으로 변환
+              const [year, month, day] = value;
+              value = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+            } else {
+              value = value.join("/");
+            }
+          }
+
+          // 거래유형 및 거래분류 한글화
+          if (header === "transactionType") {
+            value = value === "입금" ? "입금" : "출금";
+          }
+
+          // 문자열에 쉼표가 있는 경우 따옴표로 감싸기
+          if (typeof value === "string" && value.includes(",")) {
+            value = `"${value}"`;
+          }
+
+          return value;
+        })
+        .join(","),
+    ),
+  ].join("\n");
+
+  return csvContent;
+};
+
+// 객체를 CSV로 변환하는 함수 (composition 데이터용) - 한글 적용
+const objectToCsv = (obj) => {
+  if (!obj || typeof obj !== "object") {
+    return null;
+  }
+
+  const entries = Object.entries(obj);
+  const csvContent = [
+    "자산분류,비율(%)", // 한글 헤더
+    ...entries.map(([key, value]) => {
+      // 자산분류명도 한글로 유지
+      const koreanKey = columnMappings.composition[key] || key;
+      return `${koreanKey},${value}`;
+    }),
+  ].join("\n");
+
+  return csvContent;
+};
+
+// 파일 다운로드 함수 (기존과 동일)
+const downloadCsv = (csvContent, filename) => {
+  if (!csvContent) return;
+
+  // BOM 추가 (Excel에서 한글이 깨지지 않도록)
+  const BOM = "\uFEFF";
+  const blob = new Blob([BOM + csvContent], {
+    type: "text/csv;charset=utf-8;",
+  });
+  const link = document.createElement("a");
+
+  if (link.download !== undefined) {
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+};
+
+// 수정된 handleDownloadAssets 메서드
+const handleDownloadAssets = async () => {
+  try {
+    const response = await getTraineeAssetByRoomId(roomId);
+    const data = response.data;
+
+    if (!data || !response.success) {
+      console.error("데이터를 불러올 수 없습니다.");
+      return;
+    }
+
+    const { transactions, snapshots, composition } = data;
+
+    // 현재 날짜로 파일명 생성
+    const today = new Date().toISOString().split("T")[0];
+
+    // 1. Transactions CSV 생성 및 다운로드
+    if (transactions && transactions.length > 0) {
+      const transactionsCsv = jsonToCsv(transactions, "transactions");
+      downloadCsv(transactionsCsv, `${userName.value}_거래내역_${today}.csv`);
+    }
+
+    // 2. Snapshots CSV 생성 및 다운로드
+    if (snapshots && snapshots.length > 0) {
+      const snapshotsCsv = jsonToCsv(snapshots, "snapshots");
+      downloadCsv(snapshotsCsv, `${userName.value}_잔액스냅샷_${today}.csv`);
+    }
+
+    // 3. Asset Composition CSV 생성 및 다운로드
+    if (composition && composition.assetComposition) {
+      const compositionCsv = objectToCsv(composition.assetComposition);
+      downloadCsv(compositionCsv, `${userName.value}_자산구성_${today}.csv`);
+    }
+
+    console.log("CSV 파일 다운로드가 완료되었습니다.");
+  } catch (err) {
+    console.error("자산 불러오기 실패:", err);
+  }
 };
 
 const groupByDate = (messages) => {
@@ -125,6 +291,9 @@ onBeforeUnmount(() => {
       :user-name="userName"
       :user-profile-url="userProfileUrl"
       :expires-at="expiresAt"
+      :room-id="roomId"
+      buttonText="자산 다운로드"
+      :button-handler="handleDownloadAssets"
       @back="router.push('/common/pt-history')"
     />
 

@@ -7,6 +7,7 @@ import "dayjs/locale/ko";
 import { awaitUserReady } from "@/composables/user/awaitUserReady";
 import { getAiChatHistory } from "@/composables/api/useAiChatApi";
 import { requestAiConsulting } from "@/composables/api/useAiChatApi";
+import { getTraineeAsset } from "@/composables/api/useAssetApi";
 
 import ChatHeader from "@/components/chat/ChatHeader.vue";
 import ChatBubble from "@/components/chat/ChatBubble.vue";
@@ -20,6 +21,7 @@ const router = useRouter();
 
 const userId = ref(null);
 const remainingChats = ref(0);
+const assets = ref(null);
 
 const status = computed(() => {
   return remainingChats.value <= 0 ? "만료" : "활성";
@@ -35,8 +37,26 @@ const disabled = computed(() => status.value === "만료");
 
 const messages = ref([]);
 const messageContainer = ref(null);
+const isButtonDisabled = computed(() => remainingChats.value <= 0);
 
-const handleSendMessage = async (text, isAiChat = false, profileUrl = "") => {
+const fetchAssets = async () => {
+  try {
+    const response = await getTraineeAsset();
+    assets.value = response.data.data;
+  } catch (error) {
+    console.error("자산 데이터 불러오기 실패:", error);
+  }
+};
+
+const handleSendMessage = async (
+  text,
+  isAiChat = false,
+  profileUrl = "",
+  isAsset = false,
+) => {
+  const messageToSend =
+    isAsset && assets.value ? JSON.stringify(assets.value) : text;
+
   const userMsg = {
     id: Date.now(),
     text,
@@ -61,7 +81,7 @@ const handleSendMessage = async (text, isAiChat = false, profileUrl = "") => {
   scrollToBottom();
 
   try {
-    const aiText = await requestAiConsulting(text);
+    const aiText = await requestAiConsulting(messageToSend, isAsset);
     remainingChats.value = aiText.remainingChats;
 
     const aiMsg = {
@@ -70,7 +90,7 @@ const handleSendMessage = async (text, isAiChat = false, profileUrl = "") => {
       isOwn: false,
       sendAt: new Date(),
       isAiChat,
-      profileUrl: profileImg, // 금육이 프로필 이미지
+      profileUrl: profileImg,
     };
 
     const index = messages.value.findIndex((msg) => msg.id === typingMessageId);
@@ -86,7 +106,7 @@ const handleSendMessage = async (text, isAiChat = false, profileUrl = "") => {
       isOwn: false,
       sendAt: new Date(),
       isAiChat,
-      profileUrl: profileImg, // 금육이 프로필 이미지
+      profileUrl: profileImg,
     });
     scrollToBottom();
   }
@@ -141,6 +161,11 @@ onMounted(async () => {
     console.error("초기화 실패:", err);
   }
 });
+
+const handleFetchAssetsAndSendMessage = async () => {
+  await fetchAssets();
+  handleSendMessage("자산 정보를 전송했습니다.", true, null, true);
+};
 </script>
 
 <template>
@@ -148,8 +173,10 @@ onMounted(async () => {
     <ChatHeader
       user-name="금육이"
       :user-profile-url="profileImg"
-      :remaining-chats="remainingChats"
       isAiChat="true,"
+      buttonText="자산 전송하기"
+      :buttonHandler="handleFetchAssetsAndSendMessage"
+      :buttonDisabled="isButtonDisabled"
       @back="router.push('/trainee/asset')"
     />
 
@@ -170,6 +197,8 @@ onMounted(async () => {
       <ChatInput
         :disabled="disabled"
         :placeholder="placeholder"
+        :remaining-chats="remainingChats"
+        isAiChat="true,"
         @send="handleSendMessage"
       />
     </div>
