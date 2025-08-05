@@ -54,7 +54,8 @@ const handleSendMessage = async (
   profileUrl = "",
   isAsset = false,
 ) => {
-  const messageToSend = assets.value ? JSON.stringify(assets.value) : text;
+  const messageToSend =
+    isAsset && assets.value ? JSON.stringify(assets.value) : text;
 
   const userMsg = {
     id: Date.now(),
