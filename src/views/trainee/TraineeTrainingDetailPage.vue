@@ -14,122 +14,115 @@ const route = useRoute();
 
 const trainingData = ref(null);
 
-// 루틴 분류 (flat 배열 → 스트레칭/근력/유산소 3등분)
-function groupRoutines(routines) {
-  return {
-    stretching: routines.slice(0, 3).map((r) => ({
-      id: r.routineId,
-      name: r.title,
-      completed: r.completed,
-      rewardPoint: r.rewardPoint,
-    })),
-    strength: routines.slice(3, 6).map((r) => ({
-      id: r.routineId,
-      name: r.title,
-      completed: r.completed,
-      rewardPoint: r.rewardPoint,
-    })),
-    cardio: routines.slice(6).map((r) => ({
-      id: r.routineId,
-      name: r.title,
-      completed: r.completed,
-      rewardPoint: r.rewardPoint,
-    })),
-  };
-}
-
-//  API 호출 및 데이터 매핑
+// ✅ API 호출 및 데이터 매핑 (Map → 배열 변환)
 const loadTrainingData = async () => {
   try {
-    const trainingId = route.params.trainingId; // 라우트 파라미터 사용
-    console.log(
-      " API 호출 시도 URL:",
-      `/api/trainee/trainings/running/${trainingId}`,
-    );
+    const trainingId = route.params.trainingId;
+    const res = await getTraineeTrainingDetail(trainingId);
+    const raw = res.data.data;
 
-    const res = await getTraineeTrainingDetail(trainingId); // API 호출
-    console.log(" API 응답:", res);
-
-    const raw = res.data.data; // 응답 데이터에서 raw 선언
+    // ✅ Map 데이터를 배열로 변환하면서 id/name 필드 생성
+    const convertRoutines = (routineList) =>
+      routineList?.map((r) => ({
+        id: r.routineId,
+        name: r.title,
+        completed: r.completed,
+        rewardPoint: r.rewardPoint,
+        completedAt: r.completedAt,
+      })) || [];
 
     trainingData.value = {
-      startDate: new Date().toISOString().split("T")[0], // dueDate 없으므로 임시
+      startDate: new Date().toISOString().split("T")[0],
       trainerName: raw.trainerName || "트레이너명 준비중",
       trainerRating: raw.averageRating,
       studentCount: raw.traineeCount,
-      totalWeeks: 4, // 응답에 없으므로 임시 값
+      totalWeeks: 4,
       title: raw.title,
       progress: raw.progress,
       totalReward: raw.totalScore,
-      routines: groupRoutines(raw.routines),
+      routines: {
+        스트레칭: convertRoutines(raw.routines["스트레칭"]),
+        근력: convertRoutines(raw.routines["근력"]),
+        유산소: convertRoutines(raw.routines["유산소"]),
+      },
     };
   } catch (err) {
-    console.error(" 트레이닝 상세 조회 실패:", err);
+    console.error("🚨 트레이닝 상세 조회 실패:", err);
   }
 };
 
 onMounted(loadTrainingData);
 
-//  상태
 const expandedSections = ref({
   stretching: true,
   strength: false,
   cardio: false,
 });
 
-//  트레이닝 기간 종료 여부 계산
-const isTrainingExpired = computed(() => {
-  if (!trainingData.value?.startDate) return false;
-  const endDate = new Date(trainingData.value.startDate);
-  endDate.setMonth(endDate.getMonth() + 1); // 기존 로직 기준 1개월
-  return new Date() > endDate;
-});
+// ✅ 섹션 잠금 여부
+const isSectionLocked = (key) => {
+  if (!trainingData.value?.routines) return false;
+  if (key === "strength") {
+    return !trainingData.value.routines["스트레칭"]?.every((q) => q.completed);
+  }
+  if (key === "cardio") {
+    return !trainingData.value.routines["근력"]?.every((q) => q.completed);
+  }
+  return false;
+};
 
-//  Computed
-const trainingDeadline = computed(() => {
-  if (!trainingData.value?.startDate) return "";
-  const startDate = new Date(trainingData.value.startDate);
-  startDate.setMonth(startDate.getMonth() + 1);
-  return `${startDate.getFullYear()}.${String(startDate.getMonth() + 1).padStart(2, "0")}.${String(startDate.getDate()).padStart(2, "0")}`;
-});
-
+// ✅ 완료 여부 계산
 const isStretchingComplete = computed(
   () =>
-    trainingData.value?.routines.stretching.length > 0 &&
-    trainingData.value.routines.stretching.every((q) => q.completed),
+    trainingData.value?.routines["스트레칭"]?.length > 0 &&
+    trainingData.value.routines["스트레칭"].every((q) => q.completed),
 );
 const isStrengthComplete = computed(
   () =>
-    trainingData.value?.routines.strength.length > 0 &&
-    trainingData.value.routines.strength.every((q) => q.completed),
+    trainingData.value?.routines["근력"]?.length > 0 &&
+    trainingData.value.routines["근력"].every((q) => q.completed),
 );
 const areAllQuestsComplete = computed(
   () =>
     isStretchingComplete.value &&
     isStrengthComplete.value &&
-    trainingData.value?.routines.cardio.every((q) => q.completed),
+    trainingData.value?.routines["유산소"]?.every((q) => q.completed),
 );
 
-//  Methods
+// ✅ 루틴 상세 페이지 이동 (id 필드 사용)
 const goToRoutineDetail = (quest) => {
+  if (!quest?.id) {
+    console.error("❌ 루틴 ID가 존재하지 않음:", quest);
+    return;
+  }
   router.push(
     `/trainee/mypage/training/${route.params.trainingId}/routine/${quest.id}`,
   );
 };
+
 const goBack = () => router.back();
 const toggleSection = (key) => {
   if (key === "strength" && !isStretchingComplete.value) return;
   if (key === "cardio" && !isStrengthComplete.value) return;
   expandedSections.value[key] = !expandedSections.value[key];
 };
-const isSectionLocked = (key) =>
-  key === "strength"
-    ? !isStretchingComplete.value
-    : key === "cardio"
-      ? !isStrengthComplete.value
-      : false;
 
-//  버튼 표시 조건
+const isTrainingExpired = computed(() => {
+  if (!trainingData.value?.startDate) return false;
+  const endDate = new Date(trainingData.value.startDate);
+  endDate.setMonth(endDate.getMonth() + 1);
+  return new Date() > endDate;
+});
+
+const trainingDeadline = computed(() => {
+  if (!trainingData.value?.startDate) return "";
+  const startDate = new Date(trainingData.value.startDate);
+  startDate.setMonth(startDate.getMonth() + 1);
+  return `${startDate.getFullYear()}.${String(startDate.getMonth() + 1).padStart(2, "0")}.${String(
+    startDate.getDate(),
+  ).padStart(2, "0")}`;
+});
+
 const showChatButton = computed(() => areAllQuestsComplete.value);
 const showReviewButton = computed(
   () => areAllQuestsComplete.value || isTrainingExpired.value,
@@ -141,25 +134,25 @@ const showReviewButton = computed(
     <BaseHeader title="트레이닝 상세" @back="goBack" />
 
     <main v-if="trainingData" class="flex-1">
-      <!-- 배지 -->
+      <!-- ✅ 배지 -->
       <div class="mt-4 flex items-center gap-2">
         <BaseBadge>{{ trainingData.level || "초급" }}</BaseBadge>
         <BaseBadge>{{ trainingData.category || "투자입문" }}</BaseBadge>
-        <BaseBadge variant="primary" class="ml-auto"
-          >총 리워드 {{ trainingData.totalReward }}P</BaseBadge
-        >
+        <BaseBadge variant="primary" class="ml-auto">
+          총 리워드 {{ trainingData.totalReward }}P
+        </BaseBadge>
       </div>
 
-      <!-- 진행률 차트 -->
+      <!-- ✅ 진행률 차트 -->
       <div
         class="my-6 flex flex-col items-center justify-center rounded-xl border border-white p-6"
       >
         <div class="relative h-24 w-24">
           <DoughnutChart :progress="trainingData.progress" />
           <div class="absolute inset-0 flex items-center justify-center">
-            <span class="text-title font-bold text-white"
-              >{{ trainingData.progress }}%</span
-            >
+            <span class="text-title font-bold text-white">
+              {{ trainingData.progress }}%
+            </span>
           </div>
         </div>
         <p class="mt-4 text-subtext font-bold text-gray-200">
@@ -167,42 +160,11 @@ const showReviewButton = computed(
         </p>
       </div>
 
-      <!-- 트레이너 정보 -->
-      <div class="mb-6 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div
-            class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-700"
-          >
-            <img
-              src="@/assets/images/Image_Square.svg"
-              alt="프로필"
-              class="h-6 w-6"
-            />
-          </div>
-          <p class="font-bold text-white">{{ trainingData.trainerName }}</p>
-        </div>
-        <div class="flex items-center gap-2 text-caption text-gray-200">
-          <div class="flex items-center gap-1">
-            <img src="@/assets/images/star.svg" alt="별점" class="h-3 w-3" />
-            <span>{{ trainingData.trainerRating }}</span>
-          </div>
-          <span>|</span>
-          <span>{{ trainingData.studentCount }}명 수강</span>
-          <span>|</span>
-          <span>{{ trainingData.totalWeeks }}주</span>
-        </div>
-      </div>
-
-      <!-- 제목 -->
-      <h2 class="mb-5 text-heading font-bold text-white">
-        {{ trainingData.title }}
-      </h2>
-
-      <!-- 루틴 섹션 -->
+      <!-- ✅ 루틴 섹션 -->
       <div class="space-y-2.5">
         <TraineeRoutineSection
           title="스트레칭"
-          :quests="trainingData.routines.stretching"
+          :quests="trainingData.routines['스트레칭']"
           :is-locked="isSectionLocked('stretching')"
           :is-expanded="expandedSections.stretching"
           @toggle="toggleSection('stretching')"
@@ -210,7 +172,7 @@ const showReviewButton = computed(
         />
         <TraineeRoutineSection
           title="근력"
-          :quests="trainingData.routines.strength"
+          :quests="trainingData.routines['근력']"
           :is-locked="isSectionLocked('strength')"
           :is-expanded="expandedSections.strength"
           @toggle="toggleSection('strength')"
@@ -218,7 +180,7 @@ const showReviewButton = computed(
         />
         <TraineeRoutineSection
           title="유산소"
-          :quests="trainingData.routines.cardio"
+          :quests="trainingData.routines['유산소']"
           :is-locked="isSectionLocked('cardio')"
           :is-expanded="expandedSections.cardio"
           @toggle="toggleSection('cardio')"
@@ -226,7 +188,7 @@ const showReviewButton = computed(
         />
       </div>
 
-      <!-- 액션 버튼 -->
+      <!-- ✅ 액션 버튼 -->
       <div class="mt-10 flex flex-col gap-3">
         <ActionButton
           v-if="showReviewButton"
@@ -242,7 +204,6 @@ const showReviewButton = computed(
           </template>
         </ActionButton>
 
-        <!-- 트레이너와 1:1 채팅하기 (아래, 조건부 표시) -->
         <ActionButton
           v-if="showChatButton"
           text="트레이너와 1:1 채팅하기"
