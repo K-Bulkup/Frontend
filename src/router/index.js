@@ -5,6 +5,10 @@ import LoginPage from "@/views/auth/LoginPage.vue";
 import adminLoginPage from "@/views/admin/adminLoginPage.vue";
 import TrainingApprovalPage from '@/views/admin/TrainingApprovalPage.vue';
 import AdminDashboard from '@/views/admin/AdminDashboard.vue';
+import AdminUserMainPage from '@/views/admin/AdminUserMainPage.vue';
+import AdminUserListPage from '@/views/admin/AdminUserListPage.vue';
+import AdminUserCreatePage from '@/views/admin/AdminUserCreatePage.vue';
+import AdminUserEditPage from '@/views/admin/AdminUserEditPage.vue';
 //training
 import TrainingListPage from "@/views/training/TrainingListPage.vue";
 import TrainingDetailPage from "@/views/training/TrainingDetailPage.vue";
@@ -40,6 +44,10 @@ const routes = [
   { path: "/admin/login", component: adminLoginPage, meta: { hideNavbar: true } },
   { path: '/admin/training-approval', component: TrainingApprovalPage, meta: { hideNavbar: true, requiresAuth: true, roles: ['ADMIN'] } },
   { path: '/admin/dashboard', component: AdminDashboard, meta: { hideNavbar: true, requiresAuth: true, roles: ['ADMIN'] } },
+  { path: '/admin/member-management', component: AdminUserMainPage, meta: { hideNavbar: true, requiresAuth: true, roles: ['ADMIN'] } },
+  { path: '/admin/member-management/list', component: AdminUserListPage, meta: { hideNavbar: true, requiresAuth: true, roles: ['ADMIN'] } },
+  { path: '/admin/member-management/create', component: AdminUserCreatePage, meta: { hideNavbar: true, requiresAuth: true, roles: ['ADMIN'] } },
+  { path: '/admin/member-management/edit/:userId', component: AdminUserEditPage, meta: { hideNavbar: true, requiresAuth: true, roles: ['ADMIN'] } },
 
   //training
   { path: "/training", component: TrainingListPage },

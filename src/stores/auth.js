@@ -3,20 +3,18 @@ import apiClient from "@/plugins/axios";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
-    role: localStorage.getItem("userRole") || null,
-    token: localStorage.getItem("accessToken") || null,
+    role: null,
+    token: null,
     userId: null,
   }),
 
   actions: {
     setRole(role) {
       this.role = role;
-      localStorage.setItem("userRole", role);
     },
 
     setToken(token) {
       this.token = token;
-      localStorage.setItem("accessToken", token);
     },
 
     setUserId(userId) {
@@ -42,8 +40,6 @@ export const useAuthStore = defineStore("auth", {
       this.role = null;
       this.token = null;
       this.userId = null;
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("userRole");
     },
   },
 });
