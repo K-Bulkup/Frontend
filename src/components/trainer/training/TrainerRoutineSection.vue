@@ -23,7 +23,16 @@ const emit = defineEmits(["toggle", "add-routine"]);
       @click="emit('toggle')"
       class="flex cursor-pointer items-center justify-between rounded-xl bg-gray-100 p-4"
     >
-      <span class="text-body text-black">{{ title }}</span>
+      <div class="flex items-center gap-2">
+        <img
+          src="@/assets/images/Chevron_Down_M.svg"
+          alt="펼치기"
+          class="h-5 w-5 transition-transform"
+          :class="{ 'rotate-180': isExpanded }"
+        />
+        <span class="text-body text-black">{{ title }}</span>
+      </div>
+
       <button
         @click.stop="emit('add-routine')"
         class="flex h-6 w-6 items-center justify-center rounded-full bg-primary"
