@@ -11,12 +11,12 @@ const props = defineProps({
 const emit = defineEmits(["update:modelValue"]);
 
 const FINANCE_CATEGORIES = [
-  "재무설계",
-  "현금관리",
+  "재무 설계",
+  "현금 관리",
   "신용과 부채관리",
-  "위험관리와 보험설계",
-  "투자설계",
-  "세금설계",
+  "위험 관리와 보험 설계",
+  "투자 설계",
+  "세금 설계",
   "기타",
 ];
 

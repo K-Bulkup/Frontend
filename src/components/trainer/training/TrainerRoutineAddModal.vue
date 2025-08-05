@@ -5,52 +5,74 @@ import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseFormField from "@/components/common/BaseFormField.vue";
 
-// 상수
-const ROUTINE_TYPES = ["실천형", "주관식", "OX"];
+const props = defineProps({
+  routineCategoryKey: {
+    type: String,
+    required: true,
+  },
+});
 
-// emit 정의
 const emit = defineEmits(["close", "save"]);
 
-// 반응형 데이터
+const QUIZ_TYPES = [
+  { key: "PHOTO", label: "실천형" },
+  { key: "SHORT_ANSWER", label: "주관식" },
+  { key: "OX", label: "OX" },
+];
+
 const routineTitle = ref("");
 const routineUrl = ref("");
-const routineContent = ref("");
+const routineDescription = ref("");
 const routineAnswer = ref("");
-const selectedRoutineType = ref("");
+const selectedQuizType = ref("PHOTO");
 
-// 계산된 속성
 const isSaveButtonDisabled = computed(() => {
   const hasRequiredInfo =
-    !routineTitle.value.trim() ||
-    !routineContent.value.trim() ||
-    !selectedRoutineType.value;
+    !routineTitle.value.trim() || !routineDescription.value.trim();
 
-  // 기본 정보가 없으면 무조건 비활성화
   if (hasRequiredInfo) {
     return true;
   }
 
-  if (selectedRoutineType.value !== "실천형") {
-    return !routineAnswer.value.trim(); // 답안이 없으면 비활성화
+  if (selectedQuizType.value !== "PHOTO") {
+    return !routineAnswer.value.trim();
   }
 
   return false;
 });
 
-// 메서드
 const handleClose = () => {
   emit("close");
+};
+
+const convertCategoryToKorean = (key) => {
+  switch (key) {
+    case "stretching":
+      return "스트레칭";
+    case "strength":
+      return "근력";
+    case "cardio":
+      return "유산소";
+    default:
+      return "";
+  }
 };
 
 const handleSave = () => {
   if (isSaveButtonDisabled.value) return;
 
   const routineData = {
-    name: routineTitle.value,
-    url: routineUrl.value,
-    content: routineContent.value,
-    type: selectedRoutineType.value,
+    title: routineTitle.value,
+    description: routineDescription.value,
+    routineType: convertCategoryToKorean(props.routineCategoryKey), // DB에 저장할 한글 값으로 변환
+    quizType: selectedQuizType.value,
+    videoUrl: routineUrl.value || null,
+    score: 10,
+    answer: routineAnswer.value || null,
   };
+
+  console.log("DB로 전송될 실제 데이터:", routineData);
+  console.log("routineCategoryKey Prop 값:", props.routineCategoryKey);
 
   emit("save", routineData);
 };
@@ -84,7 +106,7 @@ const handleSave = () => {
           <BaseFormField
             label="루틴 내용"
             placeholder="루틴 내용을 입력해주세요"
-            v-model="routineContent"
+            v-model="routineDescription"
             :isTextarea="true"
           />
 
@@ -92,23 +114,23 @@ const handleSave = () => {
             <div class="mb-4 text-subtext text-gray-50">루틴 유형</div>
             <div class="flex items-center gap-2.5">
               <button
-                v-for="type in ROUTINE_TYPES"
-                :key="type"
+                v-for="type in QUIZ_TYPES"
+                :key="type.key"
                 :class="[
                   'flex-1 rounded-xl py-3 text-center text-subtext transition-colors',
-                  selectedRoutineType === type
+                  selectedQuizType === type.key
                     ? 'bg-primary text-black'
                     : 'bg-gray-100 text-black hover:bg-gray-200',
                 ]"
-                @click="selectedRoutineType = type"
+                @click="selectedQuizType = type.key"
               >
-                {{ type }}
+                {{ type.label }}
               </button>
             </div>
           </div>
 
           <BaseFormField
-            v-if="selectedRoutineType && selectedRoutineType !== '실천형'"
+            v-if="selectedQuizType !== 'PHOTO'"
             label="루틴 답안"
             placeholder="루틴 답안을 입력해주세요"
             v-model="routineAnswer"
