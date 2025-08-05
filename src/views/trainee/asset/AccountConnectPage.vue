@@ -81,7 +81,7 @@ const cancel = () => {
 };
 
 const onClickConnect = async () => {
-  const result = await connectAccount(userId.value, selectedBank.value);
+  const result = await connectAccount(selectedBank.value);
 
   if (!result.success) {
     showFailureModal.value = true;
