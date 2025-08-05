@@ -8,7 +8,7 @@ import ConnectSuccessModal from "@/components/common/ConnectSuccessModal.vue";
 
 import { useRouter } from "vue-router";
 import { ref, computed } from "vue";
-import { trainerMyPageApi } from "@/composables/api/trainer/mypage/trainerMypageApi";
+import { trainerMyPageApi } from "@/composables/api/useTrainerMypageApi";
 
 const router = useRouter();
 

@@ -15,6 +15,7 @@ const route = useRoute();
 
 // 가상의 트레이닝 상세 데이터
 const trainingData = ref({
+  startDate: "2025-08-04",
   trainerName: "김헬스",
   trainerRating: 4.8,
   studentCount: 15,
@@ -55,6 +56,20 @@ const goToRoutineDetail = (quest) => {
 };
 
 // 계산된 속성 (Computed)
+const trainingDeadline = computed(() => {
+  if (!trainingData.value.startDate) return "";
+
+  const startDate = new Date(trainingData.value.startDate);
+  // 시작일로부터 3개월 뒤 날짜로 설정
+  startDate.setMonth(startDate.getMonth() + 3);
+
+  // YYYY.MM.DD 형식으로 변환
+  const year = startDate.getFullYear();
+  const month = String(startDate.getMonth() + 1).padStart(2, "0");
+  const day = String(startDate.getDate()).padStart(2, "0");
+
+  return `${year}.${month}.${day}`;
+});
 
 const questStats = computed(() => {
   const allQuests = Object.values(trainingData.value.routines).flat();
@@ -100,7 +115,7 @@ const isSectionLocked = (sectionKey) => {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col bg-realBlack px-6 pb-24 pt-10">
+  <div class="flex min-h-screen flex-col bg-realBlack px-6 pb-24 pt-4">
     <BaseHeader title="트레이닝 상세" @back="goBack" />
 
     <main class="flex-1">
@@ -123,7 +138,7 @@ const isSectionLocked = (sectionKey) => {
           </div>
         </div>
         <p class="mt-4 text-subtext font-bold text-gray-200">
-          강의 기한: 2025.12.31까지
+          트레이닝 기한: {{ trainingDeadline }}까지
         </p>
       </div>
 
