@@ -97,7 +97,7 @@ const badgeClass = computed(() => {
 
     <div class="flex items-center justify-end">
       <button
-        v-if="isAiChat"
+        v-if="isAiChat || (!isAiChat && isTrainer)"
         @click="buttonHandler"
         :disabled="buttonDisabled"
         class="mr-6 mt-2 h-[30px] w-[91px] rounded-lg bg-black p-2 text-[11px]"
