@@ -77,8 +77,13 @@ const handleOpenRoutineModal = (categoryKey) => {
 const onRoutineSaved = (newRoutine) => {
   if (currentRoutineCategory.value) {
     routines.value[currentRoutineCategory.value].push({
-      id: Date.now(),
-      name: newRoutine.name,
+      title: newRoutine.title,
+      description: newRoutine.description,
+      routineType: newRoutine.routineType,
+      quizType: newRoutine.quizType,
+      orderNumber: routines.value[currentRoutineCategory.value].length + 1,
+      score: newRoutine.score,
+      videoUrl: newRoutine.videoUrl,
     });
   }
   isModalVisible.value = false;
@@ -165,6 +170,7 @@ const handleCompletion = () => {
       v-if="isModalVisible"
       @close="isModalVisible = false"
       @save="onRoutineSaved"
+      :routineCategoryKey="currentRoutineCategory"
     />
   </div>
 </template>

@@ -42,7 +42,7 @@ const emit = defineEmits(["toggle", "add-routine"]);
           :key="routine.id"
           class="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4"
         >
-          <span class="flex-1 text-body text-black">{{ routine.name }}</span>
+          <span class="flex-1 text-body text-black">{{ routine.title }}</span>
         </div>
       </div>
       <div
