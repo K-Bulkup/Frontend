@@ -1,7 +1,7 @@
 <script setup>
-import { ref, computed } from "vue";
-import { useRouter } from "vue-router";
-import axios from "axios";
+import { ref, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { getRoutineDetail } from "@/composables/api/trainee/training/routineDetailAPI";
 
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseBadge from "@/components/common/BaseBadge.vue";
@@ -11,126 +11,86 @@ import RoutineVideo from "@/components/trainee/training/RoutineVideo.vue";
 import RoutineResultModal from "@/components/trainee/training/RoutineResultModal.vue";
 
 const router = useRouter();
+const route = useRoute();
 
-// --- 상태 (State) ---
+// API 데이터 상태
+const currentRoutine = ref(null);
 
-// 예시 데이터
-const RoutineData = ref({
-  id: 1,
-  title: "계좌 개설하기",
-  description:
-    "위 영상을 참고하여 과제를 수행하고 결과를 입력해주세요. 사진을 첨부하거나 텍스트로 답변할 수 있습니다.",
-  level: "초급",
-  category: "투자입문",
-  reward: 2,
-  videoUrl: "https://youtu.be/M2WTUoy4y6E?si=wICQQuJ2Jf5kzKqv",
-  completed: false,
-});
-const currentRoutine = ref(RoutineData.value);
-const certificationPhotos = ref([
-  {
-    id: 1,
-    description: "계좌 개설 완료",
-    imageUrl: null,
-    timestamp: new Date(),
-    isUser: true, // 사용자가 보낸 메시지인지 구분을 위한 플래그
-  },
-]);
-
-// AI 판별 및 모달 관련 상태 추가
-const isLoading = ref(false); // AI가 판별하는 동안의 로딩 상태
+// AI 채팅/인증 상태
+const certificationPhotos = ref([]);
+const isLoading = ref(false);
 const isResultModalVisible = ref(false);
-const submissionStatus = ref("success"); // 'success' 또는 'failure'
+const submissionStatus = ref("success");
 const acquiredReward = ref(0);
 
-// --- 메서드 (Methods) ---
+// API 호출 → 루틴 상세 로드
+const loadRoutineDetail = async () => {
+  try {
+    const res = await getRoutineDetail(route.params.routineId);
+    const raw = res.data;
 
+    currentRoutine.value = {
+      id: route.params.routineId,
+      title: raw.routineTitle,
+      description: raw.routineDescription,
+      level: raw.level,
+      category: raw.category,
+      reward: raw.routineScore,
+      videoUrl: raw.videoUrl || null,
+      completed: false,
+    };
+  } catch (err) {
+    console.error(" 루틴 상세 조회 실패:", err);
+    router.back();
+  }
+};
+
+onMounted(loadRoutineDetail);
+
+// 뒤로 가기
 const handleGoBack = () => router.back();
 
+// 영상 열기
 const openVideo = () => {
   if (currentRoutine.value?.videoUrl) {
     window.open(currentRoutine.value.videoUrl, "_blank");
   }
 };
 
-// AI 판별 로직이 적용된 제출 핸들러
+// 제출 처리 (AI 판별 or API 검증 로직 연결 예정)
 const handleCertificationSubmit = async (submission) => {
   if (isLoading.value) return;
   isLoading.value = true;
 
-  // 사용자가 제출한 내용을 채팅창에 먼저 표시
-  const userSubmission = {
+  certificationPhotos.value.push({
     id: Date.now(),
     description: submission.text,
-    imageUrl: submission.imageUrl, // 미리보기를 위한 로컬 URL
+    imageUrl: submission.imageUrl,
     timestamp: new Date(),
     isUser: true,
-  };
-  certificationPhotos.value.push(userSubmission);
+  });
 
-  // --- 벡엔드 연동 전, 테스트를 위한 시뮬레이션 코드 ---
-  console.log("AI 판별 시뮬레이션 시작...");
-  await new Promise((resolve) => setTimeout(resolve, 1500)); // 1.5초 딜레이
+  // --- 현재는 테스트 시뮬레이션 ---
+  await new Promise((r) => setTimeout(r, 1200));
+  const isCorrect = Math.random() > 0.5;
 
-  try {
-    // 50% 확률로 성공 또는 실패를 시뮬레이션합니다.
-    const isCorrect = Math.random() > 0.5;
-    const reward = isCorrect ? currentRoutine.value.reward : 0;
+  submissionStatus.value = isCorrect ? "success" : "failure";
+  acquiredReward.value = isCorrect ? currentRoutine.value.reward : 0;
 
-    console.log(`시뮬레이션 결과: ${isCorrect ? "성공" : "실패"}`);
-
-    submissionStatus.value = isCorrect ? "success" : "failure";
-    acquiredReward.value = reward;
-  } catch (error) {
-    // 테스트 중에는 거의 발생하지 않지만, 예외 처리 구문은 유지합니다.
-    console.error("테스트 중 에러 발생:", error);
-    submissionStatus.value = "failure";
-    acquiredReward.value = 0;
-  } finally {
-    isLoading.value = false;
-    isResultModalVisible.value = true; // 결과 모달 표시
-  }
-  // --- 시뮬레이션 코드 종료 ---
+  isLoading.value = false;
+  isResultModalVisible.value = true;
 };
-
-//   // 서버에 보낼 FormData 생성
-//   const formData = new FormData();
-//   formData.append("routineTitle", currentRoutine.value.title);
-//   formData.append("submissionText", submission.text);
-//   if (submission.imageFile) {
-//     formData.append("submissionImage", submission.imageFile);
-//   }
-
-//   try {
-//     // 1. 백엔드 서버에 AI 판별 요청
-//     const response = await axios.post("/api/check-routine", formData);
-
-//     // 2. 백엔드 결과로 모달 상태 설정
-//     const { isCorrect, reward } = response.data;
-//     submissionStatus.value = isCorrect ? "success" : "failure";
-//     acquiredReward.value = reward || 0;
-//   } catch (error) {
-//     // 3. 에러 발생 시 실패 처리
-//     console.error("AI 판별 요청 실패:", error);
-//     submissionStatus.value = "failure";
-//     acquiredReward.value = 0;
-//   } finally {
-//     isLoading.value = false;
-//     isResultModalVisible.value = true; // 결과 모달 표시
-//   }
-// };
 
 // 모달 닫기
 const closeModal = () => {
   isResultModalVisible.value = false;
-
   if (submissionStatus.value === "success") {
     currentRoutine.value.completed = true;
-    router.back(); // 성공 시에만 뒤로 가기
+    router.back();
   }
 };
 
-// 다시 시도
+// 재시도
 const retrySubmission = () => {
   isResultModalVisible.value = false;
 };
@@ -142,7 +102,10 @@ const retrySubmission = () => {
       <BaseHeader title="루틴 상세" @back="handleGoBack" />
     </header>
 
-    <main class="flex-1 overflow-y-auto px-6 pb-40 pt-4 scrollbar-hide">
+    <main
+      v-if="currentRoutine"
+      class="flex-1 overflow-y-auto px-6 pb-40 pt-4 scrollbar-hide"
+    >
       <div class="mt-4 flex items-center gap-2">
         <BaseBadge>{{ currentRoutine.level }}</BaseBadge>
         <BaseBadge>{{ currentRoutine.category }}</BaseBadge>
