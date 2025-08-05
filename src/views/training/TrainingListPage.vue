@@ -1,78 +1,97 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, watch } from "vue";
 import { useRouter } from "vue-router";
-import TrainingCard from "@/components/trainee/training/TrainingCard.vue"; // ✅ 카드 컴포넌트 임포트
+import TrainingCard from "@/components/trainee/training/TrainingCard.vue";
+import {
+  getAllTrainings,
+  searchTrainings,
+} from "@/composables/api/trainee/training/useTrainingListApi";
 
 const router = useRouter();
 const searchQuery = ref("");
+const trainings = ref([]);
 
-const trainings = ref([
-  {
-    id: 1,
-    title: "예금관리의 기초",
-    trainerName: "김헬스",
-    price: 21000,
-    rating: 4.8,
-    tags: ["재무설계", "중급"],
-  },
-  {
-    id: 2,
-    title: "투자 입문 강좌",
-    trainerName: "박강사",
-    price: 35000,
-    rating: 4.7,
-    tags: ["투자입문", "초급"],
-  },
-  {
-    id: 3,
-    title: "주식 고급 과정",
-    trainerName: "이전문가",
-    price: 50000,
-    rating: 4.9,
-    tags: ["주식투자", "고급"],
-  },
-  {
-    id: 4,
-    title: "재무설계 실전편",
-    trainerName: "최재무",
-    price: 42000,
-    rating: 4.6,
-    tags: ["재무설계", "고급"],
-  },
-  {
-    id: 5,
-    title: "예금관리의 기초",
-    trainerName: "김헬스",
-    price: 21000,
-    rating: 4.8,
-    tags: ["재무설계", "중급"],
-  },
-  {
-    id: 6,
-    title: "예금관리의 기초",
-    trainerName: "김헬스",
-    price: 21000,
-    rating: 4.8,
-    tags: ["재무설계", "중급"],
-  },
-]);
+// 하드코딩된 결제 완료 ID (임시)
+const purchasedTrainingIds = [2001]; // 테스트용 결제된 트레이닝 ID 넣기
 
-const filteredTrainings = computed(() => {
-  if (!searchQuery.value) return trainings.value;
-  return trainings.value.filter(
-    (t) =>
-      t.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      t.trainerName.toLowerCase().includes(searchQuery.value.toLowerCase()),
-  );
-});
-
-const goToDetail = (trainingId) => {
-  router.push(`/training/${trainingId}`);
+// 전체 트레이닝 불러오기
+const fetchAllTrainings = async () => {
+  try {
+    const res = await getAllTrainings();
+    trainings.value = res.data.data.map((t) => ({
+      id: t.trainingId,
+      title: t.title,
+      trainerName: t.trainerName,
+      price: t.price,
+      rating: t.averageRating,
+      tags: [t.category, t.level],
+      thumbnailUrl: t.thumbnailUrl,
+      // 나중에 백엔드 isPurchased 추가되면 여기도 그대로 들어올 예정
+      isPurchased: t.isPurchased ?? false,
+    }));
+  } catch (err) {
+    console.error("🚨 전체 트레이닝 목록 조회 실패:", err);
+  }
 };
 
+// 검색 API 호출
+const fetchSearchResults = async (keyword) => {
+  try {
+    const res = await searchTrainings(keyword);
+    trainings.value = res.data.data.map((t) => ({
+      id: t.trainingId,
+      title: t.title,
+      trainerName: t.trainerName,
+      price: t.price,
+      rating: t.averageRating,
+      tags: [t.category, t.level],
+      thumbnailUrl: t.thumbnailUrl,
+      isPurchased: t.isPurchased ?? false,
+    }));
+  } catch (err) {
+    console.error("🚨 검색 실패:", err);
+  }
+};
+
+// 디바운스 처리 (검색어 입력 시 자동 검색)
+let debounceTimer;
+watch(searchQuery, (newValue) => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    if (!newValue.trim()) {
+      fetchAllTrainings(); // 검색어 없으면 전체 목록 복귀
+    } else {
+      fetchSearchResults(newValue);
+    }
+  }, 300);
+});
+
+// 상세 페이지 이동 (현재: 하드코딩된 purchasedTrainingIds 사용)
+const goToDetail = (trainingId) => {
+  if (purchasedTrainingIds.includes(trainingId)) {
+    router.push(`/trainee/mypage/training/${trainingId}`); // 결제 후 페이지
+  } else {
+    router.push(`/training/${trainingId}`); // 결제 전 페이지
+  }
+
+  /* 
+  [나중에 백엔드 isPurchased 필드 추가 시 사용할 코드]
+  const training = trainings.value.find(t => t.id === trainingId);
+  if (training?.isPurchased) {
+    router.push(`/trainee/mypage/training/${trainingId}`);
+  } else {
+    router.push(`/training/${trainingId}`);
+  }
+  */
+};
+
+// PT 페이지 이동
 const goToPtPage = () => {
   router.push("/trainee/mypage/pt");
 };
+
+// 최초 전체 목록 로딩
+fetchAllTrainings();
 </script>
 
 <template>
@@ -93,7 +112,7 @@ const goToPtPage = () => {
 
     <main class="grid grid-cols-2 gap-4">
       <TrainingCard
-        v-for="training in filteredTrainings"
+        v-for="training in trainings"
         :key="training.id"
         :training="training"
         @click="goToDetail(training.id)"

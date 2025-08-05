@@ -15,7 +15,15 @@ const formattedPrice = (price) => {
 
 <template>
   <div class="flex flex-col rounded-xl bg-gray-100 p-3 text-black shadow-sm">
-    <div class="aspect-square w-full rounded-lg bg-gray-200"></div>
+    <!-- 썸네일 이미지 표시 -->
+    <div class="aspect-square w-full overflow-hidden rounded-lg bg-gray-200">
+      <img
+        v-if="training.thumbnailUrl"
+        :src="training.thumbnailUrl"
+        alt="트레이닝 썸네일"
+        class="h-full w-full object-cover"
+      />
+    </div>
 
     <div class="mt-3 flex flex-grow flex-col">
       <h3 class="text-lg font-bold">{{ training.title }}</h3>
@@ -33,12 +41,8 @@ const formattedPrice = (price) => {
       </p>
 
       <div class="mt-auto flex justify-between pt-4">
-        <BaseBadge variant="outline">
-          {{ training.tags[0] }}
-        </BaseBadge>
-        <BaseBadge variant="outline">
-          {{ training.tags[1] }}
-        </BaseBadge>
+        <BaseBadge variant="outline">{{ training.tags[0] }}</BaseBadge>
+        <BaseBadge variant="outline">{{ training.tags[1] }}</BaseBadge>
       </div>
     </div>
   </div>
