@@ -1,5 +1,7 @@
 <script setup>
-defineProps({
+import { computed } from "vue";
+
+const props = defineProps({
   title: String,
   quests: Array,
   isLocked: Boolean,
@@ -7,10 +9,16 @@ defineProps({
 });
 
 const emit = defineEmits(["toggle", "routine-click"]);
+
+// 진행 중 루틴(첫 번째 미완료 루틴) 인덱스
+const nextIncompleteIndex = computed(() =>
+  props.quests.findIndex((q) => !q.completed),
+);
 </script>
 
 <template>
   <div>
+    <!-- 섹션 헤더 -->
     <div
       @click="emit('toggle')"
       class="flex items-center justify-between rounded-xl p-4"
@@ -40,17 +48,26 @@ const emit = defineEmits(["toggle", "routine-click"]);
       />
     </div>
 
+    <!-- 루틴 목록 -->
     <div v-if="isExpanded && !isLocked" class="mt-2.5">
       <div class="flex flex-col gap-2.5 rounded-xl bg-gray-100 p-4">
         <div
-          v-for="quest in quests"
+          v-for="(quest, index) in quests"
           :key="quest.id"
           @click="emit('routine-click', quest)"
           class="flex cursor-pointer items-center justify-between rounded-xl border border-gray-200 p-4 transition-colors duration-200 hover:border-gray-500"
-          :class="quest.completed ? 'bg-white' : 'bg-gray-200'"
+          :class="[
+            quest.completed
+              ? 'bg-white text-black'
+              : index === nextIncompleteIndex
+                ? 'border-2 border-gray-400 bg-white font-semibold text-black'
+                : 'bg-gray-200 text-gray-700',
+          ]"
         >
-          <span class="flex-1 text-body text-black">{{ quest.name }}</span>
+          <!-- 루틴 이름 -->
+          <span class="flex-1 text-body">{{ quest.name }}</span>
 
+          <!-- 완료 상태 -->
           <div
             v-if="quest.completed"
             class="flex items-center gap-2 text-subtext font-semibold text-[#28A745]"
@@ -62,8 +79,10 @@ const emit = defineEmits(["toggle", "routine-click"]);
             />
             <span>완료</span>
           </div>
+
+          <!-- 리워드 표시 (+P) -->
           <span v-else class="text-caption text-gray-700"
-            >+{{ quest.reward }}P</span
+            >+{{ quest.rewardPoint }}P</span
           >
         </div>
       </div>
