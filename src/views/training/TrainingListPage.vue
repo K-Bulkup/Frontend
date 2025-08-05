@@ -10,87 +10,87 @@ import {
 const router = useRouter();
 const searchQuery = ref("");
 const trainings = ref([]);
+const allTrainingsCache = ref([]); // 전체 목록 캐시
 
-// 하드코딩된 결제 완료 ID (임시)
-const purchasedTrainingIds = [2001]; // 테스트용 결제된 트레이닝 ID 넣기
-
-// 전체 트레이닝 불러오기
+// ✅ 전체 트레이닝 불러오기
 const fetchAllTrainings = async () => {
   try {
     const res = await getAllTrainings();
-    trainings.value = res.data.data.map((t) => ({
-      id: t.trainingId,
+    console.log("✅ 전체 목록 API 응답:", res.data.data);
+
+    allTrainingsCache.value = res.data.data.map((t) => ({
+      trainingId: t.trainingId,
       title: t.title,
       trainerName: t.trainerName,
       price: t.price,
       rating: t.averageRating,
       tags: [t.category, t.level],
       thumbnailUrl: t.thumbnailUrl,
-      // 나중에 백엔드 isPurchased 추가되면 여기도 그대로 들어올 예정
-      isPurchased: t.isPurchased ?? false,
+      isPurchased: t.purchased ?? false, // ✅ 필드명 수정
     }));
+    trainings.value = [...allTrainingsCache.value];
   } catch (err) {
     console.error("🚨 전체 트레이닝 목록 조회 실패:", err);
   }
 };
 
-// 검색 API 호출
+// ✅ 검색 API 호출
 const fetchSearchResults = async (keyword) => {
   try {
     const res = await searchTrainings(keyword);
+    console.log("✅ 검색 API 응답:", res.data.data);
+
     trainings.value = res.data.data.map((t) => ({
-      id: t.trainingId,
+      trainingId: t.trainingId,
       title: t.title,
       trainerName: t.trainerName,
       price: t.price,
       rating: t.averageRating,
       tags: [t.category, t.level],
       thumbnailUrl: t.thumbnailUrl,
-      isPurchased: t.isPurchased ?? false,
+      isPurchased: t.purchased ?? false, // ✅ 백엔드에서 안 내려오면 false
     }));
   } catch (err) {
     console.error("🚨 검색 실패:", err);
   }
 };
 
-// 디바운스 처리 (검색어 입력 시 자동 검색)
+// ✅ 검색어 감지 (디바운스)
 let debounceTimer;
 watch(searchQuery, (newValue) => {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => {
     if (!newValue.trim()) {
-      fetchAllTrainings(); // 검색어 없으면 전체 목록 복귀
+      trainings.value = [...allTrainingsCache.value];
     } else {
       fetchSearchResults(newValue);
     }
   }, 300);
 });
 
-// 상세 페이지 이동 (현재: 하드코딩된 purchasedTrainingIds 사용)
-const goToDetail = (trainingId) => {
-  if (purchasedTrainingIds.includes(trainingId)) {
-    router.push(`/trainee/mypage/training/${trainingId}`); // 결제 후 페이지
-  } else {
-    router.push(`/training/${trainingId}`); // 결제 전 페이지
-  }
+// ✅ 상세 페이지 이동
+const goToDetail = (training) => {
+  console.log("📌 클릭한 트레이닝:", training);
 
-  /* 
-  [나중에 백엔드 isPurchased 필드 추가 시 사용할 코드]
-  const training = trainings.value.find(t => t.id === trainingId);
-  if (training?.isPurchased) {
-    router.push(`/trainee/mypage/training/${trainingId}`);
+  const purchased =
+    training.isPurchased ||
+    allTrainingsCache.value.find((t) => t.trainingId === training.trainingId)
+      ?.isPurchased ||
+    false;
+
+  if (purchased) {
+    router.push(`/trainee/mypage/training/${training.trainingId}`);
   } else {
-    router.push(`/training/${trainingId}`);
+    router.push(`/training/${training.trainingId}`);
   }
-  */
 };
 
-// PT 페이지 이동
+// ✅ PT 페이지 이동
 const goToPtPage = () => {
   router.push("/trainee/mypage/pt");
 };
 
-// 최초 전체 목록 로딩
+// ✅ 최초 전체 목록 로딩
 fetchAllTrainings();
 </script>
 
@@ -113,9 +113,9 @@ fetchAllTrainings();
     <main class="grid grid-cols-2 gap-4">
       <TrainingCard
         v-for="training in trainings"
-        :key="training.id"
+        :key="training.trainingId"
         :training="training"
-        @click="goToDetail(training.id)"
+        @click="goToDetail(training)"
         class="cursor-pointer"
       />
     </main>
