@@ -12,6 +12,7 @@ onMounted(async () => {
     authStore.setToken(token);
     try {
       await authStore.fetchUserInfo();
+      
     } catch (err) {
       authStore.logout();
       router.push("/login");

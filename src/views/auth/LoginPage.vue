@@ -64,6 +64,11 @@ onMounted(() => {
 });
 
 const goNext = () => {
+  if (form.value.email === 'admin@admin.com' && form.value.password === 'admin') {
+    router.push('/admin/login');
+    return;
+  }
+
   if (form.value.email && form.value.password) {
     form.value.loginType = "LOCAL";
     step.value++;
