@@ -1,63 +1,76 @@
 <script setup>
-import { ref, computed } from "vue";
-import { useRouter } from "vue-router";
+import { ref, computed, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { getTraineeTrainingPreDetail } from "@/composables/api/trainee/training/traineeTrainingPreDetailAPI";
 
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseBadge from "@/components/common/BaseBadge.vue";
 
 const router = useRouter();
+const route = useRoute();
 
-// --- 상태 (State) ---
+// 상태 (API 데이터 저장)
+const trainingData = ref(null);
 
-// 이미지에 표시된 트레이닝 상세 정보 데이터
-const trainingData = ref({
-  tags: ["초급", "투자입문"],
-  reward: "20P",
-  trainerName: "김헬스",
-  trainerRating: 4.8,
-  studentCount: 15,
-  totalWeeks: 4,
-  title: "초보자를 위한 주식 투자 완전 정복",
-  description:
-    "상세설명상세설명상세설명상세설명상세설명상세설명상세설명상세설명상세설명상세설명상세설명상세설명상세설명상세설명상세설명상세설명",
-  price: 21000,
-  thumbnailUrl:
-    "https://your-s3-bucket.s3.amazonaws.com/path/to/your/image.jpg",
-});
+// API 호출 및 데이터 매핑
+const loadTrainingDetail = async () => {
+  try {
+    const res = await getTraineeTrainingPreDetail(route.params.trainingId);
+    const raw = res.data.data;
 
-// --- 계산된 속성 (Computed) ---
+    trainingData.value = {
+      level: raw.level,
+      category: raw.category,
+      reward: `${raw.totalRoutineScore}P`, // API에서 제공되는 totalRoutineScore 사용
+      trainerName: raw.trainerNickname || "트레이너명 준비중",
+      trainerProfileUrl: raw.trainerProfileUrl,
+      trainerRating: raw.averageRating,
+      studentCount: raw.traineeCount,
+      totalWeeks: 4, // API에 totalWeeks가 없으므로 기본 4주
+      title: raw.title,
+      description: raw.description,
+      price: raw.price,
+      thumbnailUrl: raw.thumbnailUrl,
+    };
+  } catch (err) {
+    console.error("🚨 결제 전 트레이닝 상세 조회 실패:", err);
+  }
+};
 
-// 가격을 콤마가 포함된 문자열로 변환합니다.
+onMounted(loadTrainingDetail);
+
+// 가격 포맷
 const formattedPrice = computed(() => {
-  return trainingData.value.price.toLocaleString();
+  return trainingData.value ? trainingData.value.price.toLocaleString() : "";
 });
-
-// --- 메서드 (Methods) ---
 
 // 뒤로가기
 const goBack = () => {
   router.back();
 };
 
-// 결제 페이지로 이동 (가상)
+// 결제 버튼 (추후 결제 API 연결)
 const proceedToPayment = () => {
-  console.log("결제하기 버튼 클릭");
+  console.log("결제하기 버튼 클릭 (결제 API 연결 예정)");
   // router.push('/payment');
 };
 </script>
 
 <template>
   <div class="flex min-h-screen flex-col bg-realBlack pt-4">
-    <main class="flex-1 px-6">
+    <main v-if="trainingData" class="flex-1 px-6">
       <BaseHeader title="트레이닝 상세" @back="goBack" />
+
+      <!-- 난이도 / 카테고리 / 리워드 -->
       <div class="mt-4 flex items-center gap-2">
-        <BaseBadge>{{ trainingData.tags[0] }}</BaseBadge>
-        <BaseBadge>{{ trainingData.tags[1] }}</BaseBadge>
+        <BaseBadge>{{ trainingData.level }}</BaseBadge>
+        <BaseBadge>{{ trainingData.category }}</BaseBadge>
         <BaseBadge variant="primary" class="ml-auto">
           총 리워드 {{ trainingData.reward }}
         </BaseBadge>
       </div>
 
+      <!-- 썸네일 -->
       <div
         class="mt-6 flex h-48 w-full items-center justify-center rounded-lg bg-gray-800"
       >
@@ -68,15 +81,19 @@ const proceedToPayment = () => {
         />
       </div>
 
+      <!-- 트레이너 정보 -->
       <div class="mt-6 flex items-center justify-between">
         <div class="flex items-center gap-3">
           <div
             class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-700"
           >
             <img
-              src="@/assets/images/Image_Square.svg"
+              :src="
+                trainingData.trainerProfileUrl ||
+                '@/assets/images/Image_Square.svg'
+              "
               alt="프로필"
-              class="h-6 w-6"
+              class="h-6 w-6 rounded-full"
             />
           </div>
           <p class="font-bold text-white">{{ trainingData.trainerName }}</p>
@@ -93,17 +110,18 @@ const proceedToPayment = () => {
         </div>
       </div>
 
+      <!-- 제목 + 설명 -->
       <h2 class="mt-5 text-heading font-bold text-white">
         {{ trainingData.title }}
       </h2>
-      <p class="mt-2 text-body text-gray-300">
-        {{ trainingData.description }}
-      </p>
+      <p class="mt-2 text-body text-gray-300">{{ trainingData.description }}</p>
 
       <div class="mb-4 mt-8 h-px bg-gray-700"></div>
 
+      <!-- 가격 -->
       <div class="text-title font-bold text-white">{{ formattedPrice }}원</div>
 
+      <!-- 결제 버튼 -->
       <div class="mt-12 pb-8">
         <button
           @click="proceedToPayment"
