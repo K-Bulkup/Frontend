@@ -18,14 +18,18 @@ const ROUTINE_SECTIONS = [
   { key: "cardio", title: "유산소" },
 ];
 
-const expandedSections = ref({
-  stretching: true,
-  strength: true,
-  cardio: true,
-});
+const manuallyToggled = ref({});
+
+const isSectionExpanded = (sectionKey) => {
+  if (manuallyToggled.value[sectionKey] !== undefined) {
+    return manuallyToggled.value[sectionKey];
+  }
+
+  return (routines.value?.[sectionKey]?.length || 0) > 0;
+};
 
 const handleSectionToggle = (sectionKey) => {
-  expandedSections.value[sectionKey] = !expandedSections.value[sectionKey];
+  manuallyToggled.value[sectionKey] = !isSectionExpanded(sectionKey);
 };
 </script>
 
@@ -82,7 +86,7 @@ const handleSectionToggle = (sectionKey) => {
           :key="section.key"
           :title="section.title"
           :routines="routines[section.key]"
-          :is-expanded="expandedSections[section.key]"
+          :is-expanded="isSectionExpanded(section.key)"
           @toggle="handleSectionToggle(section.key)"
           @add-routine="emit('open-routine-modal', section.key)"
         />

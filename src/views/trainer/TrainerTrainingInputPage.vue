@@ -11,7 +11,7 @@ import TrainingStep3Thumbnail from "@/components/trainer/training/TrainingStep3T
 import TrainingStep4Complete from "@/components/trainer/training/TrainingStep4Complete.vue";
 import RoutineAddModal from "@/components/trainer/training/TrainerRoutineAddModal.vue";
 
-import { createTraining } from "@/plugins/axios";
+import { createTraining } from "@/composables/api/trainer/training/trainerTrainingAPI";
 
 // 라우터 및 상태 (Router & State)
 const router = useRouter();
@@ -77,8 +77,13 @@ const handleOpenRoutineModal = (categoryKey) => {
 const onRoutineSaved = (newRoutine) => {
   if (currentRoutineCategory.value) {
     routines.value[currentRoutineCategory.value].push({
-      id: Date.now(),
-      name: newRoutine.name,
+      title: newRoutine.title,
+      description: newRoutine.description,
+      routineType: newRoutine.routineType,
+      quizType: newRoutine.quizType,
+      orderNumber: routines.value[currentRoutineCategory.value].length + 1,
+      score: newRoutine.score,
+      videoUrl: newRoutine.videoUrl,
     });
   }
   isModalVisible.value = false;
@@ -90,17 +95,32 @@ const handleNextStep = async () => {
   if (step.value < 3) {
     step.value++;
   } else if (step.value === 3) {
-    // 파일 업로드를 위해 FormData 사용
+    const trainingDto = {
+      title: trainerName.value,
+      description: trainingDescription.value,
+      price: 0, // 실제 가격 데이터로 채우기 (수정 필요)
+      category: selectedCategory.value,
+      level: selectedDifficulty.value,
+      routines: [
+        ...routines.value.stretching,
+        ...routines.value.strength,
+        ...routines.value.cardio,
+      ],
+    };
+
     const formData = new FormData();
-    formData.append("category", selectedCategory.value);
-    formData.append("trainerName", trainerName.value);
-    formData.append("description", trainingDescription.value);
-    formData.append("difficulty", selectedDifficulty.value);
-    formData.append("routines", JSON.stringify(routines.value));
+
+    formData.append(
+      "dto",
+      new Blob([JSON.stringify(trainingDto)], { type: "application/json" }),
+    );
+
+    // 썸네일 파일 추가
     if (thumbnail.value) {
-      formData.append("thumbnail", thumbnail.value); // 파일 객체 추가
+      formData.append("thumbnail", thumbnail.value);
     }
 
+    // API 호출
     try {
       console.log("API로 FormData 전송:", ...formData.entries());
       await createTraining(formData);
@@ -150,6 +170,7 @@ const handleCompletion = () => {
       v-if="isModalVisible"
       @close="isModalVisible = false"
       @save="onRoutineSaved"
+      :routineCategoryKey="currentRoutineCategory"
     />
   </div>
 </template>
