@@ -15,7 +15,6 @@ export const useAuthStore = defineStore("auth", {
 
     setToken(token) {
       this.token = token;
-      localStorage.setItem("accessToken", token);
     },
 
     setUserId(userId) {
@@ -23,6 +22,9 @@ export const useAuthStore = defineStore("auth", {
     },
 
     async fetchUserInfo() {
+      if (this.role === 'ADMIN') {
+        return; // 관리자 역할이면 API 호출을 건너뜁니다.
+      }
       try {
         const res = await apiClient.get("/api/common/users/me");
         const userData = res.data.data;
@@ -38,7 +40,6 @@ export const useAuthStore = defineStore("auth", {
       this.role = null;
       this.token = null;
       this.userId = null;
-      localStorage.removeItem("accessToken");
     },
   },
 });

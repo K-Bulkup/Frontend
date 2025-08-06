@@ -1,0 +1,132 @@
+<script setup>
+import { ref, onMounted } from "vue";
+import apiClient from "@/plugins/axios";
+
+const pendingTrainings = ref([]);
+
+// 페이지가 로드될 때 승인 대기 목록을 가져옵니다.
+onMounted(async () => {
+  try {
+    const response = await apiClient.get("/api/admin/trainings/pending");
+    console.log("강좌 승인 API 응답:", response);
+    // 백엔드 응답이 { data: [...] } 형태일 경우 response.data.data 사용
+    // 그렇지 않고 바로 배열일 경우 response.data 사용
+    pendingTrainings.value = response.data.data || response.data;
+  } catch (error) {
+    console.error("승인 대기 강좌 목록 조회 실패:", error.response || error);
+    alert(
+      "데이터를 불러오는 데 실패했습니다. (API가 아직 준비되지 않았을 수 있습니다)",
+    );
+    // 임시 목업 데이터 (AdminTrainingResponseDto 구조에 맞춤)
+    pendingTrainings.value = [
+      {
+        trainingId: 1,
+        trainingName: "초보자를 위한 헬스 기초 (예시)",
+        trainerId: 10,
+        trainerName: "김강철",
+        approvalStatus: "대기",
+        totalStudents: 5,
+        requestDate: "2025-08-05",
+      },
+      {
+        trainingId: 2,
+        trainingName: "다이어트 챌린지 30일 (예시)",
+        trainerId: 11,
+        trainerName: "박건강",
+        approvalStatus: "대기",
+        totalStudents: 12,
+        requestDate: "2025-08-04",
+      },
+    ];
+  }
+});
+
+const approveTraining = async (trainingId) => {
+  try {
+    await apiClient.post(`/api/admin/trainings/${trainingId}/approve`);
+    alert("강좌가 승인되었습니다.");
+    // 목록에서 승인된 항목 제거
+    pendingTrainings.value = pendingTrainings.value.filter(
+      (t) => t.trainingId !== trainingId,
+    );
+  } catch (error) {
+    console.error("강좌 승인 실패:", error);
+    alert("강좌 승인에 실패했습니다. (API가 아직 준비되지 않았을 수 있습니다)");
+  }
+};
+
+const rejectTraining = async (trainingId) => {
+  try {
+    await apiClient.post(`/api/admin/trainings/${trainingId}/reject`);
+    alert("강좌가 거절되었습니다.");
+    // 목록에서 거절된 항목 제거
+    pendingTrainings.value = pendingTrainings.value.filter(
+      (t) => t.trainingId !== trainingId,
+    );
+  } catch (error) {
+    console.error("강좌 거절 실패:", error);
+    alert("강좌 거절에 실패했습니다. (API가 아직 준비되지 않았을 수 있습니다)");
+  }
+};
+</script>
+
+<template>
+  <div class="min-h-screen bg-[#111111] p-6 text-white">
+    <h1 class="mb-6 text-center text-2xl font-bold">강좌 승인 관리</h1>
+
+    <div class="mx-auto max-w-6xl rounded-xl bg-gray-800 p-4 shadow">
+      <div class="overflow-x-auto rounded">
+        <table class="min-w-full text-sm">
+          <thead>
+            <tr class="bg-gray-700 text-gray-300">
+              <th class="px-4 py-3 text-left font-semibold">강좌명</th>
+              <th class="px-4 py-3 text-left font-semibold">트레이너</th>
+              <th class="px-4 py-3 text-center font-semibold">수강생 수</th>
+              <th class="px-4 py-3 text-center font-semibold">신청일</th>
+              <th class="px-4 py-3 text-center font-semibold">관리</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-700">
+            <tr v-if="pendingTrainings.length === 0">
+              <td colspan="5" class="px-4 py-6 text-center text-gray-400">
+                승인 대기 중인 강좌가 없습니다.
+              </td>
+            </tr>
+            <tr
+              v-for="training in pendingTrainings"
+              :key="training.trainingId"
+              class="transition hover:bg-gray-700"
+            >
+              <td class="whitespace-nowrap px-4 py-3">
+                {{ training.trainingName }}
+              </td>
+              <td class="whitespace-nowrap px-4 py-3">
+                {{ training.trainerName }}
+              </td>
+              <td class="whitespace-nowrap px-4 py-3 text-center">
+                {{ training.totalStudents }}명
+              </td>
+              <td class="whitespace-nowrap px-4 py-3 text-center">
+                {{ training.requestDate }}
+              </td>
+              <td class="space-x-2 px-4 py-3 text-center">
+                <button
+                  @click="approveTraining(training.trainingId)"
+                  class="rounded bg-green-600 px-3 py-1 text-xs text-white hover:bg-green-700"
+                >
+                  승인
+                </button>
+                <button
+                  @click="rejectTraining(training.trainingId)"
+                  class="rounded bg-red-600 px-3 py-1 text-xs text-white hover:bg-red-700"
+                >
+                  거절
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</template>
