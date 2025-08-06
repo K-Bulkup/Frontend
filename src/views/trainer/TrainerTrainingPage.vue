@@ -77,7 +77,7 @@ const filteredTrainings = computed(() => {
 
 // 트레이닝 상세 페이지로 이동하는 함수
 const goToDetail = (trainingId) => {
-  router.push(`/training/${trainingId}`);
+  router.push(`/trainer/mypage/training/${trainingId}`);
 };
 
 // PT 페이지로 이동하는 함수

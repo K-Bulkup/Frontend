@@ -11,10 +11,15 @@ defineProps({
 const formattedPrice = (price) => {
   return price.toLocaleString();
 };
+
+const emit = defineEmits(["click"]);
 </script>
 
 <template>
-  <div class="flex flex-col rounded-xl bg-gray-100 p-3 text-black shadow-sm">
+  <div
+    @click="emit('click')"
+    class="flex flex-col rounded-xl bg-gray-100 p-3 text-black shadow-sm"
+  >
     <!-- 썸네일 이미지 표시 -->
     <div class="aspect-square w-full overflow-hidden rounded-lg bg-gray-200">
       <img
