@@ -15,8 +15,12 @@ const courseContainer = ref(null);
 
 const scrollLeft = () => {
   if (courseContainer.value) {
+    const cardWidth = courseContainer.value.children[0]?.offsetWidth || 0;
+    const gap = 16; // gap-4 = 1rem = 16px
+    const scrollDistance = (cardWidth + gap) * 3;
+
     courseContainer.value.scrollBy({
-      left: -200,
+      left: -scrollDistance,
       behavior: "smooth",
     });
   }
@@ -24,8 +28,12 @@ const scrollLeft = () => {
 
 const scrollRight = () => {
   if (courseContainer.value) {
+    const cardWidth = courseContainer.value.children[0]?.offsetWidth || 0;
+    const gap = 16;
+    const scrollDistance = (cardWidth + gap) * 3;
+
     courseContainer.value.scrollBy({
-      left: 200,
+      left: scrollDistance,
       behavior: "smooth",
     });
   }
@@ -37,22 +45,8 @@ const selectCourse = (course) => {
 </script>
 
 <template>
-  <div class="relative">
+  <div>
     <h2 class="mb-4 text-lg font-semibold text-white">수강 목록</h2>
-
-    <button
-      class="absolute left-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white backdrop-blur-sm transition-all hover:bg-black/70"
-      @click="scrollLeft"
-    >
-      <ChevronLeft :size="20" />
-    </button>
-
-    <button
-      class="absolute right-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white backdrop-blur-sm transition-all hover:bg-black/70"
-      @click="scrollRight"
-    >
-      <ChevronRight :size="20" />
-    </button>
 
     <div
       ref="courseContainer"
@@ -89,6 +83,16 @@ const selectCourse = (course) => {
           </div>
         </div>
       </div>
+    </div>
+
+    <div class="mt-4 flex justify-center gap-4">
+      <button class="p-2 backdrop-blur-sm transition-all" @click="scrollLeft">
+        <ChevronLeft :size="20" />
+      </button>
+
+      <button class="p-2 backdrop-blur-sm transition-all" @click="scrollRight">
+        <ChevronRight :size="20" />
+      </button>
     </div>
   </div>
 </template>

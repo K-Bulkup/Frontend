@@ -27,7 +27,7 @@ defineEmits(["update:modelValue"]);
 
 <template>
   <div>
-    <label class="mb-2 block text-subtext text-gray-50">{{ label }}</label>
+    <label class="mb-2 block text-subtext text-black">{{ label }}</label>
     <textarea
       v-if="isTextarea"
       :value="modelValue"
