@@ -98,7 +98,7 @@ const handleNextStep = async () => {
     const trainingDto = {
       title: trainerName.value,
       description: trainingDescription.value,
-      price: 0, // 실제 가격 데이터로 채우기 (수정 필요)
+      price: 1000, // 실제 가격 데이터로 채우기 (수정 필요)
       category: selectedCategory.value,
       level: selectedDifficulty.value,
       routines: [
