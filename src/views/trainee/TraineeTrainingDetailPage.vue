@@ -102,6 +102,27 @@ const goToRoutineDetail = (quest) => {
   );
 };
 
+const goToPtPage = async () => {
+  try {
+    const traineeId = authStore.user?.userId; // ← 로그인 유저 ID
+    const trainingId = Number(route.params.trainingId); // ← 현재 트레이닝 ID
+
+    const response = await apiClient.post("/api/common/counselings", {
+      traineeId,
+      trainingId,
+    });
+
+    const roomId = response.data.data.roomId;
+    router.push(`/trainee/mypage/pt-chat/${roomId}`);
+  } catch (error) {
+    console.error("채팅방 생성 또는 조회 실패:", error);
+  }
+};
+
+const goToReviewPage = () => {
+  router.push(`/trainee/mypage/review/${route.params.trainingId}`);
+};
+
 const goBack = () => router.back();
 const toggleSection = (key) => {
   if (key === "strength" && !isStretchingComplete.value) return;
@@ -228,6 +249,7 @@ const showReviewButton = computed(
           v-if="showReviewButton"
           text="리뷰 작성하기"
           variant="secondary"
+          @click="goToReviewPage"
         >
           <template #icon>
             <img
@@ -242,6 +264,7 @@ const showReviewButton = computed(
           v-if="showChatButton"
           text="트레이너와 1:1 채팅하기"
           variant="primary"
+          @click="goToPtPage"
         >
           <template #icon>
             <img

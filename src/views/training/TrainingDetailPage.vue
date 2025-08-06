@@ -51,8 +51,21 @@ const formattedPrice = computed(() =>
   trainingData.value ? trainingData.value.price.toLocaleString() : "",
 );
 
-// ✅ 뒤로가기
-const goBack = () => router.back();
+// --- 메서드 (Methods) ---
+
+// 뒤로가기
+const goBack = () => {
+  router.back();
+};
+
+// 트레이너 상세 페이지로 이동
+const goToTrainerPage = () => {
+  if (trainingData.value.trainerId) {
+    router.push(`/trainee/trainer/${trainingData.value.trainerId}`);
+  } else {
+    console.error("이동할 트레이너의 ID가 없습니다.");
+  }
+};
 
 // ✅ 결제 버튼 → 모달 열기
 const proceedToPayment = () => {
@@ -123,7 +136,7 @@ const handlePayment = async (pg) => {
       </div>
 
       <div
-        class="mt-6 flex h-48 w-full items-center justify-center rounded-lg bg-gray-800"
+        class="mt-6 flex h-48 w-full items-center justify-center overflow-hidden rounded-lg bg-gray-800"
       >
         <img
           :src="trainingData.thumbnailUrl"
@@ -133,21 +146,29 @@ const handlePayment = async (pg) => {
       </div>
 
       <div class="mt-6 flex items-center justify-between">
-        <div class="flex items-center gap-3">
+        <div
+          @click="goToTrainerPage"
+          class="flex cursor-pointer items-center gap-3 rounded-lg p-2 transition-colors hover:bg-gray-800"
+        >
           <div
-            class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-700"
+            class="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-700"
           >
             <img
-              :src="
-                trainingData.trainerProfileUrl ||
-                '@/assets/images/Image_Square.svg'
-              "
+              v-if="trainingData.trainerProfileUrl"
+              :src="trainingData.trainerProfileUrl"
               alt="프로필"
-              class="h-6 w-6 rounded-full"
+              class="h-full w-full object-cover"
+            />
+            <img
+              v-else
+              src="@/assets/images/Image_Square.svg"
+              alt="기본 프로필"
+              class="h-6 w-6"
             />
           </div>
           <p class="font-bold text-white">{{ trainingData.trainerName }}</p>
         </div>
+
         <div class="flex items-center gap-2 text-caption text-gray-200">
           <div class="flex items-center gap-1">
             <img src="@/assets/images/star.svg" alt="별점" class="h-3 w-3" />
@@ -172,7 +193,7 @@ const handlePayment = async (pg) => {
       <div class="mt-12 pb-8">
         <button
           @click="proceedToPayment"
-          class="h-14 w-full rounded-xl bg-white text-lg font-bold text-black"
+          class="h-14 w-full rounded-xl bg-white text-lg font-bold text-black active:bg-gray-200"
         >
           결제하기
         </button>
