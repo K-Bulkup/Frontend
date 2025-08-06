@@ -33,7 +33,9 @@ const loadTrainingData = async () => {
 
     trainingData.value = {
       startDate: new Date().toISOString().split("T")[0],
-      trainerName: raw.trainerName || "트레이너명 준비중",
+      trainerName:
+        raw.trainerName || raw.trainerNickname || "트레이너명 준비중",
+      trainerProfileUrl: raw.trainerProfileUrl || null,
       trainerRating: raw.averageRating,
       studentCount: raw.traineeCount,
       totalWeeks: 4,
@@ -159,6 +161,38 @@ const showReviewButton = computed(
           트레이닝 기한: {{ trainingDeadline }}까지
         </p>
       </div>
+
+      <div class="mb-6 mt-6 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div
+            class="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-700"
+          >
+            <img
+              :src="
+                trainingData.trainerProfileUrl ||
+                '@/assets/images/Image_Square.svg'
+              "
+              alt="프로필"
+              class="h-6 w-6 rounded-full"
+            />
+          </div>
+          <p class="font text-white">{{ trainingData.trainerName }}</p>
+        </div>
+        <div class="flex items-center gap-2 text-caption text-gray-200">
+          <div class="flex items-center gap-1">
+            <img src="@/assets/images/star.svg" alt="별점" class="h-3 w-3" />
+            <span>{{ trainingData.trainerRating }}</span>
+          </div>
+          <span>|</span>
+          <span>{{ trainingData.studentCount }}명 수강</span>
+          <span>|</span>
+          <span>{{ trainingData.totalWeeks }}주</span>
+        </div>
+      </div>
+
+      <h2 class="font mb-4 text-body text-white">
+        {{ trainingData.title }}
+      </h2>
 
       <!-- ✅ 루틴 섹션 -->
       <div class="space-y-2.5">

@@ -87,7 +87,7 @@ const goToDetail = (training) => {
 
 // ✅ PT 페이지 이동
 const goToPtPage = () => {
-  router.push("/trainee/mypage/pt");
+  router.push("/common/pt-history");
 };
 
 // ✅ 최초 전체 목록 로딩

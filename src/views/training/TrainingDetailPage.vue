@@ -1,18 +1,26 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 import { getTraineeTrainingPreDetail } from "@/composables/api/trainee/training/traineeTrainingPreDetailAPI";
+import { traineeTrainingPayment } from "@/composables/api/trainee/training/traineeTrainingPaymentAPI";
+import PaymentModal from "@/components/common/PaymentModal.vue";
 
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseBadge from "@/components/common/BaseBadge.vue";
 
 const router = useRouter();
 const route = useRoute();
+const authStore = useAuthStore();
 
-// 상태 (API 데이터 저장)
 const trainingData = ref(null);
+const modalVisible = ref(false);
 
-// API 호출 및 데이터 매핑
+// ✅ 로그인 유저 ID 동적 적용
+const userId = authStore.userId || 0;
+const merchantUid = "order_" + new Date().getTime();
+
+// ✅ 트레이닝 상세 API 호출
 const loadTrainingDetail = async () => {
   try {
     const res = await getTraineeTrainingPreDetail(route.params.trainingId);
@@ -21,12 +29,12 @@ const loadTrainingDetail = async () => {
     trainingData.value = {
       level: raw.level,
       category: raw.category,
-      reward: `${raw.totalRoutineScore}P`, // API에서 제공되는 totalRoutineScore 사용
+      reward: `${raw.totalRoutineScore}P`,
       trainerName: raw.trainerNickname || "트레이너명 준비중",
       trainerProfileUrl: raw.trainerProfileUrl,
       trainerRating: raw.averageRating,
       studentCount: raw.traineeCount,
-      totalWeeks: 4, // API에 totalWeeks가 없으므로 기본 4주
+      totalWeeks: 4,
       title: raw.title,
       description: raw.description,
       price: raw.price,
@@ -36,23 +44,68 @@ const loadTrainingDetail = async () => {
     console.error("🚨 결제 전 트레이닝 상세 조회 실패:", err);
   }
 };
-
 onMounted(loadTrainingDetail);
 
-// 가격 포맷
-const formattedPrice = computed(() => {
-  return trainingData.value ? trainingData.value.price.toLocaleString() : "";
-});
+// ✅ 가격 포맷
+const formattedPrice = computed(() =>
+  trainingData.value ? trainingData.value.price.toLocaleString() : "",
+);
 
-// 뒤로가기
-const goBack = () => {
-  router.back();
+// ✅ 뒤로가기
+const goBack = () => router.back();
+
+// ✅ 결제 버튼 → 모달 열기
+const proceedToPayment = () => {
+  modalVisible.value = true;
 };
 
-// 결제 버튼 (추후 결제 API 연결)
-const proceedToPayment = () => {
-  console.log("결제하기 버튼 클릭 (결제 API 연결 예정)");
-  // router.push('/payment');
+// ✅ PortOne SDK 결제 호출
+const handlePayment = async (pg) => {
+  modalVisible.value = false;
+
+  const IMP = window.IMP;
+  if (!IMP) {
+    alert(
+      "❌ PortOne SDK가 로드되지 않았습니다. 새로고침 후 다시 시도해주세요.",
+    );
+    return;
+  }
+
+  IMP.init("imp13063177"); // ✅ 실제 가맹점 코드 입력 필요
+
+  IMP.request_pay(
+    {
+      pg, // ✅ 선택된 PG사
+      pay_method: "card",
+      merchant_uid: merchantUid,
+      name: trainingData.value?.title || "트레이닝 결제",
+      amount: trainingData.value?.price || 0,
+      buyer_name: authStore.user?.name || "사용자",
+      buyer_email: authStore.user?.email || "user@example.com",
+    },
+    async (rsp) => {
+      if (rsp.success) {
+        try {
+          const payload = {
+            impUid: rsp.imp_uid, // ✅ 실제 imp_uid
+            merchantUid,
+            trainingId: route.params.trainingId,
+            userId,
+          };
+
+          const res = await traineeTrainingPayment(payload);
+          console.log("✅ 결제 응답:", res.data);
+          alert("✅ 결제 완료: " + res.data.data.message);
+          router.replace(`/trainee/mypage/training/${route.params.trainingId}`);
+        } catch (err) {
+          console.error("❌ 백엔드 결제 API 오류:", err);
+          alert("❌ 결제 처리 중 오류 발생");
+        }
+      } else {
+        alert("❌ 결제가 취소되었습니다.");
+      }
+    },
+  );
 };
 </script>
 
@@ -61,7 +114,6 @@ const proceedToPayment = () => {
     <main v-if="trainingData" class="flex-1 px-6">
       <BaseHeader title="트레이닝 상세" @back="goBack" />
 
-      <!-- 난이도 / 카테고리 / 리워드 -->
       <div class="mt-4 flex items-center gap-2">
         <BaseBadge>{{ trainingData.level }}</BaseBadge>
         <BaseBadge>{{ trainingData.category }}</BaseBadge>
@@ -70,7 +122,6 @@ const proceedToPayment = () => {
         </BaseBadge>
       </div>
 
-      <!-- 썸네일 -->
       <div
         class="mt-6 flex h-48 w-full items-center justify-center rounded-lg bg-gray-800"
       >
@@ -81,7 +132,6 @@ const proceedToPayment = () => {
         />
       </div>
 
-      <!-- 트레이너 정보 -->
       <div class="mt-6 flex items-center justify-between">
         <div class="flex items-center gap-3">
           <div
@@ -110,7 +160,6 @@ const proceedToPayment = () => {
         </div>
       </div>
 
-      <!-- 제목 + 설명 -->
       <h2 class="mt-5 text-heading font-bold text-white">
         {{ trainingData.title }}
       </h2>
@@ -118,10 +167,8 @@ const proceedToPayment = () => {
 
       <div class="mb-4 mt-8 h-px bg-gray-700"></div>
 
-      <!-- 가격 -->
       <div class="text-title font-bold text-white">{{ formattedPrice }}원</div>
 
-      <!-- 결제 버튼 -->
       <div class="mt-12 pb-8">
         <button
           @click="proceedToPayment"
@@ -131,5 +178,11 @@ const proceedToPayment = () => {
         </button>
       </div>
     </main>
+
+    <PaymentModal
+      :visible="modalVisible"
+      @close="modalVisible = false"
+      @select="handlePayment"
+    />
   </div>
 </template>
