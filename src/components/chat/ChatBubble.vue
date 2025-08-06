@@ -4,36 +4,24 @@ import { UserIcon } from "lucide-vue-next";
 import profileImg from "@/assets/images/mascot/profile.png";
 
 const props = defineProps({
-  message: {
-    type: String,
-    required: true,
-  },
-  timestamp: {
-    type: String,
-    required: true,
-  },
-  isOwn: {
-    type: Boolean,
-    default: false,
-  },
-  profileUrl: {
-    type: String,
-    required: false,
-  },
-  isAiChat: {
-    type: Boolean,
-    default: false,
-  },
+  message: String,
+  timestamp: String,
+  isOwn: Boolean,
+  profileUrl: String,
+  isAiChat: Boolean,
 });
 
-const messageClasses = computed(() => {
-  return props.isOwn
+const messageClasses = computed(() =>
+  props.isOwn
     ? "bg-primary text-black rounded-br-sm"
-    : "bg-white text-black rounded-bl-sm";
-});
+    : "bg-white text-black rounded-bl-sm",
+);
 
 const profileImage = computed(() => {
-  return props.isAiChat ? profileImg : props.profileUrl || UserIcon;
+  if (props.isAiChat && !props.isOwn) {
+    return profileImg;
+  }
+  return props.profileUrl || null;
 });
 </script>
 
@@ -46,7 +34,7 @@ const profileImage = computed(() => {
       v-if="!isOwn"
       class="mr-2 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-white"
     >
-      <template v-if="profileUrl">
+      <template v-if="profileImage">
         <img
           :src="profileImage"
           alt="프로필 이미지"
@@ -74,7 +62,7 @@ const profileImage = computed(() => {
       v-if="isOwn"
       class="ml-2 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-white"
     >
-      <template v-if="profileUrl">
+      <template v-if="profileImage">
         <img
           :src="profileImage"
           alt="내 프로필 이미지"

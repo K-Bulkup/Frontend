@@ -2,23 +2,27 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { getTraineeTrainingDetail } from "@/composables/api/trainee/training/traineeTrainingDetailAPI";
+import { createCounseling } from "@/composables/api/useCounselingApi";
 
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseBadge from "@/components/common/BaseBadge.vue";
 import TraineeRoutineSection from "@/components/trainee/training/TraineeRoutineSection.vue";
 import ActionButton from "@/components/trainee/training/ActionButton.vue";
 import DoughnutChart from "@/components/trainee/training/DoughnutChart.vue";
+import { useAuthStore } from "@/stores/auth";
 
 const router = useRouter();
 const route = useRoute();
+const authStore = useAuthStore();
 
 const trainingData = ref(null);
+const trainingId = ref(route.params.trainingId);
+const userId = authStore.userId;
 
 // ✅ API 호출 및 데이터 매핑
 const loadTrainingData = async () => {
   try {
-    const trainingId = route.params.trainingId;
-    const res = await getTraineeTrainingDetail(trainingId);
+    const res = await getTraineeTrainingDetail(trainingId.value);
     const raw = res.data.data;
 
     const convertRoutines = (routineList) =>
@@ -115,8 +119,8 @@ const goToRoutineDetail = (quest) => {
 // ✅ 1:1 PT 채팅
 const goToPtPage = async () => {
   try {
-    const traineeId = authStore.user?.userId;
-    const trainingId = Number(route.params.trainingId);
+    const traineeId = authStore.user?.userId; // ← 로그인 유저 ID
+    const trainingId = Number(route.params.trainingId); // ← 현재 트레이닝 ID
     const response = await apiClient.post("/api/common/counselings", {
       traineeId,
       trainingId,
@@ -157,11 +161,10 @@ const trainingDeadline = computed(() => {
   ).padStart(2, "0")}`;
 });
 
-// ✅ 루틴이 1개일 때 버튼 노출 추가 로직
+// ✅ 단일 루틴 케이스 포함 (너의 개선된 로직 유지)
 const showChatButton = computed(() => {
   const routines = trainingData.value?.routines;
   if (!routines) return false;
-  // ✅ 실제 존재하는 루틴만 필터링
   const allRoutines = Object.values(routines)
     .flat()
     .filter((r) => r && r.id);
@@ -184,6 +187,23 @@ const showReviewButton = computed(() => {
     areAllQuestsComplete.value || singleCompleted || isTrainingExpired.value
   );
 });
+
+// ✅ 다른 사람이 추가한 startChat 유지 (웹소켓 관련 로직)
+const startChat = async () => {
+  try {
+    const response = await createCounseling(trainingId.value, userId);
+
+    if (response.data.success && response.data.data?.roomId) {
+      alert("채팅방이 생성되었습니다.");
+      router.push(`/common/pt-chat/${response.data.data.roomId}`);
+    } else {
+      throw new Error(response.data.message || "채팅방 생성에 실패했습니다.");
+    }
+  } catch (err) {
+    console.error("🚨 채팅방 생성 실패:", err);
+    alert("채팅방 생성 중 오류가 발생했습니다. 다시 시도해주세요.");
+  }
+};
 </script>
 
 <template>
@@ -309,7 +329,7 @@ const showReviewButton = computed(() => {
           v-if="showChatButton"
           text="트레이너와 1:1 채팅하기"
           variant="primary"
-          @click="goToPtPage"
+          @click="startChat"
         >
           <template #icon>
             <img

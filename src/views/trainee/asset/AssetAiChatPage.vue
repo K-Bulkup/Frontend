@@ -186,6 +186,7 @@ const handleFetchAssetsAndSendMessage = async () => {
         <ChatBubble
           v-for="message in group"
           :key="message.id"
+          isAiChat="true,"
           :message="message.text"
           :is-own="message.isOwn"
           :timestamp="message.timestamp"

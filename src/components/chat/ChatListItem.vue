@@ -35,6 +35,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  opponentProfileUrl: {
+    type: String,
+    default: false,
+  },
 });
 
 defineEmits(["click"]);
@@ -68,7 +72,16 @@ const remainingDaysClass = computed(() => {
       <div
         class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-600"
       >
-        <UserIcon class="h-6 w-6 text-gray-300" />
+        <template v-if="opponentProfileUrl">
+          <img
+            :src="opponentProfileUrl"
+            alt="상대방 프로필"
+            class="h-12 w-12 object-cover"
+          />
+        </template>
+        <template v-else>
+          <UserIcon class="h-6 w-6 text-gray-300" />
+        </template>
       </div>
       <div
         v-if="unreadCount > 0"
