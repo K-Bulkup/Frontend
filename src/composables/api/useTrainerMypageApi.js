@@ -8,6 +8,7 @@ export const trainerMyPageApi = {
       return response.data;
     } catch (error) {
       console.error("트레이너 정보 조회 실패:", error);
+      throw error;
     }
   },
 
@@ -20,6 +21,7 @@ export const trainerMyPageApi = {
       return response.data;
     } catch (error) {
       console.error("소개 업데이트 실패:", error);
+      throw error;
     }
   },
 
@@ -38,6 +40,7 @@ export const trainerMyPageApi = {
       return response.data;
     } catch (error) {
       console.error("프로필 이미지 업로드 실패:", error);
+      throw error;
     }
   },
 
@@ -50,6 +53,7 @@ export const trainerMyPageApi = {
       return response.data;
     } catch (error) {
       console.error("자격증 정보 조회 실패:", error);
+      throw error;
     }
   },
 };
