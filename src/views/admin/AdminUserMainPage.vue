@@ -2,10 +2,10 @@
   <div class="admin-user-main-page p-4">
     <h1 class="mb-4 text-2xl font-bold">사용자 관리 메인</h1>
 
-    <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2">
+    <div class="grid grid-cols-2 gap-6">
       <!-- 사용자 목록 보기 -->
       <div
-        class="flex aspect-square flex-col justify-between rounded-xl bg-white p-5 shadow"
+        class="flex h-[200px] min-w-0 flex-col justify-between rounded-xl bg-white p-5 shadow"
       >
         <div>
           <h2 class="mb-2 text-2xl font-semibold text-black">목록 보기</h2>
@@ -21,7 +21,7 @@
 
       <!-- 새 사용자 추가 -->
       <div
-        class="flex aspect-square flex-col justify-between rounded-xl bg-white p-5 shadow"
+        class="flex h-[200px] min-w-0 flex-col justify-between rounded-xl bg-white p-5 shadow"
       >
         <div>
           <h2 class="mb-2 text-2xl font-semibold text-black">추가하기</h2>
@@ -37,7 +37,7 @@
 
       <!-- 사용자 정보 수정 -->
       <div
-        class="flex aspect-square flex-col justify-between rounded-xl bg-white p-5 shadow"
+        class="flex h-[200px] min-w-0 flex-col justify-between rounded-xl bg-white p-5 shadow"
       >
         <div>
           <h2 class="mb-2 text-2xl font-semibold text-black">수정하기</h2>
@@ -53,7 +53,7 @@
 
       <!-- 사용자 삭제 -->
       <div
-        class="flex aspect-square flex-col justify-between rounded-xl bg-white p-5 shadow"
+        class="flex h-[200px] min-w-0 flex-col justify-between rounded-xl bg-white p-5 shadow"
       >
         <div>
           <h2 class="mb-2 text-2xl font-semibold text-black">삭제하기</h2>
