@@ -14,14 +14,13 @@ const route = useRoute();
 
 const trainingData = ref(null);
 
-// ✅ API 호출 및 데이터 매핑 (Map → 배열 변환)
+// ✅ API 호출 및 데이터 매핑
 const loadTrainingData = async () => {
   try {
     const trainingId = route.params.trainingId;
     const res = await getTraineeTrainingDetail(trainingId);
     const raw = res.data.data;
 
-    // ✅ Map 데이터를 배열로 변환하면서 id/name 필드 생성
     const convertRoutines = (routineList) =>
       routineList?.map((r) => ({
         id: r.routineId,
@@ -61,9 +60,20 @@ const expandedSections = ref({
   cardio: false,
 });
 
-// ✅ 섹션 잠금 여부
+// ✅ 섹션 잠금 여부 (루틴 없을 때도 잠금 처리)
 const isSectionLocked = (key) => {
   if (!trainingData.value?.routines) return false;
+
+  const routineMap = {
+    stretching: "스트레칭",
+    strength: "근력",
+    cardio: "유산소",
+  };
+  const routineList = trainingData.value.routines[routineMap[key]];
+
+  // ✅ 루틴 없으면 자동 잠금
+  if (!routineList || routineList.length === 0) return true;
+
   if (key === "strength") {
     return !trainingData.value.routines["스트레칭"]?.every((q) => q.completed);
   }
@@ -91,7 +101,7 @@ const areAllQuestsComplete = computed(
     trainingData.value?.routines["유산소"]?.every((q) => q.completed),
 );
 
-// ✅ 루틴 상세 페이지 이동 (id 필드 사용)
+// ✅ 루틴 상세 이동 (잠금 상태면 차단)
 const goToRoutineDetail = (quest) => {
   if (!quest?.id) {
     console.error("❌ 루틴 ID가 존재하지 않음:", quest);
@@ -102,16 +112,15 @@ const goToRoutineDetail = (quest) => {
   );
 };
 
+// ✅ 1:1 PT 채팅
 const goToPtPage = async () => {
   try {
-    const traineeId = authStore.user?.userId; // ← 로그인 유저 ID
-    const trainingId = Number(route.params.trainingId); // ← 현재 트레이닝 ID
-
+    const traineeId = authStore.user?.userId;
+    const trainingId = Number(route.params.trainingId);
     const response = await apiClient.post("/api/common/counselings", {
       traineeId,
       trainingId,
     });
-
     const roomId = response.data.data.roomId;
     router.push(`/trainee/mypage/pt-chat/${roomId}`);
   } catch (error) {
@@ -124,12 +133,14 @@ const goToReviewPage = () => {
 };
 
 const goBack = () => router.back();
+
+// ✅ 섹션 토글 (잠금 상태면 차단)
 const toggleSection = (key) => {
-  if (key === "strength" && !isStretchingComplete.value) return;
-  if (key === "cardio" && !isStrengthComplete.value) return;
+  if (isSectionLocked(key)) return;
   expandedSections.value[key] = !expandedSections.value[key];
 };
 
+// ✅ 트레이닝 기간 체크
 const isTrainingExpired = computed(() => {
   if (!trainingData.value?.startDate) return false;
   const endDate = new Date(trainingData.value.startDate);
@@ -146,10 +157,33 @@ const trainingDeadline = computed(() => {
   ).padStart(2, "0")}`;
 });
 
-const showChatButton = computed(() => areAllQuestsComplete.value);
-const showReviewButton = computed(
-  () => areAllQuestsComplete.value || isTrainingExpired.value,
-);
+// ✅ 루틴이 1개일 때 버튼 노출 추가 로직
+const showChatButton = computed(() => {
+  const routines = trainingData.value?.routines;
+  if (!routines) return false;
+  // ✅ 실제 존재하는 루틴만 필터링
+  const allRoutines = Object.values(routines)
+    .flat()
+    .filter((r) => r && r.id);
+  if (allRoutines.length === 0) return false;
+  const isSingleRoutine = allRoutines.length === 1;
+  const singleCompleted = isSingleRoutine && allRoutines[0].completed;
+  return areAllQuestsComplete.value || singleCompleted;
+});
+
+const showReviewButton = computed(() => {
+  const routines = trainingData.value?.routines;
+  if (!routines) return false;
+  const allRoutines = Object.values(routines)
+    .flat()
+    .filter((r) => r && r.id);
+  if (allRoutines.length === 0) return false;
+  const isSingleRoutine = allRoutines.length === 1;
+  const singleCompleted = isSingleRoutine && allRoutines[0].completed;
+  return (
+    areAllQuestsComplete.value || singleCompleted || isTrainingExpired.value
+  );
+});
 </script>
 
 <template>
@@ -173,9 +207,9 @@ const showReviewButton = computed(
         <div class="relative h-24 w-24">
           <DoughnutChart :progress="trainingData.progress" />
           <div class="absolute inset-0 flex items-center justify-center">
-            <span class="text-title font-bold text-white">
-              {{ trainingData.progress }}%
-            </span>
+            <span class="text-title font-bold text-white"
+              >{{ trainingData.progress }}%</span
+            >
           </div>
         </div>
         <p class="mt-4 text-subtext font-bold text-gray-200">
@@ -183,6 +217,7 @@ const showReviewButton = computed(
         </p>
       </div>
 
+      <!-- ✅ 트레이너 정보 -->
       <div class="mb-6 mt-6 flex items-center justify-between">
         <div class="flex items-center gap-3">
           <div
@@ -211,9 +246,7 @@ const showReviewButton = computed(
         </div>
       </div>
 
-      <h2 class="font mb-4 text-body text-white">
-        {{ trainingData.title }}
-      </h2>
+      <h2 class="font mb-4 text-body text-white">{{ trainingData.title }}</h2>
 
       <!-- ✅ 루틴 섹션 -->
       <div class="space-y-2.5">
@@ -223,7 +256,11 @@ const showReviewButton = computed(
           :is-locked="isSectionLocked('stretching')"
           :is-expanded="expandedSections.stretching"
           @toggle="toggleSection('stretching')"
-          @routine-click="goToRoutineDetail"
+          @routine-click="
+            (quest) => {
+              if (!isSectionLocked('stretching')) goToRoutineDetail(quest);
+            }
+          "
         />
         <TraineeRoutineSection
           title="근력"
@@ -231,7 +268,11 @@ const showReviewButton = computed(
           :is-locked="isSectionLocked('strength')"
           :is-expanded="expandedSections.strength"
           @toggle="toggleSection('strength')"
-          @routine-click="goToRoutineDetail"
+          @routine-click="
+            (quest) => {
+              if (!isSectionLocked('strength')) goToRoutineDetail(quest);
+            }
+          "
         />
         <TraineeRoutineSection
           title="유산소"
@@ -239,7 +280,11 @@ const showReviewButton = computed(
           :is-locked="isSectionLocked('cardio')"
           :is-expanded="expandedSections.cardio"
           @toggle="toggleSection('cardio')"
-          @routine-click="goToRoutineDetail"
+          @routine-click="
+            (quest) => {
+              if (!isSectionLocked('cardio')) goToRoutineDetail(quest);
+            }
+          "
         />
       </div>
 
