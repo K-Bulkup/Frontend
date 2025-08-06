@@ -9,6 +9,8 @@ defineProps({
   },
 });
 
+const emit = defineEmits(["selectTraining"]);
+
 const courseContainer = ref(null);
 
 const scrollLeft = () => {
@@ -27,10 +29,6 @@ const scrollRight = () => {
       behavior: "smooth",
     });
   }
-};
-
-const selectCourse = (course) => {
-  console.log("Selected course:", course);
 };
 </script>
 
@@ -59,13 +57,13 @@ const selectCourse = (course) => {
     >
       <div
         v-for="course in courses"
-        :key="course.id"
+        :key="course.trainingId"
+        @click="$emit('selectTraining', course.trainingId)"
         class="cursor-pointer rounded-2xl bg-gray-100 p-4 transition-colors hover:bg-gray-300"
         style="
           min-width: calc((100% - 2rem) / 3);
           flex: 0 0 calc((100% - 2rem) / 3);
         "
-        @click="selectCourse(course)"
       >
         <div class="mb-1 flex h-16 items-center justify-center rounded-lg">
           <Image :size="30" class="text-gray-700" />
