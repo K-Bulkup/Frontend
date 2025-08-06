@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import { Image, ChevronLeft, ChevronRight } from "lucide-vue-next";
 
 defineProps({
@@ -9,12 +10,13 @@ defineProps({
   },
 });
 
+const router = useRouter();
 const courseContainer = ref(null);
 
 const scrollLeft = () => {
   if (courseContainer.value) {
     courseContainer.value.scrollBy({
-      left: -160,
+      left: -200,
       behavior: "smooth",
     });
   }
@@ -23,14 +25,14 @@ const scrollLeft = () => {
 const scrollRight = () => {
   if (courseContainer.value) {
     courseContainer.value.scrollBy({
-      left: 160,
+      left: 200,
       behavior: "smooth",
     });
   }
 };
 
 const selectCourse = (course) => {
-  console.log("Selected course:", course);
+  router.push(`/trainee/mypage/training/${course.id}`);
 };
 </script>
 
