@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
 import BaseFormField from "@/components/common/BaseFormField.vue";
-import TrainerRoutineSection from "./TrainerRoutineSection.vue";
+import TrainerRoutineAddSection from "./TrainerRoutineAddSection.vue";
 
 const trainerName = defineModel("trainerName");
 const description = defineModel("description");
@@ -81,7 +81,7 @@ const handleSectionToggle = (sectionKey) => {
 
       <div>
         <div class="mb-4 text-subtext text-gray-50">루틴</div>
-        <TrainerRoutineSection
+        <TrainerRoutineAddSection
           v-for="section in ROUTINE_SECTIONS"
           :key="section.key"
           :title="section.title"
