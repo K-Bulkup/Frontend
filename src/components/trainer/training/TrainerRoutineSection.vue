@@ -12,6 +12,10 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  showAddButton: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 const emit = defineEmits(["toggle", "add-routine"]);
@@ -34,6 +38,7 @@ const emit = defineEmits(["toggle", "add-routine"]);
       </div>
 
       <button
+        v-if="showAddButton"
         @click.stop="emit('add-routine')"
         class="flex h-6 w-6 items-center justify-center rounded-full bg-primary"
       >
@@ -47,8 +52,8 @@ const emit = defineEmits(["toggle", "add-routine"]);
         class="flex flex-col gap-2.5 rounded-xl bg-gray-100 p-4"
       >
         <div
-          v-for="routine in routines"
-          :key="routine.id"
+          v-for="(routine, index) in routines"
+          :key="index"
           class="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4"
         >
           <span class="flex-1 text-body text-black">{{ routine.title }}</span>
@@ -58,7 +63,7 @@ const emit = defineEmits(["toggle", "add-routine"]);
         v-else
         class="rounded-xl bg-gray-800 p-4 text-center text-subtext text-gray-700"
       >
-        루틴을 추가해주세요
+        루틴이 없습니다
       </div>
     </div>
   </div>
