@@ -249,7 +249,7 @@ const startChat = async () => {
                 '@/assets/images/Image_Square.svg'
               "
               alt="프로필"
-              class="h-6 w-6 rounded-full"
+              class="h-full w-full object-cover"
             />
           </div>
           <p class="font text-white">{{ trainingData.trainerName }}</p>
