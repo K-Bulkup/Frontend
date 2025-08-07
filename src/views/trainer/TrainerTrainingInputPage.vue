@@ -74,7 +74,6 @@ const handleOpenRoutineModal = (categoryKey) => {
   isModalVisible.value = true;
 };
 
-// 루틴 저장 시 score 필드 제거
 const onRoutineSaved = (newRoutine) => {
   if (currentRoutineCategory.value) {
     routines.value[currentRoutineCategory.value].push({
@@ -84,14 +83,12 @@ const onRoutineSaved = (newRoutine) => {
       routineType: newRoutine.routineType,
       quizType: newRoutine.quizType,
       orderNumber: routines.value[currentRoutineCategory.value].length + 1,
-      // score: newRoutine.score, // 제거
       videoUrl: newRoutine.videoUrl,
     });
   }
   isModalVisible.value = false;
 };
 
-// API 전송 시 price 필드 제거
 const handleNextStep = async () => {
   if (isNextButtonDisabled.value) return;
 
