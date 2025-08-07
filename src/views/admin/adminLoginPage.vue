@@ -16,7 +16,7 @@ const form = ref({
   password: "",
 });
 
-const result = ref(null);
+const step = ref(1); // 1: 로그인 페이지, 2: 성공, 3: 실패
 
 const isEmailValid = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -24,11 +24,9 @@ const isEmailValid = (email) => {
 
 const handleLogin = async () => {
   if (!form.value.email || !form.value.password) {
-    alert("이메일과 비밀번호를 입력해주세요.");
     return;
   }
   if (!isEmailValid(form.value.email)) {
-    alert("올바른 이메일 형식을 입력해주세요.");
     return;
   }
 
@@ -40,28 +38,27 @@ const handleLogin = async () => {
       loginType: "LOCAL",
     });
 
-    const { accessToken } = response.data; // 'data' 중첩을 제거합니다.
+    const { accessToken } = response.data;
 
     if (accessToken) {
       authStore.setToken(accessToken);
       authStore.setRole("ADMIN");
 
-      result.value = "success";
-      router.push("/admin/dashboard"); // 대시보드로 이동
+      step.value = 2;
+      router.push("/admin/dashboard");
     } else {
-      result.value = "fail";
+      step.value = 3;
     }
   } catch (error) {
     console.error("관리자 로그인 중 오류 발생:", error);
-    alert("아이디 또는 비밀번호가 일치하지 않습니다.");
-    result.value = "fail";
+    step.value = 3;
   }
 };
 </script>
 
 <template>
   <div
-    v-if="result === 'success'"
+    v-if="step === 2"
     class="flex min-h-screen flex-col justify-between px-1 py-20"
   >
     <ConnectSuccessModal />
@@ -73,19 +70,10 @@ const handleLogin = async () => {
   </div>
 
   <div
-    v-else-if="result === 'fail'"
+    v-else-if="step === 3"
     class="flex min-h-screen flex-col justify-between px-1 py-20"
   >
-    <ConnectFailureModal />
-    <div class="mt-10 flex w-full justify-center">
-      <BaseButton
-        @click="
-          result = null;
-          router.push('admin/login');
-        "
-        >다시 시도</BaseButton
-      >
-    </div>
+    <ConnectFailureModal @retry="step = 1" />
   </div>
 
   <div v-else class="flex min-h-screen flex-col justify-center px-4 py-12">
@@ -102,7 +90,6 @@ const handleLogin = async () => {
           placeholder="아이디"
           type="text"
           :is-invalid="form.email !== '' && !isEmailValid(form.email)"
-          error-message="올바른 이메일 형식(예: user@example.com)을 입력해주세요"
           autocomplete="username"
         />
         <BaseInput
