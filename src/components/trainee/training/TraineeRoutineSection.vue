@@ -10,9 +10,12 @@ const props = defineProps({
 
 const emit = defineEmits(["toggle", "routine-click"]);
 
-// 진행 중 루틴(첫 번째 미완료 루틴) 인덱스
+// ✅ 루틴이 없는 경우도 잠금 처리 (UI에서 바로 적용)
+const noRoutines = computed(() => !props.quests || props.quests.length === 0);
+
+// ✅ 진행 중 루틴(첫 번째 미완료 루틴) 인덱스
 const nextIncompleteIndex = computed(() =>
-  props.quests.findIndex((q) => !q.completed),
+  props.quests?.findIndex((q) => !q.completed),
 );
 </script>
 
@@ -20,24 +23,27 @@ const nextIncompleteIndex = computed(() =>
   <div>
     <!-- 섹션 헤더 -->
     <div
-      @click="emit('toggle')"
-      class="flex items-center justify-between rounded-xl p-4"
+      @click="!isLocked && !noRoutines ? emit('toggle') : null"
+      class="flex items-center justify-between rounded-xl p-4 transition-colors"
       :class="{
-        'cursor-pointer bg-gray-100': !isLocked,
-        'bg-gray-800 text-gray-700': isLocked,
+        'cursor-pointer bg-gray-100 hover:bg-gray-200':
+          !isLocked && !noRoutines,
+        'pointer-events-none bg-gray-800 text-gray-600': isLocked || noRoutines,
       }"
     >
       <span
         class="text-body"
-        :class="isLocked ? 'text-gray-700' : 'text-black'"
+        :class="isLocked || noRoutines ? 'text-gray-600' : 'text-black'"
       >
         {{ title }}
       </span>
+
+      <!-- ✅ 아이콘: 잠금 / 화살표 -->
       <img
-        v-if="isLocked"
+        v-if="isLocked || noRoutines"
         src="@/assets/images/trainee/training/lock.svg"
         alt="잠금"
-        class="h-5 w-5"
+        class="h-5 w-5 opacity-70"
       />
       <img
         v-else
@@ -48,8 +54,8 @@ const nextIncompleteIndex = computed(() =>
       />
     </div>
 
-    <!-- 루틴 목록 -->
-    <div v-if="isExpanded && !isLocked" class="mt-2.5">
+    <!-- ✅ 루틴 목록 (루틴 없거나 잠금이면 표시 안함) -->
+    <div v-if="isExpanded && !isLocked && !noRoutines" class="mt-2.5">
       <div class="flex flex-col gap-2.5 rounded-xl bg-gray-100 p-4">
         <div
           v-for="(quest, index) in quests"
@@ -80,10 +86,10 @@ const nextIncompleteIndex = computed(() =>
             <span>완료</span>
           </div>
 
-          <!-- 리워드 표시 (+P) -->
-          <span v-else class="text-caption text-gray-700"
-            >+{{ quest.rewardPoint }}P</span
-          >
+          <!-- 리워드 표시 -->
+          <span v-else class="text-caption text-gray-700">
+            +{{ quest.rewardPoint }}P
+          </span>
         </div>
       </div>
     </div>
