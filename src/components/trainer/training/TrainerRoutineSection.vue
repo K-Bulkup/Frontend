@@ -52,8 +52,8 @@ const emit = defineEmits(["toggle", "add-routine"]);
         class="flex flex-col gap-2.5 rounded-xl bg-gray-100 p-4"
       >
         <div
-          v-for="(routine, index) in routines"
-          :key="index"
+          v-for="routine in routines"
+          :key="routine.id"
           class="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4"
         >
           <span class="flex-1 text-body text-black">{{ routine.title }}</span>
