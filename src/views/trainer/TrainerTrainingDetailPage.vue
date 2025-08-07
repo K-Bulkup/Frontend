@@ -69,9 +69,9 @@ onMounted(async () => {
     console.log("API로부터 받은 리뷰 데이터:", response);
 
     if (response.success) {
-      reviewList.value = response.data.map((review) => ({
-        id: review.reviewId,
-        author: review.reviewerName,
+      reviewList.value = response.data.map((review, index) => ({
+        id: index,
+        author: review.username,
         rating: review.rating,
         content: review.content,
       }));
