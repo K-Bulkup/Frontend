@@ -77,6 +77,7 @@ const handleOpenRoutineModal = (categoryKey) => {
 const onRoutineSaved = (newRoutine) => {
   if (currentRoutineCategory.value) {
     routines.value[currentRoutineCategory.value].push({
+      id: Date.now() + Math.random(),
       title: newRoutine.title,
       description: newRoutine.description,
       routineType: newRoutine.routineType,
