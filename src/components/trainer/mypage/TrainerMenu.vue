@@ -2,7 +2,7 @@
 import { useRouter } from "vue-router";
 
 import certificationIcon from "@/assets/images/trainer/mypage/certificationIcon.svg";
-import memberIcon from "@/assets/images/trainer/mypage/memberIcon.svg";
+import coinIcon from "@/assets/images/trainer/mypage/coins.svg";
 import qnaIcon from "@/assets/images/trainer/mypage/qnaIcon.svg";
 
 const router = useRouter();
@@ -15,15 +15,15 @@ const goToVerify = () => {
 <template>
   <!-- 하단 메뉴 섹션 -->
   <div class="mx-5 mt-6 grid grid-cols-3 gap-4">
-    <!-- 수강생관리 -->
+    <!-- 트레이너 수입 관리 -->
     <div class="flex flex-col items-center">
       <div
         class="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-gray-700 text-white"
       >
-        <img :src="memberIcon" alt="인증" class="h-6 w-6" />
+        <img :src="coinIcon" alt="인증" class="h-6 w-6" />
         <i class="fas fa-users text-xl"></i>
       </div>
-      <span class="text-sm text-white">수강생관리</span>
+      <span class="text-sm text-white">수입 관리</span>
     </div>
 
     <!-- 인증 -->
