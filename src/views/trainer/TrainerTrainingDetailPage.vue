@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseBadge from "@/components/common/BaseBadge.vue";
-import TrainerReviewList from "@/components/trainer/training/TrainerReviewList.vue";
+import ReviewList from "@/components/common/ReviewList.vue";
 import TrainerRoutineSection from "@/components/trainer/training/TrainerRoutineSection.vue";
 
 import { getTrainerReviews } from "@/composables/api/useReviewApi";
@@ -168,7 +168,7 @@ onMounted(async () => {
 
     <div class="my-6 h-px bg-gray-800"></div>
 
-    <TrainerReviewList :reviews="reviewList" />
+    <ReviewList :reviews="reviewList" />
 
     <div class="my-6 h-px bg-gray-800"></div>
 
