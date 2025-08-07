@@ -45,6 +45,7 @@ const handleSectionToggle = (sectionKey) => {
     <main>
       <div class="mb-6">
         <BaseFormField
+          variant="dark"
           label="트레이닝명"
           placeholder="트레이닝명을 입력해주세요"
           v-model="trainerName"
@@ -52,6 +53,7 @@ const handleSectionToggle = (sectionKey) => {
       </div>
       <div class="mb-8">
         <BaseFormField
+          variant="dark"
           label="트레이닝 소개"
           placeholder="트레이닝에 대한 소개를 입력해주세요"
           v-model="description"

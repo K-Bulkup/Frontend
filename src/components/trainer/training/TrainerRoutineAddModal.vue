@@ -94,16 +94,19 @@ const handleSave = () => {
 
         <div class="flex flex-col space-y-6">
           <BaseFormField
+            variant="dark"
             label="루틴 제목"
             placeholder="루틴 제목을 입력해주세요"
             v-model="routineTitle"
           />
           <BaseFormField
+            variant="dark"
             label="영상 URL"
             placeholder="영상 URL을 입력해주세요"
             v-model="routineUrl"
           />
           <BaseFormField
+            variant="dark"
             label="루틴 내용"
             placeholder="루틴 내용을 입력해주세요"
             v-model="routineDescription"
@@ -130,6 +133,7 @@ const handleSave = () => {
           </div>
 
           <BaseFormField
+            variant="dark"
             v-if="selectedQuizType !== 'PHOTO'"
             label="루틴 답안"
             placeholder="루틴 답안을 입력해주세요"
