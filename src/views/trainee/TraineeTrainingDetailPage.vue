@@ -1,7 +1,10 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { getTraineeTrainingDetail } from "@/composables/api/trainee/training/traineeTrainingDetailAPI";
+import {
+  getTraineeTrainingDetail,
+  getTraineeTrainingReviewBoolean,
+} from "@/composables/api/trainee/training/traineeTrainingDetailAPI";
 import { createCounseling } from "@/composables/api/useCounselingApi";
 
 import BaseHeader from "@/components/common/BaseHeader.vue";
@@ -16,6 +19,7 @@ const route = useRoute();
 const authStore = useAuthStore();
 
 const trainingData = ref(null);
+const hasWrittenReview = ref(false);
 const trainingId = ref(route.params.trainingId);
 const userId = authStore.userId;
 
@@ -56,7 +60,19 @@ const loadTrainingData = async () => {
   }
 };
 
-onMounted(loadTrainingData);
+const checkReviewExist = async () => {
+  try {
+    const res = await getTraineeTrainingReviewBoolean(trainingId.value);
+    hasWrittenReview.value = res.data.data;
+  } catch (err) {
+    console.error("리뷰 존재 여부 확인 실패:", err);
+  }
+};
+
+onMounted(() => {
+  loadTrainingData();
+  checkReviewExist();
+});
 
 const expandedSections = ref({
   stretching: true,
@@ -312,9 +328,10 @@ const startChat = async () => {
       <div class="mt-10 flex flex-col gap-3">
         <ActionButton
           v-if="showReviewButton"
-          text="리뷰 작성하기"
-          variant="secondary"
-          @click="goToReviewPage"
+          :text="hasWrittenReview ? '리뷰 작성 완료' : '리뷰 작성하기'"
+          :variant="hasWrittenReview ? 'disabled' : 'secondary'"
+          :disabled="hasWrittenReview"
+          @click="!hasWrittenReview && goToReviewPage()"
         >
           <template #icon>
             <img
