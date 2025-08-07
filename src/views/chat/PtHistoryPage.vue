@@ -93,6 +93,7 @@ const fetchChatList = async () => {
         unreadCount: item.unreadCount,
         isExpired,
         roomId: item.roomId,
+        opponentProfileUrl: item.opponentProfileUrl,
       };
     });
   } catch (error) {
@@ -157,6 +158,7 @@ onBeforeUnmount(async () => {
         :timestamp="chat.timestamp"
         :unread-count="chat.unreadCount"
         :is-expired="chat.isExpired"
+        :opponent-profile-url="chat.opponentProfileUrl"
         @click="handleChatClick"
       />
 
