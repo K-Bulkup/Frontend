@@ -67,7 +67,6 @@ const handleSave = () => {
     routineType: convertCategoryToKorean(props.routineCategoryKey), // DB에 저장할 한글 값으로 변환
     quizType: selectedQuizType.value,
     videoUrl: routineUrl.value || null,
-    score: 10,
     answer: routineAnswer.value || null,
   };
 
