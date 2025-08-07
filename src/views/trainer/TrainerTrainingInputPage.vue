@@ -74,7 +74,7 @@ const handleOpenRoutineModal = (categoryKey) => {
   isModalVisible.value = true;
 };
 
-// ✨ [수정 1] 루틴 저장 시 score 필드 제거
+// 루틴 저장 시 score 필드 제거
 const onRoutineSaved = (newRoutine) => {
   if (currentRoutineCategory.value) {
     routines.value[currentRoutineCategory.value].push({
@@ -91,7 +91,7 @@ const onRoutineSaved = (newRoutine) => {
   isModalVisible.value = false;
 };
 
-// ✨ [수정 2] API 전송 시 price 필드 제거
+// API 전송 시 price 필드 제거
 const handleNextStep = async () => {
   if (isNextButtonDisabled.value) return;
 
@@ -101,7 +101,6 @@ const handleNextStep = async () => {
     const trainingDto = {
       title: trainerName.value,
       description: trainingDescription.value,
-      // price: 1000, // 제거
       category: selectedCategory.value,
       level: selectedDifficulty.value,
       routines: [
