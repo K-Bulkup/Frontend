@@ -6,6 +6,8 @@ import BaseBadge from "@/components/common/BaseBadge.vue";
 import TrainerReviewList from "@/components/trainer/training/TrainerReviewList.vue";
 import TrainerRoutineSection from "@/components/trainer/training/TrainerRoutineSection.vue";
 
+import { getTrainerReviews } from "@/composables/api/useReviewApi";
+
 const route = useRoute();
 const router = useRouter();
 
@@ -61,20 +63,25 @@ onMounted(async () => {
     totalWeeks: 8,
   };
 
-  reviewList.value = [
-    {
-      id: 1,
-      author: "홍길동",
-      rating: 5,
-      content: "정말 도움되는 강의였어요! 최고!",
-    },
-    {
-      id: 2,
-      author: "김철수",
-      rating: 4,
-      content: "루틴이 명확하고 쉽게 따라할 수 있어서 좋았습니다.",
-    },
-  ];
+  try {
+    const response = await getTrainerReviews(trainingId);
+
+    console.log("API로부터 받은 리뷰 데이터:", response);
+
+    if (response.success) {
+      reviewList.value = response.data.map((review) => ({
+        id: review.reviewId,
+        author: review.reviewerName,
+        rating: review.rating,
+        content: review.content,
+      }));
+    } else {
+      console.error("리뷰 데이터를 불러오는데 실패했습니다:", response.message);
+    }
+  } catch (error) {
+    console.error("리뷰 API 호출 중 에러 발생:", error);
+    reviewList.value = [];
+  }
 
   // API에서 받아온 전체 루틴 목록 (가정)
   const allRoutinesFromApi = [

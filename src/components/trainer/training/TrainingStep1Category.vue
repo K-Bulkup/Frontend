@@ -13,7 +13,7 @@ const emit = defineEmits(["update:modelValue"]);
 const FINANCE_CATEGORIES = [
   "재무 설계",
   "현금 관리",
-  "신용과 부채관리",
+  "신용과 부채 관리",
   "위험 관리와 보험 설계",
   "투자 설계",
   "세금 설계",

@@ -84,6 +84,7 @@ const onRoutineSaved = (newRoutine) => {
       quizType: newRoutine.quizType,
       orderNumber: routines.value[currentRoutineCategory.value].length + 1,
       videoUrl: newRoutine.videoUrl,
+      routineAnswer: newRoutine.routineAnswer,
     });
   }
   isModalVisible.value = false;
