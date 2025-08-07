@@ -138,7 +138,7 @@ const handleUpdateUser = async () => {
     };
     await updateUser(editingUser.value.userId, payload);
     alert("사용자 정보가 성공적으로 업데이트되었습니다.");
-    router.push("/admin/member-management/list"); // 업데이트 후 목록 페이지로 이동
+    router.push("/admin/user-management/list"); // 업데이트 후 목록 페이지로 이동
   } catch (err) {
     alert("사용자 정보 업데이트에 실패했습니다.");
     console.error(err);

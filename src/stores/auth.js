@@ -15,6 +15,11 @@ export const useAuthStore = defineStore("auth", {
 
     setToken(token) {
       this.token = token;
+      if (token) {
+        localStorage.setItem("accessToken", token);
+      } else {
+        localStorage.removeItem("accessToken");
+      }
     },
 
     setUserId(userId) {
@@ -40,6 +45,7 @@ export const useAuthStore = defineStore("auth", {
       this.role = null;
       this.token = null;
       this.userId = null;
+      localStorage.removeItem("accessToken");
     },
   },
 });
