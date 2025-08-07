@@ -9,7 +9,7 @@ import TrainingStep1Category from "@/components/trainer/training/TrainingStep1Ca
 import TrainingStep2Curriculum from "@/components/trainer/training/TrainingStep2Curriculum.vue";
 import TrainingStep3Thumbnail from "@/components/trainer/training/TrainingStep3Thumbnail.vue";
 import TrainingStep4Complete from "@/components/trainer/training/TrainingStep4Complete.vue";
-import RoutineAddModal from "@/components/trainer/training/TrainerRoutineAddModal.vue";
+import TrainerRoutineAddModal from "@/components/trainer/training/TrainerRoutineAddModal.vue";
 
 import { createTraining } from "@/composables/api/trainer/training/trainerTrainingAPI";
 
@@ -35,7 +35,7 @@ const thumbnail = ref(null);
 
 // 모달 상태
 const isModalVisible = ref(false);
-const currentRoutineCategory = ref(null); // 'currentCategory'에서 이름 변경 (명확성)
+const currentRoutineCategory = ref(null);
 
 // 계산된 속성 (Computed)
 const isNextButtonDisabled = computed(() => {
@@ -83,7 +83,6 @@ const onRoutineSaved = (newRoutine) => {
       routineType: newRoutine.routineType,
       quizType: newRoutine.quizType,
       orderNumber: routines.value[currentRoutineCategory.value].length + 1,
-      score: newRoutine.score,
       videoUrl: newRoutine.videoUrl,
     });
   }
@@ -99,7 +98,6 @@ const handleNextStep = async () => {
     const trainingDto = {
       title: trainerName.value,
       description: trainingDescription.value,
-      price: 1000, // 실제 가격 데이터로 채우기 (수정 필요)
       category: selectedCategory.value,
       level: selectedDifficulty.value,
       routines: [
@@ -116,12 +114,10 @@ const handleNextStep = async () => {
       new Blob([JSON.stringify(trainingDto)], { type: "application/json" }),
     );
 
-    // 썸네일 파일 추가
     if (thumbnail.value) {
       formData.append("thumbnail", thumbnail.value);
     }
 
-    // API 호출
     try {
       console.log("API로 FormData 전송:", ...formData.entries());
       await createTraining(formData);
@@ -167,7 +163,7 @@ const handleCompletion = () => {
       </BaseButton>
     </div>
 
-    <RoutineAddModal
+    <TrainerRoutineAddModal
       v-if="isModalVisible"
       @close="isModalVisible = false"
       @save="onRoutineSaved"

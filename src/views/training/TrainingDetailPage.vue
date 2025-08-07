@@ -16,16 +16,14 @@ const authStore = useAuthStore();
 const trainingData = ref(null);
 const modalVisible = ref(false);
 
-// ✅ 로그인 유저 ID 동적 적용
+// 로그인 유저 ID 동적 적용
 const userId = authStore.userId || 0;
 const merchantUid = "order_" + new Date().getTime();
 
-// ✅ 트레이닝 상세 API 호출
+// 트레이닝 상세 API 호출
 const loadTrainingDetail = async () => {
   try {
     const res = await getTraineeTrainingPreDetail(route.params.trainingId);
-    // ✅ 여기에 콘솔 추가
-    console.log("🚀 API 응답 데이터:", res.data);
     const raw = res.data.data;
 
     trainingData.value = {
@@ -33,6 +31,7 @@ const loadTrainingDetail = async () => {
       category: raw.category,
       reward: `${raw.totalRoutineScore}P`,
       trainerName: raw.trainerNickname || "트레이너명 준비중",
+      trainerId: raw.trainerID,
       trainerProfileUrl: raw.trainerProfileUrl,
       trainerId: raw.trainerId,
       trainerRating: raw.averageRating,
@@ -49,7 +48,7 @@ const loadTrainingDetail = async () => {
 };
 onMounted(loadTrainingDetail);
 
-// ✅ 가격 포맷
+// 가격 포맷
 const formattedPrice = computed(() =>
   trainingData.value ? trainingData.value.price.toLocaleString() : "",
 );
@@ -70,12 +69,12 @@ const goToTrainerPage = () => {
   }
 };
 
-// ✅ 결제 버튼 → 모달 열기
+// 결제 버튼 → 모달 열기
 const proceedToPayment = () => {
   modalVisible.value = true;
 };
 
-// ✅ PortOne SDK 결제 호출
+// PortOne SDK 결제 호출
 const handlePayment = async (pg) => {
   modalVisible.value = false;
 
@@ -87,11 +86,11 @@ const handlePayment = async (pg) => {
     return;
   }
 
-  IMP.init("imp13063177"); // ✅ 실제 가맹점 코드 입력 필요
+  IMP.init("imp13063177"); // 실제 가맹점 코드 입력 필요
 
   IMP.request_pay(
     {
-      pg, // ✅ 선택된 PG사
+      pg, // 선택된 PG사
       pay_method: "card",
       merchant_uid: merchantUid,
       name: trainingData.value?.title || "트레이닝 결제",
@@ -103,7 +102,7 @@ const handlePayment = async (pg) => {
       if (rsp.success) {
         try {
           const payload = {
-            impUid: rsp.imp_uid, // ✅ 실제 imp_uid
+            impUid: rsp.imp_uid, // 실제 imp_uid
             merchantUid,
             trainingId: route.params.trainingId,
             userId,
