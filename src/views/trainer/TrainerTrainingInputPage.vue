@@ -85,6 +85,7 @@ const onRoutineSaved = (newRoutine) => {
       orderNumber: routines.value[currentRoutineCategory.value].length + 1,
       score: newRoutine.score,
       videoUrl: newRoutine.videoUrl,
+      routineAnswer: newRoutine.routineAnswer,
     });
   }
   isModalVisible.value = false;
@@ -99,7 +100,6 @@ const handleNextStep = async () => {
     const trainingDto = {
       title: trainerName.value,
       description: trainingDescription.value,
-      price: 1000, // 실제 가격 데이터로 채우기 (수정 필요)
       category: selectedCategory.value,
       level: selectedDifficulty.value,
       routines: [
