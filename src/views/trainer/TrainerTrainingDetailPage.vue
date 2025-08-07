@@ -6,7 +6,7 @@ import BaseBadge from "@/components/common/BaseBadge.vue";
 import ReviewList from "@/components/common/ReviewList.vue";
 import TrainerRoutineSection from "@/components/trainer/training/TrainerRoutineSection.vue";
 
-import { getTrainerReviews } from "@/composables/api/useReviewApi";
+import { getReviews } from "@/composables/api/useReviewApi";
 
 const route = useRoute();
 const router = useRouter();
@@ -64,7 +64,7 @@ onMounted(async () => {
   };
 
   try {
-    const response = await getTrainerReviews(trainingId);
+    const response = await getReviews(trainingId);
 
     console.log("API로부터 받은 리뷰 데이터:", response);
 

@@ -4,7 +4,10 @@ import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { getTraineeTrainingPreDetail } from "@/composables/api/trainee/training/traineeTrainingPreDetailAPI";
 import { traineeTrainingPayment } from "@/composables/api/trainee/training/traineeTrainingPaymentAPI";
+import { getReviews } from "@/composables/api/useReviewApi";
+
 import PaymentModal from "@/components/common/PaymentModal.vue";
+import ReviewList from "@/components/common/ReviewList.vue";
 
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseBadge from "@/components/common/BaseBadge.vue";
@@ -14,6 +17,7 @@ const route = useRoute();
 const authStore = useAuthStore();
 
 const trainingData = ref(null);
+const reviewList = ref([]);
 const modalVisible = ref(false);
 
 // 로그인 유저 ID 동적 적용
@@ -22,6 +26,8 @@ const merchantUid = "order_" + new Date().getTime();
 
 // 트레이닝 상세 API 호출
 const loadTrainingDetail = async () => {
+  const trainingId = route.params.trainingId;
+
   try {
     const res = await getTraineeTrainingPreDetail(route.params.trainingId);
     const raw = res.data.data;
@@ -44,6 +50,24 @@ const loadTrainingDetail = async () => {
     };
   } catch (err) {
     console.error("🚨 결제 전 트레이닝 상세 조회 실패:", err);
+  }
+
+  // 리뷰 목록 가져오기
+  try {
+    const response = await getReviews(trainingId);
+    if (response.success) {
+      reviewList.value = response.data.map((review, index) => ({
+        id: index,
+        author: review.username,
+        rating: review.rating,
+        content: review.content,
+      }));
+    } else {
+      console.error("리뷰 데이터를 불러오는데 실패했습니다:", response.message);
+    }
+  } catch (error) {
+    console.error("리뷰 API 호출 중 에러 발생:", error);
+    reviewList.value = [];
   }
 };
 onMounted(loadTrainingDetail);
@@ -125,7 +149,9 @@ const handlePayment = async (pg) => {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col bg-realBlack pt-4">
+  <div
+    class="flex min-h-screen flex-col overflow-y-auto bg-realBlack px-6 pb-20 pt-4"
+  >
     <main v-if="trainingData" class="flex-1 px-6">
       <BaseHeader title="트레이닝 상세" @back="goBack" />
 
@@ -188,7 +214,9 @@ const handlePayment = async (pg) => {
       </h2>
       <p class="mt-2 text-body text-gray-300">{{ trainingData.description }}</p>
 
-      <div class="mb-4 mt-8 h-px bg-gray-700"></div>
+      <div class="mb-4 mt-8 h-px bg-gray-800"></div>
+      <ReviewList :reviews="reviewList" />
+      <div class="my-6 h-px bg-gray-800"></div>
 
       <div class="text-title font-bold text-white">{{ formattedPrice }}원</div>
 
