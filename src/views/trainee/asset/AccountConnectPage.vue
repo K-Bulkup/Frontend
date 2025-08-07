@@ -3,6 +3,7 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAccountConnect } from "@/composables/asset/useCreateAsset";
 import { awaitUserReady } from "@/composables/user/awaitUserReady";
+import BaseLodaing from "@/components/common/BaseLodaing.vue";
 import ConnectSuccessModal from "@/components/common/ConnectSuccessModal.vue";
 import ConnectFailureModal from "@/components/common/ConnectFailureModal.vue";
 import BaseHeader from "@/components/common/BaseHeader.vue";
@@ -12,7 +13,7 @@ const { connectAccount } = useAccountConnect();
 
 const selectedBanks = ref([]); // 다중 선택용
 const selectedBank = ref(null); // 마지막 클릭한 은행 1개
-
+const isLoading = ref(false);
 const showSuccessModal = ref(false);
 const showFailureModal = ref(false);
 
@@ -81,14 +82,22 @@ const cancel = () => {
 };
 
 const onClickConnect = async () => {
-  const result = await connectAccount(selectedBank.value);
+  isLoading.value = true;
 
-  if (!result.success) {
-    showFailureModal.value = true;
-    return;
+  try {
+    const result = await connectAccount(selectedBank.value);
+
+    if (!result.success) {
+      showFailureModal.value = true;
+      return;
+    }
+
+    showSuccessModal.value = true;
+  } catch (error) {
+    console.error("계좌 연결 중 에러:", error);
+  } finally {
+    isLoading.value = false;
   }
-
-  showSuccessModal.value = true;
 };
 
 const handleRetry = () => {
@@ -191,6 +200,7 @@ const handleSuccessClose = () => {
     </div>
 
     <!-- 모달 -->
+    <BaseLodaing v-if="isLoading" mainText="자산 연동 중입니다." />
     <ConnectSuccessModal
       v-if="showSuccessModal"
       title="자산 연동에 성공했습니다"

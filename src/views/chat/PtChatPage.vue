@@ -248,9 +248,13 @@ onMounted(async () => {
 
     const detailRes = await getCounselingDetail(roomId);
     const detail = detailRes.data?.data;
+
     status.value = detail.status;
-    userName.value = detail.userName;
-    userProfileUrl.value = detail.userProfileUrl;
+    userName.value = detail.opponentUserName;
+    userProfileUrl.value = {
+      me: detail.myProfileUrl,
+      opponent: detail.opponentProfileUrl,
+    };
 
     const [year, month, day, hour, minute, second] = detail.expiresAt;
     expiresAt.value = new Date(year, month - 1, day, hour, minute, second);
@@ -289,7 +293,7 @@ onBeforeUnmount(() => {
   <div class="flex h-screen flex-col">
     <ChatHeader
       :user-name="userName"
-      :user-profile-url="userProfileUrl"
+      :user-profile-url="userProfileUrl?.opponent"
       :expires-at="expiresAt"
       :room-id="roomId"
       buttonText="자산 다운로드"
@@ -306,6 +310,9 @@ onBeforeUnmount(() => {
           :message="message.text"
           :is-own="message.isOwn"
           :timestamp="message.timestamp"
+          :profile-url="
+            message.isOwn ? userProfileUrl.me : userProfileUrl.opponent
+          "
         />
       </div>
     </div>
