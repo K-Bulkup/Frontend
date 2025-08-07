@@ -39,7 +39,13 @@ onUnmounted(() => {
     <div class="mx-auto mb-10 grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2">
       <div class="h-[200px] rounded-xl bg-white p-4 shadow">
         <h2 class="mb-2 text-xl font-semibold text-black">회원 수 통계</h2>
-        <div class="text-gray-400">그래프 또는 차트 컴포넌트 자리</div>
+        <div class="text-gray-400">통계 버튼을 눌러 확인하세요.</div>
+        <BaseButton
+          @click="router.push('/admin/user-statistics')"
+          class="rounded0 mt-2 bg-black py-2 text-sm font-bold text-white"
+        >
+          회원 통계
+        </BaseButton>
       </div>
       <div class="h-[200px] rounded-xl bg-white p-4 text-black shadow">
         <h2 class="mb-2 text-xl font-semibold">매출 통계</h2>
@@ -72,10 +78,10 @@ onUnmounted(() => {
           <p class="mb-4 text-gray-400">회원 등록 및 삭제</p>
         </div>
         <BaseButton
-          @click="router.push('/admin/member-management')"
+          @click="router.push('/admin/user-management')"
           class="rounded0 bg-black py-2 text-sm font-bold text-white"
         >
-          이동하기
+          회원 관리
         </BaseButton>
       </div>
 

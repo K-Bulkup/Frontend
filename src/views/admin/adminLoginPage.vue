@@ -34,15 +34,23 @@ const handleLogin = async () => {
     const response = await apiClient.post("/api/admin/auth/login", {
       email: form.value.email,
       password: form.value.password,
-      role: "ADMIN",
+      role: "",
       loginType: "LOCAL",
     });
 
-    const { accessToken } = response.data;
+    const { accessToken, roles } = response.data;
 
     if (accessToken) {
       authStore.setToken(accessToken);
-      authStore.setRole("ADMIN");
+      // 백엔드에서 받은 실제 역할을 사용합니다.
+      if (roles && roles.includes("ADMIN")) {
+        authStore.setRole("ADMIN");
+      } else {
+        // ADMIN 역할이 아니면 로그인 실패 처리 또는 다른 페이지로 리다이렉트
+        step.value = 3;
+        console.error("관리자 권한이 없습니다.");
+        return;
+      }
 
       step.value = 2;
       router.push("/admin/dashboard");
