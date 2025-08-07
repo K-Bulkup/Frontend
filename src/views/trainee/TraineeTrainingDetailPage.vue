@@ -2,26 +2,29 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { getTraineeTrainingDetail } from "@/composables/api/trainee/training/traineeTrainingDetailAPI";
+import { createCounseling } from "@/composables/api/useCounselingApi";
 
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseBadge from "@/components/common/BaseBadge.vue";
 import TraineeRoutineSection from "@/components/trainee/training/TraineeRoutineSection.vue";
 import ActionButton from "@/components/trainee/training/ActionButton.vue";
 import DoughnutChart from "@/components/trainee/training/DoughnutChart.vue";
+import { useAuthStore } from "@/stores/auth";
 
 const router = useRouter();
 const route = useRoute();
+const authStore = useAuthStore();
 
 const trainingData = ref(null);
+const trainingId = ref(route.params.trainingId);
+const userId = authStore.userId;
 
-// ✅ API 호출 및 데이터 매핑 (Map → 배열 변환)
+// ✅ API 호출 및 데이터 매핑
 const loadTrainingData = async () => {
   try {
-    const trainingId = route.params.trainingId;
-    const res = await getTraineeTrainingDetail(trainingId);
+    const res = await getTraineeTrainingDetail(trainingId.value);
     const raw = res.data.data;
 
-    // ✅ Map 데이터를 배열로 변환하면서 id/name 필드 생성
     const convertRoutines = (routineList) =>
       routineList?.map((r) => ({
         id: r.routineId,
@@ -61,9 +64,20 @@ const expandedSections = ref({
   cardio: false,
 });
 
-// ✅ 섹션 잠금 여부
+// ✅ 섹션 잠금 여부 (루틴 없을 때도 잠금 처리)
 const isSectionLocked = (key) => {
   if (!trainingData.value?.routines) return false;
+
+  const routineMap = {
+    stretching: "스트레칭",
+    strength: "근력",
+    cardio: "유산소",
+  };
+  const routineList = trainingData.value.routines[routineMap[key]];
+
+  // ✅ 루틴 없으면 자동 잠금
+  if (!routineList || routineList.length === 0) return true;
+
   if (key === "strength") {
     return !trainingData.value.routines["스트레칭"]?.every((q) => q.completed);
   }
@@ -91,7 +105,7 @@ const areAllQuestsComplete = computed(
     trainingData.value?.routines["유산소"]?.every((q) => q.completed),
 );
 
-// ✅ 루틴 상세 페이지 이동 (id 필드 사용)
+// ✅ 루틴 상세 이동 (잠금 상태면 차단)
 const goToRoutineDetail = (quest) => {
   if (!quest?.id) {
     console.error("❌ 루틴 ID가 존재하지 않음:", quest);
@@ -102,13 +116,35 @@ const goToRoutineDetail = (quest) => {
   );
 };
 
+// ✅ 1:1 PT 채팅
+const goToPtPage = async () => {
+  try {
+    const traineeId = authStore.user?.userId; // ← 로그인 유저 ID
+    const trainingId = Number(route.params.trainingId); // ← 현재 트레이닝 ID
+    const response = await apiClient.post("/api/common/counselings", {
+      traineeId,
+      trainingId,
+    });
+    const roomId = response.data.data.roomId;
+    router.push(`/trainee/mypage/pt-chat/${roomId}`);
+  } catch (error) {
+    console.error("채팅방 생성 또는 조회 실패:", error);
+  }
+};
+
+const goToReviewPage = () => {
+  router.push(`/trainee/mypage/review/${route.params.trainingId}`);
+};
+
 const goBack = () => router.back();
+
+// ✅ 섹션 토글 (잠금 상태면 차단)
 const toggleSection = (key) => {
-  if (key === "strength" && !isStretchingComplete.value) return;
-  if (key === "cardio" && !isStrengthComplete.value) return;
+  if (isSectionLocked(key)) return;
   expandedSections.value[key] = !expandedSections.value[key];
 };
 
+// ✅ 트레이닝 기간 체크
 const isTrainingExpired = computed(() => {
   if (!trainingData.value?.startDate) return false;
   const endDate = new Date(trainingData.value.startDate);
@@ -125,10 +161,49 @@ const trainingDeadline = computed(() => {
   ).padStart(2, "0")}`;
 });
 
-const showChatButton = computed(() => areAllQuestsComplete.value);
-const showReviewButton = computed(
-  () => areAllQuestsComplete.value || isTrainingExpired.value,
-);
+// ✅ 단일 루틴 케이스 포함 (너의 개선된 로직 유지)
+const showChatButton = computed(() => {
+  const routines = trainingData.value?.routines;
+  if (!routines) return false;
+  const allRoutines = Object.values(routines)
+    .flat()
+    .filter((r) => r && r.id);
+  if (allRoutines.length === 0) return false;
+  const isSingleRoutine = allRoutines.length === 1;
+  const singleCompleted = isSingleRoutine && allRoutines[0].completed;
+  return areAllQuestsComplete.value || singleCompleted;
+});
+
+const showReviewButton = computed(() => {
+  const routines = trainingData.value?.routines;
+  if (!routines) return false;
+  const allRoutines = Object.values(routines)
+    .flat()
+    .filter((r) => r && r.id);
+  if (allRoutines.length === 0) return false;
+  const isSingleRoutine = allRoutines.length === 1;
+  const singleCompleted = isSingleRoutine && allRoutines[0].completed;
+  return (
+    areAllQuestsComplete.value || singleCompleted || isTrainingExpired.value
+  );
+});
+
+// ✅ 다른 사람이 추가한 startChat 유지 (웹소켓 관련 로직)
+const startChat = async () => {
+  try {
+    const response = await createCounseling(trainingId.value, userId);
+
+    if (response.data.success && response.data.data?.roomId) {
+      alert("채팅방이 생성되었습니다.");
+      router.push(`/common/pt-chat/${response.data.data.roomId}`);
+    } else {
+      throw new Error(response.data.message || "채팅방 생성에 실패했습니다.");
+    }
+  } catch (err) {
+    console.error("🚨 채팅방 생성 실패:", err);
+    alert("채팅방 생성 중 오류가 발생했습니다. 다시 시도해주세요.");
+  }
+};
 </script>
 
 <template>
@@ -152,9 +227,9 @@ const showReviewButton = computed(
         <div class="relative h-24 w-24">
           <DoughnutChart :progress="trainingData.progress" />
           <div class="absolute inset-0 flex items-center justify-center">
-            <span class="text-title font-bold text-white">
-              {{ trainingData.progress }}%
-            </span>
+            <span class="text-title font-bold text-white"
+              >{{ trainingData.progress }}%</span
+            >
           </div>
         </div>
         <p class="mt-4 text-subtext font-bold text-gray-200">
@@ -162,6 +237,7 @@ const showReviewButton = computed(
         </p>
       </div>
 
+      <!-- ✅ 트레이너 정보 -->
       <div class="mb-6 mt-6 flex items-center justify-between">
         <div class="flex items-center gap-3">
           <div
@@ -173,7 +249,7 @@ const showReviewButton = computed(
                 '@/assets/images/Image_Square.svg'
               "
               alt="프로필"
-              class="h-6 w-6 rounded-full"
+              class="h-full w-full object-cover"
             />
           </div>
           <p class="font text-white">{{ trainingData.trainerName }}</p>
@@ -190,9 +266,7 @@ const showReviewButton = computed(
         </div>
       </div>
 
-      <h2 class="font mb-4 text-body text-white">
-        {{ trainingData.title }}
-      </h2>
+      <h2 class="font mb-4 text-body text-white">{{ trainingData.title }}</h2>
 
       <!-- ✅ 루틴 섹션 -->
       <div class="space-y-2.5">
@@ -202,7 +276,11 @@ const showReviewButton = computed(
           :is-locked="isSectionLocked('stretching')"
           :is-expanded="expandedSections.stretching"
           @toggle="toggleSection('stretching')"
-          @routine-click="goToRoutineDetail"
+          @routine-click="
+            (quest) => {
+              if (!isSectionLocked('stretching')) goToRoutineDetail(quest);
+            }
+          "
         />
         <TraineeRoutineSection
           title="근력"
@@ -210,7 +288,11 @@ const showReviewButton = computed(
           :is-locked="isSectionLocked('strength')"
           :is-expanded="expandedSections.strength"
           @toggle="toggleSection('strength')"
-          @routine-click="goToRoutineDetail"
+          @routine-click="
+            (quest) => {
+              if (!isSectionLocked('strength')) goToRoutineDetail(quest);
+            }
+          "
         />
         <TraineeRoutineSection
           title="유산소"
@@ -218,7 +300,11 @@ const showReviewButton = computed(
           :is-locked="isSectionLocked('cardio')"
           :is-expanded="expandedSections.cardio"
           @toggle="toggleSection('cardio')"
-          @routine-click="goToRoutineDetail"
+          @routine-click="
+            (quest) => {
+              if (!isSectionLocked('cardio')) goToRoutineDetail(quest);
+            }
+          "
         />
       </div>
 
@@ -228,6 +314,7 @@ const showReviewButton = computed(
           v-if="showReviewButton"
           text="리뷰 작성하기"
           variant="secondary"
+          @click="goToReviewPage"
         >
           <template #icon>
             <img
@@ -242,6 +329,7 @@ const showReviewButton = computed(
           v-if="showChatButton"
           text="트레이너와 1:1 채팅하기"
           variant="primary"
+          @click="startChat"
         >
           <template #icon>
             <img

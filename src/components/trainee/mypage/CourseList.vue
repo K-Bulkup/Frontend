@@ -63,16 +63,32 @@ const selectCourse = (course) => {
         "
         @click="selectCourse(course)"
       >
-        <div class="mb-1 flex h-16 items-center justify-center rounded-lg">
-          <Image :size="30" class="text-gray-700" />
+        <!-- ✅ 썸네일 이미지 or 기본 아이콘 -->
+        <div
+          class="mb-1 flex h-16 w-full items-center justify-center overflow-hidden rounded-lg bg-white"
+        >
+          <img
+            v-if="course.thumbnailUrl"
+            :src="course.thumbnailUrl"
+            alt="썸네일"
+            class="h-full w-auto object-contain"
+          />
+          <Image v-else :size="30" class="text-gray-700" />
         </div>
 
-        <p class="mb-1 text-xs font-bold leading-tight text-black">
+        <!-- 트레이닝 제목 -->
+        <p
+          class="mb-1 line-clamp-2 min-h-[32px] text-xs font-bold leading-tight text-black"
+        >
           {{ course.title }}
         </p>
 
+        <!-- 진행률 바 -->
         <div class="space-y-1">
-          <p class="text-right text-xs font-medium text-black">
+          <p
+            class="text-left text-xs font-medium text-black"
+            style="min-width: 32px; display: inline-block"
+          >
             {{ course.progress }}%
           </p>
           <div class="h-1.5 w-full rounded-full bg-white">
@@ -85,6 +101,7 @@ const selectCourse = (course) => {
       </div>
     </div>
 
+    <!-- 좌우 이동 버튼 -->
     <div class="mt-4 flex justify-center gap-4">
       <button class="p-2 backdrop-blur-sm transition-all" @click="scrollLeft">
         <ChevronLeft :size="20" />

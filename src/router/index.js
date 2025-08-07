@@ -3,12 +3,12 @@ import SplashPage from "@/views/auth/SplashPage.vue";
 import SignupPage from "@/views/auth/SignupPage.vue";
 import LoginPage from "@/views/auth/LoginPage.vue";
 import adminLoginPage from "@/views/admin/adminLoginPage.vue";
-import TrainingApprovalPage from '@/views/admin/TrainingApprovalPage.vue';
-import AdminDashboard from '@/views/admin/AdminDashboard.vue';
-import AdminUserMainPage from '@/views/admin/AdminUserMainPage.vue';
-import AdminUserListPage from '@/views/admin/AdminUserListPage.vue';
-import AdminUserCreatePage from '@/views/admin/AdminUserCreatePage.vue';
-import AdminUserEditPage from '@/views/admin/AdminUserEditPage.vue';
+import TrainingApprovalPage from "@/views/admin/TrainingApprovalPage.vue";
+import AdminDashboard from "@/views/admin/AdminDashboard.vue";
+import AdminUserMainPage from "@/views/admin/AdminUserMainPage.vue";
+import AdminUserListPage from "@/views/admin/AdminUserListPage.vue";
+import AdminUserCreatePage from "@/views/admin/AdminUserCreatePage.vue";
+import AdminUserEditPage from "@/views/admin/AdminUserEditPage.vue";
 //training
 import TrainingListPage from "@/views/training/TrainingListPage.vue";
 import TrainingDetailPage from "@/views/training/TrainingDetailPage.vue";
@@ -27,6 +27,7 @@ import AssetAiChatPage from "@/views/trainee/asset/AssetAiChatPage.vue";
 import TrainerMyPage from "@/views/trainer/TrainerMyPage.vue";
 import TrainerVerifyPage from "@/views/trainer/TrainerVerifyPage.vue";
 import TrainerTrainingPage from "@/views/trainer/TrainerTrainingPage.vue";
+import TrainerTrainingDetailPage from "@/views/trainer/TrainerTrainingDetailPage.vue";
 import TrainingInputPage from "@/views/trainer/TrainerTrainingInputPage.vue";
 
 //chat
@@ -37,17 +38,49 @@ import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 
 const routes = [
+  {
+    path: "/",
+    redirect: "/login",
+  },
   //auth
   { path: "/splash", component: SplashPage, meta: { hideNavbar: true } },
   { path: "/login", component: LoginPage, meta: { hideNavbar: true } },
   { path: "/signup", component: SignupPage, meta: { hideNavbar: true } },
-  { path: "/admin/login", component: adminLoginPage, meta: { hideNavbar: true } },
-  { path: '/admin/training-approval', component: TrainingApprovalPage, meta: { hideNavbar: true, requiresAuth: true, roles: ['ADMIN'] } },
-  { path: '/admin/dashboard', component: AdminDashboard, meta: { hideNavbar: true, requiresAuth: true, roles: ['ADMIN'] } },
-  { path: '/admin/member-management', component: AdminUserMainPage, meta: { hideNavbar: true, requiresAuth: true, roles: ['ADMIN'] } },
-  { path: '/admin/member-management/list', component: AdminUserListPage, meta: { hideNavbar: true, requiresAuth: true, roles: ['ADMIN'] } },
-  { path: '/admin/member-management/create', component: AdminUserCreatePage, meta: { hideNavbar: true, requiresAuth: true, roles: ['ADMIN'] } },
-  { path: '/admin/member-management/edit/:userId', component: AdminUserEditPage, meta: { hideNavbar: true, requiresAuth: true, roles: ['ADMIN'] } },
+  {
+    path: "/admin/login",
+    component: adminLoginPage,
+    meta: { hideNavbar: true },
+  },
+  {
+    path: "/admin/training-approval",
+    component: TrainingApprovalPage,
+    meta: { hideNavbar: true, requiresAuth: true, roles: ["ADMIN"] },
+  },
+  {
+    path: "/admin/dashboard",
+    component: AdminDashboard,
+    meta: { hideNavbar: true, requiresAuth: true, roles: ["ADMIN"] },
+  },
+  {
+    path: "/admin/member-management",
+    component: AdminUserMainPage,
+    meta: { hideNavbar: true, requiresAuth: true, roles: ["ADMIN"] },
+  },
+  {
+    path: "/admin/member-management/list",
+    component: AdminUserListPage,
+    meta: { hideNavbar: true, requiresAuth: true, roles: ["ADMIN"] },
+  },
+  {
+    path: "/admin/member-management/create",
+    component: AdminUserCreatePage,
+    meta: { hideNavbar: true, requiresAuth: true, roles: ["ADMIN"] },
+  },
+  {
+    path: "/admin/member-management/edit/:userId",
+    component: AdminUserEditPage,
+    meta: { hideNavbar: true, requiresAuth: true, roles: ["ADMIN"] },
+  },
 
   //training
   { path: "/training", component: TrainingListPage },
@@ -109,6 +142,11 @@ const routes = [
   {
     path: "/trainer/mypage/training",
     component: TrainerTrainingPage,
+    meta: { requiresAuth: true, roles: ["TRAINER"] },
+  },
+  {
+    path: "/trainer/mypage/training/:trainingId",
+    component: TrainerTrainingDetailPage,
     meta: { requiresAuth: true, roles: ["TRAINER"] },
   },
   {

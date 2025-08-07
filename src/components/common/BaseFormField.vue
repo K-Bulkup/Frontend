@@ -1,5 +1,7 @@
 <script setup>
-defineProps({
+import { computed } from "vue";
+
+const props = defineProps({
   modelValue: {
     type: String,
     required: true,
@@ -20,14 +22,25 @@ defineProps({
     type: Number,
     default: 4,
   },
+  variant: {
+    type: String,
+    default: "light", // 'light' | 'dark'
+  },
 });
 
 defineEmits(["update:modelValue"]);
+
+const labelClasses = computed(() => [
+  "mb-2",
+  "block",
+  "text-subtext",
+  props.variant === "dark" ? "text-gray-50" : "text-black",
+]);
 </script>
 
 <template>
   <div>
-    <label class="mb-2 block text-subtext text-black">{{ label }}</label>
+    <label :class="labelClasses">{{ label }}</label>
     <textarea
       v-if="isTextarea"
       :value="modelValue"

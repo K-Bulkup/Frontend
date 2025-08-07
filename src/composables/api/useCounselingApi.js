@@ -18,3 +18,10 @@ export async function readMessages(roomId, userId) {
     userId,
   });
 }
+
+export async function createCounseling(trainingId, traineeId) {
+  return await apiClient.post(`/api/common/counselings`, {
+    trainingId,
+    traineeId,
+  });
+}

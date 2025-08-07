@@ -12,6 +12,10 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  showAddButton: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 const emit = defineEmits(["toggle", "add-routine"]);
@@ -34,6 +38,7 @@ const emit = defineEmits(["toggle", "add-routine"]);
       </div>
 
       <button
+        v-if="showAddButton"
         @click.stop="emit('add-routine')"
         class="flex h-6 w-6 items-center justify-center rounded-full bg-primary"
       >
@@ -58,7 +63,7 @@ const emit = defineEmits(["toggle", "add-routine"]);
         v-else
         class="rounded-xl bg-gray-800 p-4 text-center text-subtext text-gray-700"
       >
-        루틴을 추가해주세요
+        루틴이 없습니다
       </div>
     </div>
   </div>
