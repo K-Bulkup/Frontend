@@ -99,7 +99,7 @@ const handleCreateUser = async () => {
     };
     await createUser(payload);
     alert("사용자가 성공적으로 생성되었습니다.");
-    router.push("/admin/member-management/list"); // 생성 후 목록 페이지로 이동
+    router.push("/admin/user-management/list"); // 생성 후 목록 페이지로 이동
   } catch (err) {
     alert("사용자 생성에 실패했습니다.");
     console.error(err);

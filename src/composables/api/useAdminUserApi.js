@@ -50,11 +50,26 @@ export const useAdminUserApi = () => {
     }
   };
 
+  const getUserSignupsStatistics = async (period, role = null) => {
+    try {
+      let url = `/api/admin/statistics/signups?period=${period}`;
+      if (role) {
+        url += `&role=${role}`;
+      }
+      const response = await axios.get(url);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching user signups statistics for period ${period} and role ${role}:`, error);
+      throw error;
+    }
+  };
+
   return {
     createUser,
     getUserById,
     getAllUsers,
     updateUser,
     deleteUser,
+    getUserSignupsStatistics,
   };
 };
