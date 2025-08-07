@@ -24,6 +24,8 @@ const merchantUid = "order_" + new Date().getTime();
 const loadTrainingDetail = async () => {
   try {
     const res = await getTraineeTrainingPreDetail(route.params.trainingId);
+    // ✅ 여기에 콘솔 추가
+    console.log("🚀 API 응답 데이터:", res.data);
     const raw = res.data.data;
 
     trainingData.value = {
@@ -32,6 +34,7 @@ const loadTrainingDetail = async () => {
       reward: `${raw.totalRoutineScore}P`,
       trainerName: raw.trainerNickname || "트레이너명 준비중",
       trainerProfileUrl: raw.trainerProfileUrl,
+      trainerId: raw.trainerId,
       trainerRating: raw.averageRating,
       studentCount: raw.traineeCount,
       totalWeeks: 4,

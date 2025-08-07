@@ -36,7 +36,7 @@ const loadRoutineDetail = async () => {
       level: raw.level,
       category: raw.category,
       reward: raw.routineScore,
-      videoUrl: raw.videoUrl || null,
+      videoUrl: raw.routineVideoUrl || null,
       completed: false,
     };
   } catch (err) {
