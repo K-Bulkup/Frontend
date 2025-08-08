@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import { useEnrollmentStore } from "@/stores/enrollment";
 import {
   getTraineeTrainingDetail,
   getTraineeTrainingReviewBoolean,
@@ -22,12 +23,18 @@ const trainingData = ref(null);
 const hasWrittenReview = ref(false);
 const trainingId = ref(route.params.trainingId);
 const userId = authStore.userId;
+const enrollmentStore = useEnrollmentStore();
 
 // API 호출 및 데이터 매핑
 const loadTrainingData = async () => {
   try {
     const res = await getTraineeTrainingDetail(trainingId.value);
     const raw = res.data.data;
+    if (raw.enrollmentId) {
+      enrollmentStore.enrollmentId = raw.enrollmentId;
+    } else {
+      console.warn("❗ enrollmentId가 응답에 포함되지 않았습니다.");
+    }
 
     const convertRoutines = (routineList) =>
       routineList?.map((r) => ({
@@ -230,6 +237,10 @@ const startChat = async () => {
     alert("채팅방 생성 중 오류가 발생했습니다. 다시 시도해주세요.");
   }
 };
+
+const goToQnaPage = () => {
+  router.push(`/trainee/mypage/training/${route.params.trainingId}/qna`);
+};
 </script>
 
 <template>
@@ -292,7 +303,13 @@ const startChat = async () => {
           <span>|</span>
           <span>{{ trainingData.studentCount }}명 수강</span>
           <span>|</span>
-          <span>{{ trainingData.totalWeeks }}주</span>
+          <!-- Q&A 버튼 -->
+          <button
+            @click="goToQnaPage"
+            class="rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-black shadow"
+          >
+            Q&A
+          </button>
         </div>
       </div>
 

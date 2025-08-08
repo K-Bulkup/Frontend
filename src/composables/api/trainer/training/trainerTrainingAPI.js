@@ -8,3 +8,10 @@ export const createTraining = (trainingFormData) => {
     },
   });
 };
+
+// 내 트레이닝 목록 + 검색
+export const getMyTrainings = (keyword = "") => {
+  return apiClient.get("/api/trainer/trainings", {
+    params: { keyword },
+  });
+};
