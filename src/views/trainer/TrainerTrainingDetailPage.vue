@@ -1,6 +1,9 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
+
+import profileDefault from "@/assets/images/mascot/profile.png";
+
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseBadge from "@/components/common/BaseBadge.vue";
 import ReviewList from "@/components/common/ReviewList.vue";
@@ -139,9 +142,9 @@ onMounted(async () => {
           />
           <img
             v-else
-            src="@/assets/images/Image_Square.svg"
+            :src="profileDefault"
             alt="기본 프로필"
-            class="h-6 w-6"
+            class="h-full w-full"
           />
         </div>
         <p class="font-bold text-white">{{ trainingData.trainerName }}</p>
