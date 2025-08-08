@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import profileDefault from "@/assets/images/mascot/profile.png";
@@ -10,6 +10,10 @@ import ReviewList from "@/components/common/ReviewList.vue";
 import TrainerRoutineSection from "@/components/trainer/training/TrainerRoutineSection.vue";
 
 import { getReviews } from "@/composables/api/useReviewApi";
+import {
+  getTrainerTrainingDetail,
+  getTrainerTrainingRoutines,
+} from "@/composables/api/trainer/training/trainerTrainingDetailApi";
 
 const route = useRoute();
 const router = useRouter();
@@ -17,21 +21,18 @@ const router = useRouter();
 const trainingData = ref(null);
 const reviewList = ref([]);
 
-// 각 섹션의 펼침 상태를 독립적으로 관리하기 위한 객체
 const expandedSections = ref({
-  stretching: true, // 기본으로 스트레칭 섹션은 펼쳐진 상태로 시작
+  stretching: true,
   strength: false,
   cardio: false,
 });
 
-// routineType에 따라 분류된 루틴 목록
 const categorizedRoutines = ref({
   stretching: [],
   strength: [],
   cardio: [],
 });
 
-// 각 섹션의 제목을 매핑
 const sectionTitles = {
   stretching: "스트레칭",
   strength: "근력",
@@ -42,7 +43,6 @@ const goBack = () => {
   router.back();
 };
 
-// 섹션 펼침/닫힘 상태를 토글하는 함수
 const toggleSection = (category) => {
   expandedSections.value[category] = !expandedSections.value[category];
 };
@@ -50,26 +50,52 @@ const toggleSection = (category) => {
 onMounted(async () => {
   const trainingId = route.params.trainingId;
 
-  // --- 예시용 데이터 ---
-  // 실제로는 API를 통해 trainingId로 상세 정보를 가져옵니다.
-  trainingData.value = {
-    level: "중급",
-    category: "재테크",
-    reward: "30P",
-    title: "MZ세대를 위한 금융 루틴",
-    description: "습관을 통해 자산을 성장시키는 트레이닝입니다.",
-    thumbnailUrl: "https://via.placeholder.com/300x150",
-    trainerProfileUrl: null,
-    trainerName: "김코치",
-    trainerRating: 4.8,
-    studentCount: 120,
-    totalWeeks: 8,
-  };
+  try {
+    // ✅ 트레이닝 상세
+    const { data: res } = await getTrainerTrainingDetail(trainingId);
+    const detail = res.data;
+
+    trainingData.value = {
+      level: detail.difficulty,
+      category: detail.category,
+      reward: `${detail.totalReward}P`,
+      title: detail.title,
+      description: detail.description,
+      thumbnailUrl: detail.thumbnailUrl || "",
+      trainerProfileUrl: detail.trainerProfileImage,
+      trainerName: detail.trainerName,
+      trainerRating: detail.trainerRating,
+      studentCount: detail.enrolledTraineeCount,
+      totalWeeks: 1, // 루틴 주 수는 고정값 또는 추후 계산 가능
+    };
+
+    // ✅ 루틴 목록 조회 및 분류
+    const { data: routineRes } = await getTrainerTrainingRoutines(trainingId);
+    const routines = routineRes.data;
+
+    categorizedRoutines.value = {
+      stretching: [],
+      strength: [],
+      cardio: [],
+    };
+
+    routines.forEach(({ category, routineTitle }) => {
+      const routine = { title: routineTitle, routineType: category };
+
+      if (category === "스트레칭") {
+        categorizedRoutines.value.stretching.push(routine);
+      } else if (category === "근력") {
+        categorizedRoutines.value.strength.push(routine);
+      } else if (category === "유산소") {
+        categorizedRoutines.value.cardio.push(routine);
+      }
+    });
+  } catch (e) {
+    console.error("트레이닝 상세 또는 루틴 API 오류:", e);
+  }
 
   try {
     const response = await getReviews(trainingId);
-
-    console.log("API로부터 받은 리뷰 데이터:", response);
 
     if (response.success) {
       reviewList.value = response.data.map((review, index) => ({
@@ -79,28 +105,12 @@ onMounted(async () => {
         content: review.content,
       }));
     } else {
-      console.error("리뷰 데이터를 불러오는데 실패했습니다:", response.message);
+      console.error("리뷰 실패:", response.message);
     }
   } catch (error) {
-    console.error("리뷰 API 호출 중 에러 발생:", error);
+    console.error("리뷰 API 호출 중 오류:", error);
     reviewList.value = [];
   }
-
-  // API에서 받아온 전체 루틴 목록 (가정)
-  const allRoutinesFromApi = [
-    { id: 1, title: "오전 5분 명상", routineType: "stretching" },
-    { id: 2, title: "경제 뉴스 1개 읽기", routineType: "stretching" },
-    { id: 3, title: "주 1회 가계부 정리", routineType: "strength" },
-    { id: 4, title: "월급날 선저축 후지출", routineType: "strength" },
-  ];
-
-  // 받아온 루틴 목록을 routineType에 따라 분류
-  allRoutinesFromApi.forEach((routine) => {
-    if (categorizedRoutines.value[routine.routineType]) {
-      categorizedRoutines.value[routine.routineType].push(routine);
-    }
-  });
-  // --- 예시 데이터 끝 ---
 });
 </script>
 
