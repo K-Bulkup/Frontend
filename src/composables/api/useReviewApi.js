@@ -1,6 +1,6 @@
 import apiClient from "@/plugins/axios";
 
-export const getTrainerReviews = async (trainingId) => {
-  const response = await apiClient.get(`/api/trainer/reviews/${trainingId}`);
+export const getReviews = async (trainingId) => {
+  const response = await apiClient.get(`/api/common/reviews/${trainingId}`);
   return response.data;
 };

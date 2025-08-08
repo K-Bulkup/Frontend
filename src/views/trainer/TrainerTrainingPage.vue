@@ -1,89 +1,62 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import BaseBadge from "@/components/common/BaseBadge.vue";
 import TrainingCard from "@/components/trainee/training/TrainingCard.vue";
 import TrainerGreetingSimple from "@/components/trainer/training/TrainerGreetingSimple.vue";
 
+import { getMyTrainings } from "@/composables/api/trainer/training/trainerTrainingAPI";
+
 const router = useRouter();
 const searchQuery = ref("");
+const trainings = ref([]);
 
 // "트레이닝 오픈" 버튼 클릭 시 호출되는 함수
 const goToTrainingInput = () => {
   router.push("/trainer/training/input");
 };
 
-// 표시될 트레이닝 데이터
-const trainings = ref([
-  {
-    id: 1,
-    title: "예금관리의 기초",
-    trainerName: "김헬스",
-    price: 21000,
-    rating: 4.8,
-    tags: ["재무설계", "중급"],
-  },
-  {
-    id: 2,
-    title: "투자 입문 강좌",
-    trainerName: "박강사",
-    price: 35000,
-    rating: 4.7,
-    tags: ["투자입문", "초급"],
-  },
-  {
-    id: 3,
-    title: "주식 고급 과정",
-    trainerName: "이전문가",
-    price: 50000,
-    rating: 4.9,
-    tags: ["주식투자", "고급"],
-  },
-  {
-    id: 4,
-    title: "재무설계 실전편",
-    trainerName: "최재무",
-    price: 42000,
-    rating: 4.6,
-    tags: ["재무설계", "고급"],
-  },
-  {
-    id: 5,
-    title: "예금관리의 기초",
-    trainerName: "김헬스",
-    price: 21000,
-    rating: 4.8,
-    tags: ["재무설계", "중급"],
-  },
-  {
-    id: 6,
-    title: "예금관리의 기초",
-    trainerName: "김헬스",
-    price: 21000,
-    rating: 4.8,
-    tags: ["재무설계", "중급"],
-  },
-]);
-
-// 검색어에 따라 필터링된 트레이닝 목록을 반환하는 computed 속성
-const filteredTrainings = computed(() => {
-  if (!searchQuery.value) return trainings.value;
-  return trainings.value.filter(
-    (t) =>
-      t.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      t.trainerName.toLowerCase().includes(searchQuery.value.toLowerCase()),
-  );
-});
-
 // 트레이닝 상세 페이지로 이동하는 함수
 const goToDetail = (trainingId) => {
   router.push(`/trainer/mypage/training/${trainingId}`);
 };
 
-// PT 페이지로 이동하는 함수
-const goToPtPage = () => {
-  router.push("/trainee/mypage/pt");
+// API 호출: 내 트레이닝 목록 + 검색
+const fetchMyTrainings = async (keyword = "") => {
+  try {
+    const res = await getMyTrainings(keyword);
+    trainings.value = res.data.data.map((t) => ({
+      id: t.trainingId,
+      title: t.title,
+      trainerName: t.trainerName,
+      price: t.price,
+      rating: t.averageRating,
+      tags: [t.category, t.level],
+      thumbnailUrl: t.thumbnailUrl,
+    }));
+  } catch (error) {
+    console.error("내 트레이닝 목록 조회 실패:", error);
+  }
 };
+
+const filteredTrainings = computed(() => {
+  if (!searchQuery.value) return trainings.value;
+  return trainings.value.filter((t) =>
+    t.title.toLowerCase().includes(searchQuery.value.toLowerCase()),
+  );
+});
+
+// 검색어 변화 감지 (디바운스 처리)
+let debounceTimer;
+watch(searchQuery, (newVal) => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    fetchMyTrainings(newVal.trim());
+  }, 300);
+});
+
+// 최초 렌더링 시 내 강의 목록 호출
+fetchMyTrainings();
 </script>
 
 <template>

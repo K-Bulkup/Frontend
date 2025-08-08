@@ -3,10 +3,10 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseBadge from "@/components/common/BaseBadge.vue";
-import TrainerReviewList from "@/components/trainer/training/TrainerReviewList.vue";
+import ReviewList from "@/components/common/ReviewList.vue";
 import TrainerRoutineSection from "@/components/trainer/training/TrainerRoutineSection.vue";
 
-import { getTrainerReviews } from "@/composables/api/useReviewApi";
+import { getReviews } from "@/composables/api/useReviewApi";
 import { getTrainerTrainingDetail } from "@/composables/api/trainer/training/trainerTrainingDetailApi";
 
 const route = useRoute();
@@ -93,11 +93,14 @@ onMounted(async () => {
 
   // ✅ 리뷰 불러오기
   try {
-    const response = await getTrainerReviews(trainingId);
+    const response = await getReviews(trainingId);
+
+    console.log("API로부터 받은 리뷰 데이터:", response);
+
     if (response.success) {
-      reviewList.value = response.data.map((review) => ({
-        id: review.reviewId,
-        author: review.reviewerName,
+      reviewList.value = response.data.map((review, index) => ({
+        id: index,
+        author: review.username,
         rating: review.rating,
         content: review.content,
       }));
@@ -178,7 +181,7 @@ onMounted(async () => {
 
     <div class="my-6 h-px bg-gray-800"></div>
 
-    <TrainerReviewList :reviews="reviewList" />
+    <ReviewList :reviews="reviewList" />
 
     <div class="my-6 h-px bg-gray-800"></div>
 
