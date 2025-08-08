@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import { useEnrollmentStore } from "@/stores/enrollment";
 import {
   getTraineeTrainingDetail,
   getTraineeTrainingReviewBoolean,
@@ -22,12 +23,18 @@ const trainingData = ref(null);
 const hasWrittenReview = ref(false);
 const trainingId = ref(route.params.trainingId);
 const userId = authStore.userId;
+const enrollmentStore = useEnrollmentStore();
 
 // API 호출 및 데이터 매핑
 const loadTrainingData = async () => {
   try {
     const res = await getTraineeTrainingDetail(trainingId.value);
     const raw = res.data.data;
+    if (raw.enrollmentId) {
+      enrollmentStore.enrollmentId = raw.enrollmentId;
+    } else {
+      console.warn("❗ enrollmentId가 응답에 포함되지 않았습니다.");
+    }
 
     const convertRoutines = (routineList) =>
       routineList?.map((r) => ({

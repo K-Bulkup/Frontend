@@ -2,6 +2,9 @@
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { getRoutineDetail } from "@/composables/api/trainee/training/routineDetailAPI";
+import { submitRoutineResult } from "@/composables/api/trainee/training/routineResultAPI";
+import { useEnrollmentStore } from "@/stores/enrollment";
+import { watch } from "vue";
 
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseBadge from "@/components/common/BaseBadge.vue";
@@ -12,6 +15,7 @@ import RoutineResultModal from "@/components/trainee/training/RoutineResultModal
 
 const router = useRouter();
 const route = useRoute();
+const enrollmentStore = useEnrollmentStore();
 
 // API 데이터 상태
 const currentRoutine = ref(null);
@@ -45,7 +49,26 @@ const loadRoutineDetail = async () => {
   }
 };
 
-onMounted(loadRoutineDetail);
+onMounted(() => {
+  if (!route.query.enrollmentId && enrollmentStore.enrollmentId) {
+    router.replace({
+      path: route.path,
+      query: {
+        ...route.query,
+        enrollmentId: enrollmentStore.enrollmentId,
+      },
+    });
+  }
+});
+watch(
+  () => route.query.enrollmentId,
+  async (val) => {
+    if (val) {
+      await loadRoutineDetail();
+    }
+  },
+  { immediate: true },
+);
 
 // 뒤로 가기
 const handleGoBack = () => router.back();
@@ -70,17 +93,26 @@ const handleCertificationSubmit = async (submission) => {
     isUser: true,
   });
 
-  // --- 현재는 테스트 시뮬레이션 ---
-  await new Promise((r) => setTimeout(r, 1200));
-  const isCorrect = Math.random() > 0.5;
+  try {
+    const res = await submitRoutineResult(currentRoutine.value.id, {
+      enrollmentId: Number(route.query.enrollmentId),
+      answerText: submission.text,
+      evidenceUrl: submission.imageUrl ?? null,
+    });
 
-  submissionStatus.value = isCorrect ? "success" : "failure";
-  acquiredReward.value = isCorrect ? currentRoutine.value.reward : 0;
+    const result = res.data.passFailResult;
 
-  isLoading.value = false;
-  isResultModalVisible.value = true;
+    submissionStatus.value = result === "PASS" ? "success" : "failure";
+    acquiredReward.value = result === "PASS" ? currentRoutine.value.reward : 0;
+  } catch (e) {
+    console.error("루틴 제출 실패", e);
+    submissionStatus.value = "failure";
+    acquiredReward.value = 0;
+  } finally {
+    isLoading.value = false;
+    isResultModalVisible.value = true;
+  }
 };
-
 // 모달 닫기
 const closeModal = () => {
   isResultModalVisible.value = false;
