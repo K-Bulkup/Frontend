@@ -6,6 +6,8 @@ import { getTraineeTrainingPreDetail } from "@/composables/api/trainee/training/
 import { traineeTrainingPayment } from "@/composables/api/trainee/training/traineeTrainingPaymentAPI";
 import { getReviews } from "@/composables/api/useReviewApi";
 
+import profileDefault from "@/assets/images/mascot/profile.png";
+
 import PaymentModal from "@/components/common/PaymentModal.vue";
 import ReviewList from "@/components/common/ReviewList.vue";
 
@@ -189,9 +191,9 @@ const handlePayment = async (pg) => {
             />
             <img
               v-else
-              src="@/assets/images/Image_Square.svg"
+              :src="profileDefault"
               alt="기본 프로필"
-              class="h-6 w-6"
+              class="h-full w-full"
             />
           </div>
           <p class="font-bold text-white">{{ trainingData.trainerName }}</p>
