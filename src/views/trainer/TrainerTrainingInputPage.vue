@@ -10,12 +10,14 @@ import TrainingStep2Curriculum from "@/components/trainer/training/TrainingStep2
 import TrainingStep3Thumbnail from "@/components/trainer/training/TrainingStep3Thumbnail.vue";
 import TrainingStep4Complete from "@/components/trainer/training/TrainingStep4Complete.vue";
 import TrainerRoutineAddModal from "@/components/trainer/training/TrainerRoutineAddModal.vue";
+import LoadingOverlay from "@/components/common/LoadingOverlay.vue";
 
 import { createTraining } from "@/composables/api/trainer/training/trainerTrainingAPI";
 
 // 라우터 및 상태 (Router & State)
 const router = useRouter();
 const step = ref(1);
+const isLoading = ref(false);
 
 // 1단계 데이터
 const selectedCategory = ref(null);
@@ -95,7 +97,10 @@ const handleNextStep = async () => {
 
   if (step.value < 3) {
     step.value++;
-  } else if (step.value === 3) {
+    return;
+  }
+
+  if (step.value === 3) {
     const trainingDto = {
       title: trainerName.value,
       description: trainingDescription.value,
@@ -109,22 +114,28 @@ const handleNextStep = async () => {
     };
 
     const formData = new FormData();
-
     formData.append(
       "dto",
       new Blob([JSON.stringify(trainingDto)], { type: "application/json" }),
     );
+    if (thumbnail.value) formData.append("thumbnail", thumbnail.value);
 
-    if (thumbnail.value) {
-      formData.append("thumbnail", thumbnail.value);
-    }
+    const MIN_MS = 1500;
+    const start = Date.now();
+    isLoading.value = true;
 
     try {
-      console.log("API로 FormData 전송:", ...formData.entries());
       await createTraining(formData);
       step.value = 4;
     } catch (error) {
       console.error("트레이닝 등록 실패:", error);
+    } finally {
+      const elapsed = Date.now() - start;
+      const remain = Math.max(0, MIN_MS - elapsed);
+      if (remain > 0) {
+        await new Promise((r) => setTimeout(r, remain));
+      }
+      isLoading.value = false;
     }
   }
 };
@@ -170,5 +181,7 @@ const handleCompletion = () => {
       @save="onRoutineSaved"
       :routineCategoryKey="currentRoutineCategory"
     />
+
+    <LoadingOverlay :show="isLoading" title="트레이닝을 오픈 중입니다" />
   </div>
 </template>
