@@ -290,7 +290,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocClick));
               label="답변을 입력하세요"
               description=""
               :maxlength="500"
-              :minlength="5"
+              :minlength="10"
               :rows="5"
             />
             <div class="mt-2 flex justify-end gap-2">
