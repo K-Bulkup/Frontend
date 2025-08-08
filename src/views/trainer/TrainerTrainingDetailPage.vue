@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseBadge from "@/components/common/BaseBadge.vue";
@@ -7,6 +7,7 @@ import TrainerReviewList from "@/components/trainer/training/TrainerReviewList.v
 import TrainerRoutineSection from "@/components/trainer/training/TrainerRoutineSection.vue";
 
 import { getTrainerReviews } from "@/composables/api/useReviewApi";
+import { getTrainerTrainingDetail } from "@/composables/api/trainer/training/trainerTrainingDetailApi";
 
 const route = useRoute();
 const router = useRouter();
@@ -16,7 +17,7 @@ const reviewList = ref([]);
 
 // 각 섹션의 펼침 상태를 독립적으로 관리하기 위한 객체
 const expandedSections = ref({
-  stretching: true, // 기본으로 스트레칭 섹션은 펼쳐진 상태로 시작
+  stretching: true,
   strength: false,
   cardio: false,
 });
@@ -39,7 +40,6 @@ const goBack = () => {
   router.back();
 };
 
-// 섹션 펼침/닫힘 상태를 토글하는 함수
 const toggleSection = (category) => {
   expandedSections.value[category] = !expandedSections.value[category];
 };
@@ -47,27 +47,53 @@ const toggleSection = (category) => {
 onMounted(async () => {
   const trainingId = route.params.trainingId;
 
-  // --- 예시용 데이터 ---
-  // 실제로는 API를 통해 trainingId로 상세 정보를 가져옵니다.
-  trainingData.value = {
-    level: "중급",
-    category: "재테크",
-    reward: "30P",
-    title: "MZ세대를 위한 금융 루틴",
-    description: "습관을 통해 자산을 성장시키는 트레이닝입니다.",
-    thumbnailUrl: "https://via.placeholder.com/300x150",
-    trainerProfileUrl: null,
-    trainerName: "김코치",
-    trainerRating: 4.8,
-    studentCount: 120,
-    totalWeeks: 8,
-  };
+  // ✅ 트레이닝 상세 데이터 불러오기
+  try {
+    const { data: res } = await getTrainerTrainingDetail(trainingId);
+    const detail = res.data;
 
+    trainingData.value = {
+      level: detail.difficulty,
+      category: detail.category,
+      reward: `${detail.totalReward}P`,
+      title: detail.title,
+      description: detail.description,
+      thumbnailUrl: "", // API에서 제공 시 여기에 적용
+      trainerProfileUrl: detail.trainerProfileImage,
+      trainerName: detail.trainerName,
+      trainerRating: detail.trainerRating,
+      studentCount: detail.enrolledTraineeCount,
+      totalWeeks: detail.routineCategories.length,
+    };
+
+    // ✅ 루틴 카테고리별 분류
+    categorizedRoutines.value = {
+      stretching: [],
+      strength: [],
+      cardio: [],
+    };
+
+    detail.routineCategories.forEach((group) => {
+      const type = group.category;
+      const routines = group.routines.map((title) => ({
+        title,
+        routineType: type,
+      }));
+
+      if (type === "스트레칭")
+        categorizedRoutines.value.stretching.push(...routines);
+      else if (type === "근력")
+        categorizedRoutines.value.strength.push(...routines);
+      else if (type === "유산소")
+        categorizedRoutines.value.cardio.push(...routines);
+    });
+  } catch (e) {
+    console.error("트레이닝 상세 API 오류:", e);
+  }
+
+  // ✅ 리뷰 불러오기
   try {
     const response = await getTrainerReviews(trainingId);
-
-    console.log("API로부터 받은 리뷰 데이터:", response);
-
     if (response.success) {
       reviewList.value = response.data.map((review) => ({
         id: review.reviewId,
@@ -76,28 +102,12 @@ onMounted(async () => {
         content: review.content,
       }));
     } else {
-      console.error("리뷰 데이터를 불러오는데 실패했습니다:", response.message);
+      console.error("리뷰 실패:", response.message);
     }
   } catch (error) {
-    console.error("리뷰 API 호출 중 에러 발생:", error);
+    console.error("리뷰 API 호출 중 오류:", error);
     reviewList.value = [];
   }
-
-  // API에서 받아온 전체 루틴 목록 (가정)
-  const allRoutinesFromApi = [
-    { id: 1, title: "오전 5분 명상", routineType: "stretching" },
-    { id: 2, title: "경제 뉴스 1개 읽기", routineType: "stretching" },
-    { id: 3, title: "주 1회 가계부 정리", routineType: "strength" },
-    { id: 4, title: "월급날 선저축 후지출", routineType: "strength" },
-  ];
-
-  // 받아온 루틴 목록을 routineType에 따라 분류
-  allRoutinesFromApi.forEach((routine) => {
-    if (categorizedRoutines.value[routine.routineType]) {
-      categorizedRoutines.value[routine.routineType].push(routine);
-    }
-  });
-  // --- 예시 데이터 끝 ---
 });
 </script>
 
