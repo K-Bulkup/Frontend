@@ -6,10 +6,12 @@ import badgeIcon from "@/assets/images/trainer/mypage/badge.png";
 import starIcon from "@/assets/images/star.svg";
 import profileDefault from "@/assets/images/mascot/profile.png";
 
+import BaseHeader from "@/components/common/BaseHeader.vue";
 import TrainerCareerDisplay from "@/components/trainee/trainer/TrainerCareerDisplay.vue";
 import TrainingList from "@/components/trainee/trainer/TrainingList.vue";
 
 import { traineeTrainerApi } from "@/composables/api/trainee/trainer/traineeTrainerApi";
+import { getTraineeTrainingPreDetail } from "@/composables/api/trainee/training/traineeTrainingPreDetailAPI";
 
 // 라우팅 관련
 const route = useRoute();
@@ -54,15 +56,32 @@ onMounted(() => {
   fetchTrainerDetail();
 });
 
-// 강의 클릭 시 이동 (결제 전/후에 따른 이동 수정 필요)
-const goToTrainingDetail = (trainingId) => {
-  router.push(`/trainee/mypage/training/${trainingId}`);
+// 뒤로 가기
+const handleGoBack = () => router.back();
+
+// 강의 클릭 시 이동 (결제 전/후에 따른 이동)
+const goToTrainingDetail = async (trainingId) => {
+  try {
+    const response = await getTraineeTrainingPreDetail(trainingId);
+    const detailData = response.data.data;
+
+    if (detailData.progress !== undefined) {
+      // '결제 후' 페이지로 이동
+      router.push(`/trainee/mypage/training/${trainingId}`);
+    } else {
+      // '결제 전' 페이지로 이동
+      router.push(`/training/${trainingId}`);
+    }
+  } catch (error) {
+    console.error("상세 정보 미리보기 실패:", error);
+  }
 };
 </script>
 
 <template>
   <div class="min-h-screen pb-10 pt-4 text-white">
     <div class="px-5 py-6">
+      <BaseHeader title="트레이너 상세" @back="handleGoBack"></BaseHeader>
       <div class="flex items-start gap-4">
         <!-- 프로필 이미지 -->
         <div class="flex-shrink-0">

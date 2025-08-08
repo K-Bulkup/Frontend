@@ -13,19 +13,18 @@ const emit = defineEmits(["selectTraining"]);
 
 const courseContainer = ref(null);
 
-const scrollLeft = () => {
+// 스크롤 로직을 동적으로 개선
+const scroll = (direction) => {
   if (courseContainer.value) {
-    courseContainer.value.scrollBy({
-      left: -160,
-      behavior: "smooth",
-    });
-  }
-};
+    const card = courseContainer.value.children[0];
+    if (!card) return;
 
-const scrollRight = () => {
-  if (courseContainer.value) {
+    const cardWidth = card.offsetWidth;
+    const gap = 16;
+    const scrollAmount = (cardWidth + gap) * direction;
+
     courseContainer.value.scrollBy({
-      left: 160,
+      left: scrollAmount,
       behavior: "smooth",
     });
   }
@@ -33,22 +32,8 @@ const scrollRight = () => {
 </script>
 
 <template>
-  <div class="relative">
+  <div>
     <h2 class="mb-4 text-lg font-semibold text-white">트레이닝 목록</h2>
-
-    <button
-      class="absolute left-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white backdrop-blur-sm transition-all hover:bg-black/70"
-      @click="scrollLeft"
-    >
-      <ChevronLeft :size="20" />
-    </button>
-
-    <button
-      class="absolute right-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white backdrop-blur-sm transition-all hover:bg-black/70"
-      @click="scrollRight"
-    >
-      <ChevronRight :size="20" />
-    </button>
 
     <div
       ref="courseContainer"
@@ -65,14 +50,39 @@ const scrollRight = () => {
           flex: 0 0 calc((100% - 2rem) / 3);
         "
       >
-        <div class="mb-1 flex h-16 items-center justify-center rounded-lg">
-          <Image :size="30" class="text-gray-700" />
+        <div
+          class="mb-1 flex h-16 w-full items-center justify-center overflow-hidden rounded-lg bg-white"
+        >
+          <img
+            v-if="course.thumbnailUrl"
+            :src="course.thumbnailUrl"
+            alt="트레이닝 썸네일"
+            class="h-full w-full object-cover"
+          />
+          <Image v-else :size="30" class="text-gray-700" />
         </div>
 
-        <p class="mb-1 text-xs font-bold leading-tight text-black">
+        <p
+          class="mb-1 line-clamp-2 min-h-[32px] text-xs font-bold leading-tight text-black"
+        >
           {{ course.title }}
         </p>
       </div>
+    </div>
+
+    <div class="mt-4 flex justify-center gap-4 text-white">
+      <button
+        class="rounded-full p-2 backdrop-blur-sm transition-all hover:bg-white/10"
+        @click="scroll(-1)"
+      >
+        <ChevronLeft :size="20" />
+      </button>
+      <button
+        class="rounded-full p-2 backdrop-blur-sm transition-all hover:bg-white/10"
+        @click="scroll(1)"
+      >
+        <ChevronRight :size="20" />
+      </button>
     </div>
   </div>
 </template>

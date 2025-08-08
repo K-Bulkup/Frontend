@@ -17,27 +17,6 @@ onMounted(async () => {
     alert(
       "데이터를 불러오는 데 실패했습니다. (API가 아직 준비되지 않았을 수 있습니다)",
     );
-    // 임시 목업 데이터 (AdminTrainingResponseDto 구조에 맞춤)
-    pendingTrainings.value = [
-      {
-        trainingId: 1,
-        trainingName: "초보자를 위한 헬스 기초 (예시)",
-        trainerId: 10,
-        trainerName: "김강철",
-        approvalStatus: "대기",
-        totalStudents: 5,
-        requestDate: "2025-08-05",
-      },
-      {
-        trainingId: 2,
-        trainingName: "다이어트 챌린지 30일 (예시)",
-        trainerId: 11,
-        trainerName: "박건강",
-        approvalStatus: "대기",
-        totalStudents: 12,
-        requestDate: "2025-08-04",
-      },
-    ];
   }
 });
 

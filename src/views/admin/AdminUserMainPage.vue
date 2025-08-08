@@ -12,7 +12,7 @@
           <p class="mb-4 text-gray-400">등록된 모든 사용자를 확인</p>
         </div>
         <BaseButton
-          @click="$router.push('/admin/member-management/list')"
+          @click="$router.push('/admin/user-management/list')"
           class="rounded-md bg-black py-2 text-sm font-bold text-white hover:bg-gray-800"
         >
           이동하기
@@ -28,7 +28,7 @@
           <p class="mb-4 text-gray-400">새로운 사용자를 추가</p>
         </div>
         <BaseButton
-          @click="$router.push('/admin/member-management/create')"
+          @click="$router.push('/admin/user-management/create')"
           class="rounded-md bg-black py-2 text-sm font-bold text-white hover:bg-gray-800"
         >
           이동하기
@@ -44,7 +44,7 @@
           <p class="mb-4 text-gray-400">기존 사용자의 정보를 수정</p>
         </div>
         <BaseButton
-          @click="$router.push('/admin/member-management/list')"
+          @click="$router.push('/admin/user-management/list')"
           class="rounded-md bg-black py-2 text-sm font-bold text-white hover:bg-gray-800"
         >
           이동하기
@@ -60,7 +60,7 @@
           <p class="mb-4 text-gray-400">사용자를 서비스에서 제거</p>
         </div>
         <BaseButton
-          @click="$router.push('/admin/member-management/list')"
+          @click="$router.push('/admin/user-management/list')"
           class="rounded-md bg-black py-2 text-sm font-bold text-white hover:bg-gray-800"
         >
           이동하기

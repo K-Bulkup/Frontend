@@ -1,7 +1,10 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { getTraineeTrainingDetail } from "@/composables/api/trainee/training/traineeTrainingDetailAPI";
+import {
+  getTraineeTrainingDetail,
+  getTraineeTrainingReviewBoolean,
+} from "@/composables/api/trainee/training/traineeTrainingDetailAPI";
 import { createCounseling } from "@/composables/api/useCounselingApi";
 
 import BaseHeader from "@/components/common/BaseHeader.vue";
@@ -16,10 +19,11 @@ const route = useRoute();
 const authStore = useAuthStore();
 
 const trainingData = ref(null);
+const hasWrittenReview = ref(false);
 const trainingId = ref(route.params.trainingId);
 const userId = authStore.userId;
 
-// ✅ API 호출 및 데이터 매핑
+// API 호출 및 데이터 매핑
 const loadTrainingData = async () => {
   try {
     const res = await getTraineeTrainingDetail(trainingId.value);
@@ -39,6 +43,7 @@ const loadTrainingData = async () => {
       trainerName:
         raw.trainerName || raw.trainerNickname || "트레이너명 준비중",
       trainerProfileUrl: raw.trainerProfileUrl || null,
+      trainerId: raw.trainerId,
       trainerRating: raw.averageRating,
       studentCount: raw.traineeCount,
       totalWeeks: 4,
@@ -56,7 +61,28 @@ const loadTrainingData = async () => {
   }
 };
 
-onMounted(loadTrainingData);
+const checkReviewExist = async () => {
+  try {
+    const res = await getTraineeTrainingReviewBoolean(trainingId.value);
+    hasWrittenReview.value = res.data.data;
+  } catch (err) {
+    console.error("리뷰 존재 여부 확인 실패:", err);
+  }
+};
+
+onMounted(() => {
+  loadTrainingData();
+  checkReviewExist();
+});
+
+// 트레이너 상세 페이지로 이동
+const goToTrainerPage = () => {
+  if (trainingData.value.trainerId) {
+    router.push(`/trainee/trainer/${trainingData.value.trainerId}`);
+  } else {
+    console.error("이동할 트레이너의 ID가 없습니다.");
+  }
+};
 
 const expandedSections = ref({
   stretching: true,
@@ -64,7 +90,7 @@ const expandedSections = ref({
   cardio: false,
 });
 
-// ✅ 섹션 잠금 여부 (루틴 없을 때도 잠금 처리)
+// 섹션 잠금 여부 (루틴 없을 때도 잠금 처리)
 const isSectionLocked = (key) => {
   if (!trainingData.value?.routines) return false;
 
@@ -75,7 +101,7 @@ const isSectionLocked = (key) => {
   };
   const routineList = trainingData.value.routines[routineMap[key]];
 
-  // ✅ 루틴 없으면 자동 잠금
+  // 루틴 없으면 자동 잠금
   if (!routineList || routineList.length === 0) return true;
 
   if (key === "strength") {
@@ -87,7 +113,7 @@ const isSectionLocked = (key) => {
   return false;
 };
 
-// ✅ 완료 여부 계산
+// 완료 여부 계산
 const isStretchingComplete = computed(
   () =>
     trainingData.value?.routines["스트레칭"]?.length > 0 &&
@@ -105,7 +131,7 @@ const areAllQuestsComplete = computed(
     trainingData.value?.routines["유산소"]?.every((q) => q.completed),
 );
 
-// ✅ 루틴 상세 이동 (잠금 상태면 차단)
+// 루틴 상세 이동 (잠금 상태면 차단)
 const goToRoutineDetail = (quest) => {
   if (!quest?.id) {
     console.error("❌ 루틴 ID가 존재하지 않음:", quest);
@@ -116,7 +142,7 @@ const goToRoutineDetail = (quest) => {
   );
 };
 
-// ✅ 1:1 PT 채팅
+// 1:1 PT 채팅
 const goToPtPage = async () => {
   try {
     const traineeId = authStore.user?.userId; // ← 로그인 유저 ID
@@ -138,13 +164,13 @@ const goToReviewPage = () => {
 
 const goBack = () => router.back();
 
-// ✅ 섹션 토글 (잠금 상태면 차단)
+// 섹션 토글 (잠금 상태면 차단)
 const toggleSection = (key) => {
   if (isSectionLocked(key)) return;
   expandedSections.value[key] = !expandedSections.value[key];
 };
 
-// ✅ 트레이닝 기간 체크
+// 트레이닝 기간 체크
 const isTrainingExpired = computed(() => {
   if (!trainingData.value?.startDate) return false;
   const endDate = new Date(trainingData.value.startDate);
@@ -161,7 +187,7 @@ const trainingDeadline = computed(() => {
   ).padStart(2, "0")}`;
 });
 
-// ✅ 단일 루틴 케이스 포함 (너의 개선된 로직 유지)
+// 단일 루틴 케이스 포함 (너의 개선된 로직 유지)
 const showChatButton = computed(() => {
   const routines = trainingData.value?.routines;
   if (!routines) return false;
@@ -188,7 +214,7 @@ const showReviewButton = computed(() => {
   );
 });
 
-// ✅ 다른 사람이 추가한 startChat 유지 (웹소켓 관련 로직)
+// 다른 사람이 추가한 startChat 유지 (웹소켓 관련 로직)
 const startChat = async () => {
   try {
     const response = await createCounseling(trainingId.value, userId);
@@ -215,7 +241,7 @@ const goToQnaPage = () => {
     <BaseHeader title="트레이닝 상세" @back="goBack" />
 
     <main v-if="trainingData" class="flex-1">
-      <!-- ✅ 배지 -->
+      <!-- 배지 -->
       <div class="mt-4 flex items-center gap-2">
         <BaseBadge>{{ trainingData.level || "초급" }}</BaseBadge>
         <BaseBadge>{{ trainingData.category || "투자입문" }}</BaseBadge>
@@ -224,7 +250,7 @@ const goToQnaPage = () => {
         </BaseBadge>
       </div>
 
-      <!-- ✅ 진행률 차트 -->
+      <!-- 진행률 차트 -->
       <div
         class="my-6 flex flex-col items-center justify-center rounded-xl border border-white p-6"
       >
@@ -241,9 +267,12 @@ const goToQnaPage = () => {
         </p>
       </div>
 
-      <!-- ✅ 트레이너 정보 -->
+      <!-- 트레이너 정보 -->
       <div class="mb-6 mt-6 flex items-center justify-between">
-        <div class="flex items-center gap-3">
+        <div
+          @click="goToTrainerPage"
+          class="flex cursor-pointer items-center gap-3 rounded-lg p-2 transition-colors hover:bg-gray-800"
+        >
           <div
             class="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-700"
           >
@@ -256,8 +285,9 @@ const goToQnaPage = () => {
               class="h-full w-full object-cover"
             />
           </div>
-          <p class="font text-white">{{ trainingData.trainerName }}</p>
+          <p class="font-bold text-white">{{ trainingData.trainerName }}</p>
         </div>
+
         <div class="flex items-center gap-2 text-caption text-gray-200">
           <div class="flex items-center gap-1">
             <img src="@/assets/images/star.svg" alt="별점" class="h-3 w-3" />
@@ -278,7 +308,7 @@ const goToQnaPage = () => {
 
       <h2 class="font mb-4 text-body text-white">{{ trainingData.title }}</h2>
 
-      <!-- ✅ 루틴 섹션 -->
+      <!-- 루틴 섹션 -->
       <div class="space-y-2.5">
         <TraineeRoutineSection
           title="스트레칭"
@@ -318,13 +348,14 @@ const goToQnaPage = () => {
         />
       </div>
 
-      <!-- ✅ 액션 버튼 -->
+      <!-- 액션 버튼 -->
       <div class="mt-10 flex flex-col gap-3">
         <ActionButton
           v-if="showReviewButton"
-          text="리뷰 작성하기"
-          variant="secondary"
-          @click="goToReviewPage"
+          :text="hasWrittenReview ? '리뷰 작성 완료' : '리뷰 작성하기'"
+          :variant="hasWrittenReview ? 'disabled' : 'secondary'"
+          :disabled="hasWrittenReview"
+          @click="!hasWrittenReview && goToReviewPage()"
         >
           <template #icon>
             <img

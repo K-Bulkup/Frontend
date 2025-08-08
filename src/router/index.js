@@ -9,6 +9,7 @@ import AdminUserMainPage from "@/views/admin/AdminUserMainPage.vue";
 import AdminUserListPage from "@/views/admin/AdminUserListPage.vue";
 import AdminUserCreatePage from "@/views/admin/AdminUserCreatePage.vue";
 import AdminUserEditPage from "@/views/admin/AdminUserEditPage.vue";
+import AdminUserStatisticsPage from "@/views/admin/AdminUserStatisticsPage.vue";
 //training
 import TrainingListPage from "@/views/training/TrainingListPage.vue";
 import TrainingDetailPage from "@/views/training/TrainingDetailPage.vue";
@@ -64,23 +65,28 @@ const routes = [
     meta: { hideNavbar: true, requiresAuth: true, roles: ["ADMIN"] },
   },
   {
-    path: "/admin/member-management",
+    path: "/admin/user-management",
     component: AdminUserMainPage,
     meta: { hideNavbar: true, requiresAuth: true, roles: ["ADMIN"] },
   },
   {
-    path: "/admin/member-management/list",
+    path: "/admin/user-management/list",
     component: AdminUserListPage,
     meta: { hideNavbar: true, requiresAuth: true, roles: ["ADMIN"] },
   },
   {
-    path: "/admin/member-management/create",
+    path: "/admin/user-management/create",
     component: AdminUserCreatePage,
     meta: { hideNavbar: true, requiresAuth: true, roles: ["ADMIN"] },
   },
   {
-    path: "/admin/member-management/edit/:userId",
+    path: "/admin/user-management/edit/:userId",
     component: AdminUserEditPage,
+    meta: { hideNavbar: true, requiresAuth: true, roles: ["ADMIN"] },
+  },
+  {
+    path: "/admin/user-statistics",
+    component: AdminUserStatisticsPage,
     meta: { hideNavbar: true, requiresAuth: true, roles: ["ADMIN"] },
   },
 
@@ -205,8 +211,13 @@ router.beforeEach(async (to, from, next) => {
   }
 
   if (requiresAuth && isAuthenticated) {
+    // 사용자 정보가 없으면 가져옵니다.
+    if (!userRole && !authStore.userId) {
+      await authStore.fetchUserInfo();
+    }
+
     if (requiredRoles && requiredRoles.length > 0) {
-      if (requiredRoles.includes(userRole)) {
+      if (requiredRoles.includes(authStore.role)) {
         return next();
       } else {
         alert("접근 권한이 없습니다.");
