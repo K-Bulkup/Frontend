@@ -66,7 +66,7 @@ onMounted(async () => {
       trainerName: detail.trainerName,
       trainerRating: detail.trainerRating,
       studentCount: detail.enrolledTraineeCount,
-      totalWeeks: 1, // 루틴 주 수는 고정값 또는 추후 계산 가능
+      totalWeeks: 4,
     };
 
     // ✅ 루틴 목록 조회 및 분류

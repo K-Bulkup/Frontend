@@ -154,7 +154,7 @@ const handlePayment = async (pg) => {
   <div
     class="flex min-h-screen flex-col overflow-y-auto bg-realBlack px-6 pb-20 pt-4"
   >
-    <main v-if="trainingData" class="flex-1 px-6">
+    <main v-if="trainingData">
       <BaseHeader title="트레이닝 상세" @back="goBack" />
 
       <div class="mt-4 flex items-center gap-2">
