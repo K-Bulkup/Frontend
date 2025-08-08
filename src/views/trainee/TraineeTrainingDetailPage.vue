@@ -8,6 +8,8 @@ import {
 } from "@/composables/api/trainee/training/traineeTrainingDetailAPI";
 import { createCounseling } from "@/composables/api/useCounselingApi";
 
+import profileDefault from "@/assets/images/mascot/profile.png";
+
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseBadge from "@/components/common/BaseBadge.vue";
 import TraineeRoutineSection from "@/components/trainee/training/TraineeRoutineSection.vue";
@@ -284,12 +286,16 @@ const goToQnaPage = () => {
             class="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-700"
           >
             <img
-              :src="
-                trainingData.trainerProfileUrl ||
-                '@/assets/images/Image_Square.svg'
-              "
+              v-if="trainingData.trainerProfileUrl"
+              :src="trainingData.trainerProfileUrl"
               alt="프로필"
               class="h-full w-full object-cover"
+            />
+            <img
+              v-else
+              :src="profileDefault"
+              alt="기본 프로필"
+              class="h-full w-full"
             />
           </div>
           <p class="font-bold text-white">{{ trainingData.trainerName }}</p>
