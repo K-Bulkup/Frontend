@@ -22,16 +22,14 @@ const trainingData = ref(null);
 const reviewList = ref([]);
 const modalVisible = ref(false);
 
-// 로그인 유저 ID 동적 적용
+// 로그인 유저 ID
 const userId = authStore.userId || 0;
-const merchantUid = "order_" + new Date().getTime();
 
-// 트레이닝 상세 API 호출
 const loadTrainingDetail = async () => {
   const trainingId = route.params.trainingId;
 
   try {
-    const res = await getTraineeTrainingPreDetail(route.params.trainingId);
+    const res = await getTraineeTrainingPreDetail(trainingId);
     const raw = res.data.data;
 
     trainingData.value = {
@@ -54,7 +52,6 @@ const loadTrainingDetail = async () => {
     console.error("🚨 결제 전 트레이닝 상세 조회 실패:", err);
   }
 
-  // 리뷰 목록 가져오기
   try {
     const response = await getReviews(trainingId);
     if (response.success) {
@@ -72,32 +69,59 @@ const loadTrainingDetail = async () => {
     reviewList.value = [];
   }
 };
-onMounted(loadTrainingDetail);
 
-// 가격 포맷
+// ✅ 리디렉션 복귀 처리 (m_redirect_url로 돌아왔을 때 결제 확정)
+const finalizeIfRedirected = async () => {
+  const { imp_uid, merchant_uid } = route.query;
+  if (!imp_uid || !merchant_uid) return;
+
+  try {
+    const payload = {
+      impUid: String(imp_uid),
+      merchantUid: String(merchant_uid),
+      trainingId: route.params.trainingId,
+      userId,
+    };
+    const res = await traineeTrainingPayment(payload);
+    alert("✅ 결제 완료: " + (res?.data?.data?.message || "성공"));
+    router.replace(`/trainee/mypage/training/${route.params.trainingId}`);
+  } catch (err) {
+    console.error("❌ 리디렉션 후 결제 확정 API 오류:", err);
+    alert("❌ 결제 처리 중 오류가 발생했습니다.");
+    router.replace({ path: route.path, params: route.params });
+  }
+};
+
+onMounted(async () => {
+  await loadTrainingDetail();
+  await finalizeIfRedirected();
+});
+
 const formattedPrice = computed(() =>
   trainingData.value ? trainingData.value.price.toLocaleString() : "",
 );
 
-// --- 메서드 (Methods) ---
+const goBack = () => router.back();
 
-// 뒤로가기
-const goBack = () => {
-  router.back();
-};
-
-// 트레이너 상세 페이지로 이동
 const goToTrainerPage = () => {
-  if (trainingData.value.trainerId) {
+  if (trainingData.value?.trainerId) {
     router.push(`/trainee/trainer/${trainingData.value.trainerId}`);
   } else {
     console.error("이동할 트레이너의 ID가 없습니다.");
   }
 };
 
-// 결제 버튼 → 모달 열기
 const proceedToPayment = () => {
   modalVisible.value = true;
+};
+
+// 🔁 QR/간편결제 최우선 매핑 (기본도 카카오 간편결제)
+const resolvePayMethod = (pg) => {
+  if (pg?.startsWith("kakaopay")) return "kakaopay"; // PC: QR, 모바일: 앱
+  if (pg?.startsWith("tosspayments")) return "tosspay"; // 토스 간편결제
+  if (pg?.startsWith("payco")) return "payco"; // 페이코 간편결제
+  if (pg?.startsWith("html5_inicis")) return "card"; // 이니시스는 카드
+  return "kakaopay"; // 기본도 QR 우선
 };
 
 // PortOne SDK 결제 호출
@@ -112,39 +136,46 @@ const handlePayment = async (pg) => {
     return;
   }
 
-  IMP.init("imp13063177"); // 실제 가맹점 코드 입력 필요
+  IMP.init("imp13063177"); // 테스트 가맹점 코드 유지
+
+  // 클릭마다 고유 주문번호 생성(중복 방지)
+  const merchantUid = `order_${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
+
+  // 웹앱/모바일 대응: 결제 후 현재 페이지로 복귀
+  const mRedirectUrl = `${location.origin}${route.path}`;
 
   IMP.request_pay(
     {
-      pg, // 선택된 PG사
-      pay_method: "card",
+      pg,
+      pay_method: resolvePayMethod(pg), // ← QR/간편결제 우선
       merchant_uid: merchantUid,
       name: trainingData.value?.title || "트레이닝 결제",
-      amount: trainingData.value?.price || 0,
+      amount: Number(trainingData.value?.price ?? 0),
       buyer_name: authStore.user?.name || "사용자",
       buyer_email: authStore.user?.email || "user@example.com",
+      m_redirect_url: mRedirectUrl, // SDK 1.1.8+ 모바일/리디렉션 필수
     },
     async (rsp) => {
-      if (rsp.success) {
+      // PC 팝업 플로우일 땐 콜백으로 성공이 들어올 수도 있음
+      if (rsp?.success) {
         try {
           const payload = {
-            impUid: rsp.imp_uid, // 실제 imp_uid
+            impUid: rsp.imp_uid,
             merchantUid,
             trainingId: route.params.trainingId,
             userId,
           };
-
           const res = await traineeTrainingPayment(payload);
-          console.log("✅ 결제 응답:", res.data);
-          alert("✅ 결제 완료: " + res.data.data.message);
+          alert("✅ 결제 완료: " + (res?.data?.data?.message || "성공"));
           router.replace(`/trainee/mypage/training/${route.params.trainingId}`);
         } catch (err) {
           console.error("❌ 백엔드 결제 API 오류:", err);
-          alert("❌ 결제 처리 중 오류 발생");
+          alert("❌ 결제 처리 중 오류가 발생했습니다.");
         }
-      } else {
-        alert("❌ 결제가 취소되었습니다.");
+      } else if (rsp?.error_msg) {
+        alert(`❌ 결제 실패: ${rsp.error_msg}`);
       }
+      // 모바일 리디렉션 플로우는 finalizeIfRedirected()에서 처리
     },
   );
 };
