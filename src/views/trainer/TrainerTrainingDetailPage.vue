@@ -7,7 +7,10 @@ import ReviewList from "@/components/common/ReviewList.vue";
 import TrainerRoutineSection from "@/components/trainer/training/TrainerRoutineSection.vue";
 
 import { getReviews } from "@/composables/api/useReviewApi";
-import { getTrainerTrainingDetail } from "@/composables/api/trainer/training/trainerTrainingDetailApi";
+import {
+  getTrainerTrainingDetail,
+  getTrainerTrainingRoutines,
+} from "@/composables/api/trainer/training/trainerTrainingDetailApi";
 
 const route = useRoute();
 const router = useRouter();
@@ -15,21 +18,18 @@ const router = useRouter();
 const trainingData = ref(null);
 const reviewList = ref([]);
 
-// 각 섹션의 펼침 상태를 독립적으로 관리하기 위한 객체
 const expandedSections = ref({
   stretching: true,
   strength: false,
   cardio: false,
 });
 
-// routineType에 따라 분류된 루틴 목록
 const categorizedRoutines = ref({
   stretching: [],
   strength: [],
   cardio: [],
 });
 
-// 각 섹션의 제목을 매핑
 const sectionTitles = {
   stretching: "스트레칭",
   strength: "근력",
@@ -47,8 +47,8 @@ const toggleSection = (category) => {
 onMounted(async () => {
   const trainingId = route.params.trainingId;
 
-  // ✅ 트레이닝 상세 데이터 불러오기
   try {
+    // ✅ 트레이닝 상세
     const { data: res } = await getTrainerTrainingDetail(trainingId);
     const detail = res.data;
 
@@ -58,44 +58,41 @@ onMounted(async () => {
       reward: `${detail.totalReward}P`,
       title: detail.title,
       description: detail.description,
-      thumbnailUrl: "", // API에서 제공 시 여기에 적용
+      thumbnailUrl: detail.thumbnailUrl || "",
       trainerProfileUrl: detail.trainerProfileImage,
       trainerName: detail.trainerName,
       trainerRating: detail.trainerRating,
       studentCount: detail.enrolledTraineeCount,
-      totalWeeks: detail.routineCategories.length,
+      totalWeeks: 1, // 루틴 주 수는 고정값 또는 추후 계산 가능
     };
 
-    // ✅ 루틴 카테고리별 분류
+    // ✅ 루틴 목록 조회 및 분류
+    const { data: routineRes } = await getTrainerTrainingRoutines(trainingId);
+    const routines = routineRes.data;
+
     categorizedRoutines.value = {
       stretching: [],
       strength: [],
       cardio: [],
     };
 
-    detail.routineCategories.forEach((group) => {
-      const type = group.category;
-      const routines = group.routines.map((title) => ({
-        title,
-        routineType: type,
-      }));
+    routines.forEach(({ category, routineTitle }) => {
+      const routine = { title: routineTitle, routineType: category };
 
-      if (type === "스트레칭")
-        categorizedRoutines.value.stretching.push(...routines);
-      else if (type === "근력")
-        categorizedRoutines.value.strength.push(...routines);
-      else if (type === "유산소")
-        categorizedRoutines.value.cardio.push(...routines);
+      if (category === "스트레칭") {
+        categorizedRoutines.value.stretching.push(routine);
+      } else if (category === "근력") {
+        categorizedRoutines.value.strength.push(routine);
+      } else if (category === "유산소") {
+        categorizedRoutines.value.cardio.push(routine);
+      }
     });
   } catch (e) {
-    console.error("트레이닝 상세 API 오류:", e);
+    console.error("트레이닝 상세 또는 루틴 API 오류:", e);
   }
 
-  // ✅ 리뷰 불러오기
   try {
     const response = await getReviews(trainingId);
-
-    console.log("API로부터 받은 리뷰 데이터:", response);
 
     if (response.success) {
       reviewList.value = response.data.map((review, index) => ({
