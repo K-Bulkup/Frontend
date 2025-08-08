@@ -11,6 +11,11 @@ const router = useRouter();
 const goToVerify = () => {
   router.push("/trainer/mypage/verify");
 };
+
+// QnA 페이지로 이동
+const goToQnA = () => {
+  router.push("/trainer/mypage/qnas");
+};
 </script>
 <template>
   <!-- 하단 메뉴 섹션 -->
@@ -38,11 +43,16 @@ const goToVerify = () => {
     </div>
 
     <!-- QNA -->
-    <div class="flex flex-col items-center">
+    <div class="flex flex-col items-center" @click="goToQnA">
       <div
-        class="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-gray-700 text-white"
+        class="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 text-black"
       >
-        <img :src="qnaIcon" alt="인증" class="h-6 w-6" />
+        <img
+          :src="qnaIcon"
+          alt="인증"
+          class="h-6 w-6"
+          style="filter: brightness(0) saturate(100%)"
+        />
         <i class="fas fa-comments text-xl"></i>
       </div>
       <span class="text-sm text-white">QNA</span>
