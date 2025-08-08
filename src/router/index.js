@@ -18,6 +18,8 @@ import TraineeMyPage from "@/views/trainee/TraineeMyPage.vue";
 import TraineeReviewPage from "@/views/trainee/TraineeReviewPage.vue";
 import TraineeRoutineDetailPage from "@/views/trainee/TraineeRoutineDetailPage.vue";
 import TraineeTrainingDetailPage from "@/views/trainee/TraineeTrainingDetailPage.vue";
+import TraineeQnAPage from "@/views/trainee/TraineeQnAPage.vue";
+import TraineeTrainingQuestionInput from "@/views/trainee/TraineeTrainingQuestionInput.vue";
 import TraineeTrainerDetailPage from "@/views/trainee/TraineeTrainerDetailPage.vue";
 import AssetMainPage from "@/views/trainee/asset/AssetMainPage.vue";
 import AccountConnectPage from "@/views/trainee/asset/AccountConnectPage.vue";
@@ -105,6 +107,16 @@ const routes = [
   {
     path: "/trainee/mypage/training/:trainingId/routine/:routineId",
     component: TraineeRoutineDetailPage,
+    meta: { requiresAuth: true, roles: ["TRAINEE"] },
+  },
+  {
+    path: "/trainee/mypage/training/:trainingId/qna",
+    component: TraineeQnAPage,
+    meta: { requiresAuth: true, roles: ["TRAINEE"] },
+  },
+  {
+    path: "/trainee/mypage/training/:trainingId/question",
+    component: TraineeTrainingQuestionInput,
     meta: { requiresAuth: true, roles: ["TRAINEE"] },
   },
   {
