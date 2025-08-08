@@ -18,7 +18,7 @@ defineProps({
   },
 });
 
-const emit = defineEmits(["toggle", "add-routine"]);
+const emit = defineEmits(["toggle", "add-routine", "edit-routine"]);
 </script>
 
 <template>
@@ -54,6 +54,7 @@ const emit = defineEmits(["toggle", "add-routine"]);
         <div
           v-for="routine in routines"
           :key="routine.id"
+          @click="emit('edit-routine', routine)"
           class="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4"
         >
           <span class="flex-1 text-body text-black">{{ routine.title }}</span>
@@ -63,7 +64,7 @@ const emit = defineEmits(["toggle", "add-routine"]);
         v-else
         class="rounded-xl bg-gray-800 p-4 text-center text-subtext text-gray-700"
       >
-        루틴이 없습니다
+        최소 1개 이상의 루틴을 등록해주세요
       </div>
     </div>
   </div>
