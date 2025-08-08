@@ -3,7 +3,6 @@ import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { getTrainingQnAListDetail } from "@/composables/api/useQnAListApi";
 import BaseHeader from "@/components/common/BaseHeader.vue";
-import NavigationBar from "@/components/layout/NavigationBar.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -43,9 +42,7 @@ const getQnAList = async () => {
   }
 };
 
-const handleBack = () => {
-  router.back();
-};
+const handleBack = () => router.back();
 
 const toggleExpand = (index) => {
   qnaData.value[index].isExpanded = !qnaData.value[index].isExpanded;
@@ -54,9 +51,7 @@ const toggleExpand = (index) => {
 const handleCreateQuestion = () => {
   router.push({
     path: `/trainee/mypage/training/${trainingId.value}/question`,
-    query: {
-      courseTitle: courseTitle.value,
-    },
+    query: { courseTitle: courseTitle.value },
   });
 };
 
@@ -79,98 +74,107 @@ onMounted(() => {
       </h1>
     </div>
 
-    <!-- Q&A List -->
-    <div class="flex-1 space-y-4 px-4 pb-20">
-      <div
-        v-for="(item, index) in qnaData"
-        :key="item.id"
-        class="rounded-xl bg-gray-100"
-      >
-        <!-- Question Header -->
+    <!-- Q&A List / Empty State -->
+    <div class="flex-1 px-4 pb-20">
+      <template v-if="qnaData.length > 0">
         <div
-          class="flex cursor-pointer items-center justify-between p-4"
-          @click="toggleExpand(index)"
+          v-for="(item, index) in qnaData"
+          :key="item.id"
+          class="mb-4 rounded-xl bg-gray-100"
         >
-          <div class="flex items-center space-x-3">
-            <!-- Question Icon -->
-            <div class="flex h-5 w-5 items-center justify-center">
-              <svg
-                class="h-5 w-5"
-                :class="item.hasAnswer ? 'text-green-500' : 'text-gray-200'"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <circle cx="10" cy="10" r="7.5" stroke-width="2" />
-                <circle
-                  :fill="item.hasAnswer ? '#28A745' : '#D0D0D0'"
-                  cx="10"
-                  cy="13.33"
-                  r="1.25"
-                />
-                <path
-                  d="M8.821 6.762c.325-.325.751-.487 1.176-.488.428-.001.855.162 1.181.488.326.325.489.752.489 1.179 0 .426-.163.853-.489 1.178-.326.326-.753.489-1.181.488L10 10.44"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </div>
-            <!-- Question Title -->
-            <h3 class="flex-1 text-heading text-black">{{ item.title }}</h3>
-          </div>
-          <!-- Chevron Icon -->
-          <svg
-            class="h-5 w-5 text-black transition-transform"
-            :class="{ 'rotate-180': item.isExpanded }"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 8 5"
-          >
-            <path
-              d="M7 1L4 4L1 1"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </div>
-
-        <!-- Expanded Content -->
-        <div v-if="item.isExpanded && item.content" class="px-4 pb-4">
-          <!-- Question Content -->
-          <div class="mb-4 rounded-lg bg-white p-4">
-            <p class="mb-4 text-subtext leading-relaxed text-black">
-              {{ item.content }}
-            </p>
-            <div class="border-t border-gray-200 pt-2">
-              <div class="flex items-center justify-between">
-                <span class="text-extra text-gray-800">{{ item.author }}</span>
-                <span class="text-extra text-gray-700">{{
-                  item.questionDate
-                }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Answer Content -->
+          <!-- Question Header -->
           <div
-            v-if="item.hasAnswer && item.answer"
-            class="rounded-lg bg-white p-4"
+            class="flex cursor-pointer items-center justify-between p-4"
+            @click="toggleExpand(index)"
           >
-            <p class="mb-4 text-subtext leading-relaxed text-black">
-              {{ item.answer }}
-            </p>
-            <div class="border-t border-gray-200 pt-2">
-              <div class="flex justify-end">
-                <span class="text-extra text-gray-700">{{
-                  item.answerDate
-                }}</span>
+            <div class="flex items-center space-x-3">
+              <!-- Question Icon -->
+              <div class="flex h-5 w-5 items-center justify-center">
+                <svg
+                  class="h-5 w-5"
+                  :class="item.hasAnswer ? 'text-green-500' : 'text-gray-200'"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <circle cx="10" cy="10" r="7.5" stroke-width="2" />
+                  <circle
+                    :fill="item.hasAnswer ? '#28A745' : '#D0D0D0'"
+                    cx="10"
+                    cy="13.33"
+                    r="1.25"
+                  />
+                  <path
+                    d="M8.821 6.762c.325-.325.751-.487 1.176-.488.428-.001.855.162 1.181.488.326.325.489.752.489 1.179 0 .426-.163.853-.489 1.178-.326.326-.753.489-1.181.488L10 10.44"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
+              <!-- Question Title -->
+              <h3 class="flex-1 text-heading text-black">{{ item.title }}</h3>
+            </div>
+            <!-- Chevron Icon -->
+            <svg
+              class="h-5 w-5 text-black transition-transform"
+              :class="{ 'rotate-180': item.isExpanded }"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 8 5"
+            >
+              <path
+                d="M7 1L4 4L1 1"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+
+          <!-- Expanded Content -->
+          <div v-if="item.isExpanded && item.content" class="px-4 pb-4">
+            <!-- Question Content -->
+            <div class="mb-4 rounded-lg bg-white p-4">
+              <p class="mb-4 text-subtext leading-relaxed text-black">
+                {{ item.content }}
+              </p>
+              <div class="border-t border-gray-200 pt-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-extra text-gray-800">{{
+                    item.author
+                  }}</span>
+                  <span class="text-extra text-gray-700">
+                    {{ item.questionDate }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Answer Content -->
+            <div
+              v-if="item.hasAnswer && item.answer"
+              class="rounded-lg bg-white p-4"
+            >
+              <p class="mb-4 text-subtext leading-relaxed text-black">
+                {{ item.answer }}
+              </p>
+              <div class="border-t border-gray-200 pt-2">
+                <div class="flex justify-end">
+                  <span class="text-extra text-gray-700">
+                    {{ item.answerDate }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </template>
+
+      <!-- 빈 상태 -->
+      <template v-else>
+        <p class="pt-2 text-heading text-white">Q&A가 없습니다.</p>
+      </template>
     </div>
 
     <!-- Floating Action Button -->
