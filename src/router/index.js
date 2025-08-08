@@ -31,6 +31,7 @@ import TrainerMyPage from "@/views/trainer/TrainerMyPage.vue";
 import TrainerVerifyPage from "@/views/trainer/TrainerVerifyPage.vue";
 import TrainerTrainingPage from "@/views/trainer/TrainerTrainingPage.vue";
 import TrainerTrainingDetailPage from "@/views/trainer/TrainerTrainingDetailPage.vue";
+import TrainerTrainingQnAPage from "@/views/trainer/TrainerTrainingQnAPage.vue";
 import TrainingInputPage from "@/views/trainer/TrainerTrainingInputPage.vue";
 
 //chat
@@ -165,6 +166,11 @@ const routes = [
   {
     path: "/trainer/mypage/training/:trainingId",
     component: TrainerTrainingDetailPage,
+    meta: { requiresAuth: true, roles: ["TRAINER"] },
+  },
+  {
+    path: "/trainer/mypage/qnas",
+    component: TrainerTrainingQnAPage,
     meta: { requiresAuth: true, roles: ["TRAINER"] },
   },
   {
