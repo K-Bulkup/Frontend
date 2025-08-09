@@ -33,6 +33,7 @@ const fetchMyTrainings = async (keyword = "") => {
       rating: t.averageRating,
       tags: [t.category, t.level],
       thumbnailUrl: t.thumbnailUrl,
+      status: t.status,
     }));
   } catch (error) {
     console.error("내 트레이닝 목록 조회 실패:", error);
@@ -95,6 +96,7 @@ fetchMyTrainings();
         v-for="training in trainings"
         :key="training.id"
         :training="training"
+        :status="training.status"
         @click="goToDetail(training.id)"
         class="cursor-pointer"
       />
