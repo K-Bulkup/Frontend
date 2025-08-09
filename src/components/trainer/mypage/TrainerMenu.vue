@@ -43,7 +43,7 @@ const goToQnA = () => {
     </div>
 
     <!-- QNA -->
-    <div class="flex flex-col items-center" @click="goToQnA">
+    <div class="flex cursor-pointer flex-col items-center" @click="goToQnA">
       <div
         class="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 text-black"
       >
