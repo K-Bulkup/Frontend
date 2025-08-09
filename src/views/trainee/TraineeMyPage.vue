@@ -32,10 +32,7 @@ onMounted(async () => {
 <template>
   <div class="p-6">
     <BaseHeaderWithoutBack title="마이 페이지" />
-    <ProfileCard
-      :userName="`${userName}님은`"
-      :stats="`3대 ${growthScore}Kg`"
-    />
+    <ProfileCard :userName="`${userName}님은`" :growthScore="growthScore" />
     <CourseList :courses="courses" class="mt-6" />
   </div>
 </template>

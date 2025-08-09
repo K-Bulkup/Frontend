@@ -7,20 +7,17 @@ import lev100_img3 from "@/assets/images/mascot/Lev100/Geumyuk_100_3.png";
 import lev100_img4 from "@/assets/images/mascot/Lev100/Geumyuk_100_4.png";
 import lev100_img5 from "@/assets/images/mascot/Lev100/Geumyuk_100_5.png";
 
-defineProps({
-  userName: {
-    type: String,
-    required: true,
-  },
-  stats: {
-    type: String,
-    required: true,
-  },
+const props = defineProps({
+  userName: { type: String, required: true },
+  growthScore: { type: Number, required: true },
 });
 
-const imageSrc = computed(() => {
-  const value = Number(props.stats);
+const displayStats = computed(
+  () => `3대 ${Number(props.growthScore).toLocaleString()}kg`,
+);
 
+const imageSrc = computed(() => {
+  const value = Number(props.growthScore) || 0;
   if (value <= 20) return lev100_img1;
   if (value <= 40) return lev100_img2;
   if (value <= 60) return lev100_img3;
@@ -45,7 +42,7 @@ const imageSrc = computed(() => {
     <div class="relative z-10 mb-8 flex items-start justify-between">
       <div>
         <p class="mb-2 text-sm text-gray-300">{{ userName }}</p>
-        <h1 class="text-2xl font-bold text-white">{{ stats }}</h1>
+        <h1 class="text-2xl font-bold text-white">{{ displayStats }}</h1>
       </div>
     </div>
 
@@ -53,7 +50,7 @@ const imageSrc = computed(() => {
       class="top-35 absolute inset-x-6 bottom-20 z-10 flex items-center justify-center"
     >
       <img
-        src="@/assets/images/mascot/Lev100/Geumyuk_100_5.png"
+        :src="imageSrc"
         alt="금육이 캐릭터"
         class="max-h-full max-w-full object-contain drop-shadow-[0_6px_24px_rgba(0,0,0,0.35)]"
       />
