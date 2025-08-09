@@ -29,32 +29,41 @@ const hasWrittenReview = ref(false);
 const trainingId = ref(route.params.trainingId);
 const userId = authStore.userId;
 
+// 서버 응답에서 "PASS"만 true가 되도록 넓게 판정
+const isServerPass = (r) =>
+  r?.completed === "PASS" ||
+  r?.passFailResult === "PASS" ||
+  r?.status === "PASS" ||
+  r?.isPassed === true;
+
+// 서버 루틴 → 화면 루틴으로 매핑 (serverPass 플래그를 보존)
 const convertRoutinesWithLock = (routineList) =>
   routineList?.map((r) => {
-    const serverCompleted = r.completed === "PASS" || r.completed === true;
-    const localCompleted = routineLock.isLocked(r.routineId);
+    const id = String(r.routineId);
+    const serverPass = isServerPass(r);
     return {
-      id: r.routineId,
+      id,
       name: r.title,
-      // ✅ 잠김이면 완료로 표시
-      completed: serverCompleted || localCompleted,
+      serverPass, // 보존해두고
+      // ✅ 완료 = 서버 PASS or 로컬 lock
+      completed: serverPass || routineLock.isLocked(id),
       rewardPoint: r.rewardPoint,
       completedAt: r.completedAt,
     };
   }) || [];
 
+// 잠금 상태 변경 시 'completed'만 다시 합성
 const applyLocalLockToTrainingData = () => {
   const td = trainingData.value;
   if (!td?.routines) return;
-  const patch = (list) =>
+  const recompute = (list) =>
     list?.map((r) => ({
       ...r,
-      // 서버 completed(불린으로 이미 들어옴) OR 로컬락
-      completed: !!r.completed || routineLock.isLocked(r.id),
+      completed: !!(r.serverPass || routineLock.isLocked(String(r.id))),
     })) || [];
-  td.routines["스트레칭"] = patch(td.routines["스트레칭"]);
-  td.routines["근력"] = patch(td.routines["근력"]);
-  td.routines["유산소"] = patch(td.routines["유산소"]);
+  td.routines["스트레칭"] = recompute(td.routines["스트레칭"]);
+  td.routines["근력"] = recompute(td.routines["근력"]);
+  td.routines["유산소"] = recompute(td.routines["유산소"]);
 };
 
 // API 호출 및 데이터 매핑
@@ -96,7 +105,7 @@ const loadTrainingData = async () => {
       category: raw.category,
     };
 
-    // 서버값 세팅 후, 로컬락으로 최종 보정 (즉시 반영)
+    // 서버값 세팅 후, 잠금과 합성값을 다시 보정
     applyLocalLockToTrainingData();
   } catch (err) {
     console.error("🚨 트레이닝 상세 조회 실패:", err);
@@ -122,7 +131,7 @@ onActivated(() => {
   loadTrainingData();
 });
 
-// 잠금 상태가 바뀌면(=정답/오답 처리) 현재 목록에 즉시 반영
+// 잠금 상태가 바뀌면 합성값 즉시 반영
 watch(
   () => routineLock.lockedByRoutineId,
   () => applyLocalLockToTrainingData(),
@@ -192,7 +201,7 @@ const goToRoutineDetail = (quest) => {
   }
   const base = `/trainee/mypage/training/${route.params.trainingId}/routine/${quest.id}`;
   if (quest.completed) {
-    router.push(base); // 열람 모드 (쿼리 없음)
+    router.push(base); // 열람 모드
   } else {
     const eid = enrollmentStore.enrollmentId;
     if (eid)

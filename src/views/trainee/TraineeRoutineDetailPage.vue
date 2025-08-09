@@ -40,8 +40,7 @@ const loadRoutineDetail = async () => {
     const res = await getRoutineDetail(route.params.routineId);
     const raw = res.data;
 
-    const id = route.params.routineId;
-    // 서버 completed 필드가 없다면 로컬락만으로 판단
+    const id = String(route.params.routineId); // ✅ 키 타입 통일
     const localLocked = routineLock.isLocked(id);
 
     currentRoutine.value = {
@@ -52,7 +51,7 @@ const loadRoutineDetail = async () => {
       category: raw.category,
       reward: raw.routineScore,
       videoUrl: raw.routineVideoUrl || null,
-      completed: localLocked, // 잠김=완료로 간주
+      completed: localLocked, // 보기 모드 표기용
     };
     isLocked.value = localLocked;
 
@@ -118,7 +117,8 @@ const handleCertificationSubmit = async (submission) => {
   });
 
   try {
-    const res = await submitRoutineResult(currentRoutine.value.id, {
+    const id = String(route.params.routineId); // ✅ 항상 문자열 키 사용
+    const res = await submitRoutineResult(id, {
       enrollmentId: Number(route.query.enrollmentId),
       answerText: submission.text,
       evidenceUrl: submission.imageUrl ?? null,
@@ -128,8 +128,8 @@ const handleCertificationSubmit = async (submission) => {
 
     submissionStatus.value = result === "PASS" ? "success" : "failure";
     if (result === "PASS") {
-      // ✅ 즉시 잠금 + 완료 표시
-      routineLock.lock(currentRoutine.value.id);
+      // ✅ PASS 때만 잠금
+      routineLock.lock(id);
       isLocked.value = true;
       currentRoutine.value.completed = true;
       acquiredReward.value = currentRoutine.value.reward;
@@ -140,8 +140,8 @@ const handleCertificationSubmit = async (submission) => {
         router.replace({ path: route.path, query: rest });
       }
     } else {
-      // 오답이면 잠금 해제 보장
-      routineLock.unlock(currentRoutine.value.id);
+      // 오답이면 잠금 해제
+      routineLock.unlock(id);
       isLocked.value = false;
       currentRoutine.value.completed = false;
       acquiredReward.value = 0;
@@ -156,7 +156,7 @@ const handleCertificationSubmit = async (submission) => {
   }
 };
 
-// 모달 닫기 (원래 네 로직 유지: 이 페이지에 그대로 남음)
+// 모달 닫기
 const closeModal = () => {
   isResultModalVisible.value = false;
 };
