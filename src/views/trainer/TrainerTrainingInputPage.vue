@@ -39,21 +39,25 @@ const thumbnail = ref(null);
 const isModalVisible = ref(false);
 const currentRoutineCategory = ref(null);
 
+const modalKey = ref(0);
+const routineToEdit = ref(null);
+
 // 계산된 속성 (Computed)
 const isNextButtonDisabled = computed(() => {
   if (step.value === 1) return !selectedCategory.value;
   if (step.value === 2) {
-    const hasNoRoutines =
-      routines.value.stretching.length === 0 &&
-      routines.value.strength.length === 0 &&
-      routines.value.cardio.length === 0;
-    return (
+    // 각 섹션별로 최소 1개의 루틴이 있는지 확인하는 로직
+    const isCurriculumInvalid =
       !trainerName.value.trim() ||
       !trainingDescription.value.trim() ||
       !selectedDifficulty.value ||
-      hasNoRoutines
-    );
+      routines.value.stretching.length === 0 || // 스트레칭 루틴이 없거나
+      routines.value.strength.length === 0 || // 근력 루틴이 없거나
+      routines.value.cardio.length === 0; // 유산소 루틴이 없는 경우 true
+
+    return isCurriculumInvalid;
   }
+
   if (step.value === 3) return !thumbnail.value;
   return step.value >= 4;
 });
@@ -71,24 +75,51 @@ const handleGoBack = () => {
   }
 };
 
+// '새로 추가' 버튼 클릭 시
 const handleOpenRoutineModal = (categoryKey) => {
+  routineToEdit.value = null;
   currentRoutineCategory.value = categoryKey;
   isModalVisible.value = true;
+  modalKey.value++;
 };
 
-const onRoutineSaved = (newRoutine) => {
-  if (currentRoutineCategory.value) {
+// '기존 루틴' 클릭 시
+const handleEditRoutine = (routine) => {
+  routineToEdit.value = routine;
+  // 루틴이 속한 카테고리를 찾아 설정
+  currentRoutineCategory.value = findRoutineCategory(routine.id);
+  isModalVisible.value = true;
+  modalKey.value++; // key를 변경해서 모달을 새로고침
+};
+
+// 루틴 ID로 카테고리(stretching, strength, cardio)를 찾는 헬퍼 함수
+const findRoutineCategory = (routineId) => {
+  for (const category in routines.value) {
+    if (routines.value[category].some((r) => r.id === routineId)) {
+      return category;
+    }
+  }
+  return null;
+};
+
+const onRoutineSaved = (savedRoutineData) => {
+  // 수정일 경우 (ID가 이미 존재)
+  if (savedRoutineData.id) {
+    const category = findRoutineCategory(savedRoutineData.id);
+    const index = routines.value[category].findIndex(
+      (r) => r.id === savedRoutineData.id,
+    );
+    // 기존 루틴을 덮어쓰기
+    if (index !== -1) routines.value[category][index] = savedRoutineData;
+  }
+  // 새로 추가일 경우
+  else {
     routines.value[currentRoutineCategory.value].push({
-      id: Date.now() + Math.random(),
-      title: newRoutine.title,
-      description: newRoutine.description,
-      routineType: newRoutine.routineType,
-      quizType: newRoutine.quizType,
-      orderNumber: routines.value[currentRoutineCategory.value].length + 1,
-      videoUrl: newRoutine.videoUrl,
-      routineAnswer: newRoutine.routineAnswer,
+      ...savedRoutineData,
+      id: Date.now(), // 새 ID 발급
     });
   }
+
   isModalVisible.value = false;
 };
 
@@ -158,6 +189,7 @@ const handleCompletion = () => {
         v-model:description="trainingDescription"
         v-model:difficulty="selectedDifficulty"
         v-model:routines="routines"
+        @edit-routine="handleEditRoutine"
         @open-routine-modal="handleOpenRoutineModal"
       />
 
@@ -177,6 +209,8 @@ const handleCompletion = () => {
 
     <TrainerRoutineAddModal
       v-if="isModalVisible"
+      :key="modalKey"
+      :initial-data="routineToEdit"
       @close="isModalVisible = false"
       @save="onRoutineSaved"
       :routineCategoryKey="currentRoutineCategory"

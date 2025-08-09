@@ -90,14 +90,18 @@ fetchMyTrainings();
       />
     </div>
 
-    <main class="grid grid-cols-2 gap-4">
+    <main v-if="trainings.length > 0" class="grid grid-cols-2 gap-4">
       <TrainingCard
-        v-for="training in filteredTrainings"
+        v-for="training in trainings"
         :key="training.id"
         :training="training"
         @click="goToDetail(training.id)"
         class="cursor-pointer"
       />
     </main>
+
+    <div v-else class="flex h-64 items-center justify-center text-center">
+      <p class="text-gray-400">오픈된 트레이닝이 없습니다.</p>
+    </div>
   </div>
 </template>
