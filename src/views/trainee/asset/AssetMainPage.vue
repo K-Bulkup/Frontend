@@ -7,40 +7,71 @@ import BalanceLineChart from "@/components/assetCharts/BalanceLineChart.vue";
 import CompositionDonutChart from "@/components/assetCharts/CompositionDonutChart.vue";
 import WithdrawalDonutChart from "@/components/assetCharts/WithdrawalDonutChart.vue";
 import BaseHeaderWithoutBack from "@/components/common/BaseHeaderWithoutBack.vue";
+import { updateAndGetTraineeAsset } from "@/composables/api/useAssetApi";
 
 const router = useRouter();
 const { getTraineeAsset, assetData, errorMessage, isLoading } =
   useTraineeAsset();
 
-const goToAccountConnect = () => {
-  router.push("/trainee/asset/account");
-};
-
-const goToAiChat = () => {
-  router.push("/trainee/asset/ai-chat");
-};
+const goToAccountConnect = () => router.push("/trainee/asset/account");
+const goToAiChat = () => router.push("/trainee/asset/ai-chat");
 
 const balance = ref(0);
+const userId = ref(null);
 
-onMounted(async () => {
-  const id = await awaitUserReady();
-  const result = await getTraineeAsset(id);
-
-  if (result.success && assetData.value?.snapshots?.length > 0) {
-    balance.value = assetData.value.snapshots[0].balance;
-  }
-
-  console.log("assetData:", assetData.value);
+// 자산 존재 여부
+const hasAsset = computed(() => {
+  const a = assetData.value;
+  if (!a) return false;
+  const hasSnapshots = Array.isArray(a.snapshots) && a.snapshots.length > 0;
+  const hasTx = Array.isArray(a.transactions) && a.transactions.length > 0;
+  const hasComp = !!a.composition;
+  return hasSnapshots || hasTx || hasComp;
 });
 
-const isAssetFetched = computed(() => !!assetData.value);
+const refreshBalanceFromSnapshots = () => {
+  if (assetData.value?.snapshots?.length > 0) {
+    balance.value = assetData.value.snapshots[0].balance;
+  } else {
+    balance.value = 0;
+  }
+};
+
+// 버튼: 자산 없으면 연결, 있으면 갱신(PUT) 후 재조회
+const handleAssetButton = async () => {
+  if (isLoading.value) return;
+
+  if (!hasAsset.value) {
+    return goToAccountConnect();
+  }
+
+  try {
+    // axios 기준: res.data = { status, name, message, data, success }
+    const res = await updateAndGetTraineeAsset(); // PUT
+    assetData.value = res.data.data; // ← 재조회 없이 상태 갱신
+    refreshBalanceFromSnapshots();
+  } catch (e) {
+    console.error(e);
+    // 실패 시에만 백업으로 GET 호출
+    await getTraineeAsset(userId.value);
+    refreshBalanceFromSnapshots();
+  }
+};
+
+const chartsReady = computed(() => hasAsset.value && !isLoading.value);
+
+onMounted(async () => {
+  userId.value = await awaitUserReady();
+  const result = await getTraineeAsset(userId.value); // 최초 GET
+  if (result?.success) refreshBalanceFromSnapshots();
+  console.log("assetData:", assetData.value);
+});
 </script>
 
 <template>
   <div>
     <BaseHeaderWithoutBack title="자산 관리" />
 
-    <!-- Main Content -->
     <div class="flex-1 overflow-y-auto px-6 pb-32 pt-10">
       <div class="space-y-6">
         <!-- Total Assets Section -->
@@ -54,12 +85,14 @@ const isAssetFetched = computed(() => !!assetData.value);
                 {{ balance.toLocaleString() }} 원
               </p>
             </div>
+
+            <!-- 단일 버튼: 없으면 불러오기 / 있으면 갱신하기 -->
             <button
-              v-if="!isLoading && !isAssetFetched"
-              @click="goToAccountConnect"
+              v-if="!isLoading"
+              @click="handleAssetButton"
               class="rounded-lg bg-primary px-4 py-2 text-subtext font-normal text-realBlack"
             >
-              자산 불러오기
+              {{ hasAsset ? "자산 갱신하기" : "자산 불러오기" }}
             </button>
           </div>
         </div>
@@ -101,7 +134,8 @@ const isAssetFetched = computed(() => !!assetData.value);
             />
           </div>
         </div>
-        <!-- AI 채팅 버튼: 메인 화면 기준 오른쪽 하단 고정 -->
+
+        <!-- AI 채팅 버튼 -->
         <div
           class="fixed bottom-[120px] z-50"
           style="right: max(1rem, calc(50vw - 180px))"
@@ -127,9 +161,8 @@ const isAssetFetched = computed(() => !!assetData.value);
               </svg>
               <span
                 class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform text-body font-semibold text-black"
+                >AI</span
               >
-                AI
-              </span>
             </div>
           </button>
         </div>
