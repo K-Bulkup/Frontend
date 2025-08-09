@@ -340,22 +340,18 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocClick));
 <style scoped>
 /* 멀티라인 말줄임 fallback (Tailwind line-clamp 미사용 시도 동작) */
 .multi-ellipsis-2 {
-  display: -webkit-box;
-  display: box; /* 오래된 브라우저 지원용 */
-  -webkit-line-clamp: 2;
-  line-clamp: 2; /* 표준 속성 */
+  display: -webkit-box; /* WebKit 기반 브라우저용 */
   -webkit-box-orient: vertical;
-  box-orient: vertical; /* 오래된 브라우저 지원용 */
-  overflow: hidden;
+  -webkit-line-clamp: 2; /* 줄 수 제한 */
+  line-clamp: 2;
+  overflow: hidden; /* 넘치는 부분 숨김 */
 }
 
 .multi-ellipsis-3 {
   display: -webkit-box;
-  display: box;
+  -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   line-clamp: 3;
-  -webkit-box-orient: vertical;
-  box-orient: vertical;
   overflow: hidden;
 }
 </style>
