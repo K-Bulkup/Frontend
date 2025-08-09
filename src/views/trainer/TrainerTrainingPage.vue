@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted, computed, watch } from "vue";
 import { useRouter } from "vue-router";
-import BaseBadge from "@/components/common/BaseBadge.vue";
 import TrainingCard from "@/components/trainee/training/TrainingCard.vue";
 import TrainerGreetingSimple from "@/components/trainer/training/TrainerGreetingSimple.vue";
 
@@ -66,15 +65,17 @@ fetchMyTrainings();
       <!-- 트레이너 인사말 -->
       <TrainerGreetingSimple></TrainerGreetingSimple>
 
-      <div class="mb-6 flex justify-end">
-        <BaseBadge
-          variant="primary"
-          class="cursor-pointer"
-          @click="goToTrainingInput"
-        >
-          트레이닝 오픈
-        </BaseBadge>
-      </div>
+      <button
+        @click="goToTrainingInput"
+        class="fixed bottom-24 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg transition-transform hover:scale-105 active:scale-95"
+        style="right: max(1rem, calc(50vw - 180px))"
+      >
+        <img
+          src="@/assets/images/plus.svg"
+          alt="트레이닝 오픈"
+          class="h-8 w-8"
+        />
+      </button>
     </div>
 
     <div class="relative mb-6">
