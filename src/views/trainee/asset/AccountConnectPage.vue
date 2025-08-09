@@ -3,10 +3,10 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAccountConnect } from "@/composables/asset/useCreateAsset";
 import { awaitUserReady } from "@/composables/user/awaitUserReady";
-import BaseLodaing from "@/components/common/BaseLodaing.vue";
 import ConnectSuccessModal from "@/components/common/ConnectSuccessModal.vue";
 import ConnectFailureModal from "@/components/common/ConnectFailureModal.vue";
 import BaseHeader from "@/components/common/BaseHeader.vue";
+import LoadingOverlay from "@/components/common/LoadingOverlay.vue";
 
 const router = useRouter();
 const { connectAccount } = useAccountConnect();
@@ -200,7 +200,11 @@ const handleSuccessClose = () => {
     </div>
 
     <!-- 모달 -->
-    <BaseLodaing v-if="isLoading" mainText="자산 연동 중입니다." />
+    <LoadingOverlay
+      :show="isLoading"
+      title="자산 연동 중입니다."
+      @close="isLoading = false"
+    />
     <ConnectSuccessModal
       v-if="showSuccessModal"
       title="자산 연동에 성공했습니다"
