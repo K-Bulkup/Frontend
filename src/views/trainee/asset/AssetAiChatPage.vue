@@ -5,13 +5,16 @@ import dayjs from "dayjs";
 import "dayjs/locale/ko";
 
 import { awaitUserReady } from "@/composables/user/awaitUserReady";
-import { getAiChatHistory } from "@/composables/api/useAiChatApi";
-import { requestAiConsulting } from "@/composables/api/useAiChatApi";
+import {
+  getAiChatHistory,
+  requestAiConsulting,
+} from "@/composables/api/useAiChatApi";
 import { getTraineeAsset } from "@/composables/api/useAssetApi";
 
 import ChatHeader from "@/components/chat/ChatHeader.vue";
 import ChatBubble from "@/components/chat/ChatBubble.vue";
 import ChatInput from "@/components/chat/ChatInput.vue";
+import LoadingOverlay from "@/components/common/LoadingOverlay.vue"; // ← 추가
 
 import profileImg from "@/assets/images/mascot/profile.png";
 
@@ -23,21 +26,19 @@ const userId = ref(null);
 const remainingChats = ref(0);
 const assets = ref(null);
 
-const status = computed(() => {
-  return remainingChats.value <= 0 ? "만료" : "활성";
-});
-
-const placeholder = computed(() => {
-  return status.value === "만료"
+const status = computed(() => (remainingChats.value <= 0 ? "만료" : "활성"));
+const placeholder = computed(() =>
+  status.value === "만료"
     ? "하루 채팅 횟수를 초과했습니다..."
-    : "메시지를 입력하세요...";
-});
-
+    : "메시지를 입력하세요...",
+);
 const disabled = computed(() => status.value === "만료");
 
 const messages = ref([]);
 const messageContainer = ref(null);
 const isButtonDisabled = computed(() => remainingChats.value <= 0);
+
+const showOverlay = ref(false);
 
 const fetchAssets = async () => {
   try {
@@ -68,35 +69,20 @@ const handleSendMessage = async (
   messages.value.push(userMsg);
   scrollToBottom();
 
-  const typingMessageId = Date.now() + 1;
-  const typingMessage = {
-    id: typingMessageId,
-    text: "금육이가 답변 중입니다....",
-    isOwn: false,
-    sendAt: new Date(),
-    isAiChat,
-    profileUrl: profileImg,
-  };
-  messages.value.push(typingMessage);
-  scrollToBottom();
+  showOverlay.value = true;
 
   try {
     const aiText = await requestAiConsulting(messageToSend, isAsset);
     remainingChats.value = aiText.remainingChats;
 
-    const aiMsg = {
-      id: typingMessageId,
+    messages.value.push({
+      id: Date.now() + 1,
       text: aiText.choices[0].message.content,
       isOwn: false,
       sendAt: new Date(),
       isAiChat,
       profileUrl: profileImg,
-    };
-
-    const index = messages.value.findIndex((msg) => msg.id === typingMessageId);
-    if (index !== -1) {
-      messages.value[index] = aiMsg;
-    }
+    });
 
     scrollToBottom();
   } catch (err) {
@@ -109,6 +95,8 @@ const handleSendMessage = async (
       profileUrl: profileImg,
     });
     scrollToBottom();
+  } finally {
+    showOverlay.value = false;
   }
 };
 
@@ -120,9 +108,9 @@ const scrollToBottom = () => {
   });
 };
 
-const groupByDate = (messages) => {
+const groupByDate = (messagesArr) => {
   const result = {};
-  for (const msg of messages) {
+  for (const msg of messagesArr) {
     const date = dayjs(msg.sendAt).format("YYYY년 M월 D일 dddd");
     if (!result[date]) result[date] = [];
     result[date].push({
@@ -173,7 +161,7 @@ const handleFetchAssetsAndSendMessage = async () => {
     <ChatHeader
       user-name="금육이"
       :user-profile-url="profileImg"
-      isAiChat="true,"
+      :isAiChat="true"
       buttonText="자산 전송하기"
       :buttonHandler="handleFetchAssetsAndSendMessage"
       :buttonDisabled="isButtonDisabled"
@@ -186,7 +174,7 @@ const handleFetchAssetsAndSendMessage = async () => {
         <ChatBubble
           v-for="message in group"
           :key="message.id"
-          isAiChat="true,"
+          :isAiChat="true"
           :message="message.text"
           :is-own="message.isOwn"
           :timestamp="message.timestamp"
@@ -199,9 +187,12 @@ const handleFetchAssetsAndSendMessage = async () => {
         :disabled="disabled"
         :placeholder="placeholder"
         :remaining-chats="remainingChats"
-        isAiChat="true,"
+        :isAiChat="true"
         @send="handleSendMessage"
       />
     </div>
+
+    <!-- 중앙 로딩 오버레이 -->
+    <LoadingOverlay :show="showOverlay" title="금육이가 답변 중입니다" />
   </div>
 </template>
