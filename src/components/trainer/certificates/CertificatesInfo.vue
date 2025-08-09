@@ -5,6 +5,7 @@ import BaseDropbox from "@/components/common/BaseDropdown.vue";
 
 import ConnectFailureModal from "@/components/common/ConnectFailureModal.vue";
 import ConnectSuccessModal from "@/components/common/ConnectSuccessModal.vue";
+import LoadingOverlay from "@/components/common/LoadingOverlay.vue";
 
 import { useRouter } from "vue-router";
 import { ref, computed } from "vue";
@@ -58,6 +59,7 @@ const inputFields = ref([
 ]);
 
 const selectedCertificate = ref(null);
+const isLoading = ref(false);
 
 // 각 input의 유효성 검사
 const isInvalid = (value, field) => {
@@ -156,18 +158,13 @@ const createCertificateDto = () => {
 };
 
 const handleSubmit = async () => {
-  // 전체 필드 검증
-  if (!validateAllFields()) {
-    return;
-  }
+  if (!validateAllFields()) return;
 
+  isLoading.value = true; // 로딩 시작
   try {
-    // DTO 생성
     const certificateDto = createCertificateDto();
-    // API 호출
-    const response = await trainerMyPageApi.getCertifications(certificateDto);
+    await trainerMyPageApi.getCertifications(certificateDto);
 
-    // 성공 시 성공 모달 표시
     modalProps.value = {
       title: "등록이 완료되었습니다.",
       subtitle: "인증뱃지를 획득했습니다.",
@@ -176,14 +173,14 @@ const handleSubmit = async () => {
     currentComponent.value = "ConnectSuccessModal";
   } catch (error) {
     console.error("자격증 인증 실패:", error);
-
-    // 실패 시 실패 모달 표시
     modalProps.value = {
       title: "유효하지 않은 자격입니다.",
       subtitle: "입력하신 정보를 다시 확인해주세요",
       retryButtonText: "다시 시도",
     };
     currentComponent.value = "ConnectFailureModal";
+  } finally {
+    isLoading.value = false; // 로딩 종료
   }
 };
 
@@ -260,5 +257,8 @@ const closeModal = () => {
       :retryButtonText="modalProps.retryButtonText"
       @retry="closeModal"
     />
+
+    <!-- 중앙 로딩 오버레이 -->
+    <LoadingOverlay :show="isLoading" title="금육이가 검증 중입니다" />
   </div>
 </template>

@@ -5,6 +5,7 @@ import { useAuthStore } from "@/stores/auth";
 import { getTraineeTrainingPreDetail } from "@/composables/api/trainee/training/traineeTrainingPreDetailAPI";
 import { traineeTrainingPayment } from "@/composables/api/trainee/training/traineeTrainingPaymentAPI";
 import { getReviews } from "@/composables/api/useReviewApi";
+import LoadingOverlay from "@/components/common/LoadingOverlay.vue";
 
 import profileDefault from "@/assets/images/mascot/profile.png";
 
@@ -21,6 +22,7 @@ const authStore = useAuthStore();
 const trainingData = ref(null);
 const reviewList = ref([]);
 const modalVisible = ref(false);
+const isLoading = ref(false);
 
 // 로그인 유저 ID
 const userId = authStore.userId || 0;
@@ -127,9 +129,11 @@ const resolvePayMethod = (pg) => {
 // PortOne SDK 결제 호출
 const handlePayment = async (pg) => {
   modalVisible.value = false;
+  isLoading.value = true;
 
   const IMP = window.IMP;
   if (!IMP) {
+    isLoading.value = false; // ⬅️ OFF
     alert(
       "❌ PortOne SDK가 로드되지 않았습니다. 새로고침 후 다시 시도해주세요.",
     );
@@ -166,14 +170,18 @@ const handlePayment = async (pg) => {
             userId,
           };
           const res = await traineeTrainingPayment(payload);
-          alert("✅ 결제 완료: " + (res?.data?.data?.message || "성공"));
+          console.log("✅ 결제 응답:", res.data);
+          alert("✅ 결제 완료: " + res.data.data.message);
+          isLoading.value = false;
           router.replace(`/trainee/mypage/training/${route.params.trainingId}`);
         } catch (err) {
           console.error("❌ 백엔드 결제 API 오류:", err);
-          alert("❌ 결제 처리 중 오류가 발생했습니다.");
+          isLoading.value = false;
+          alert("❌ 결제 처리 중 오류 발생");
         }
-      } else if (rsp?.error_msg) {
-        alert(`❌ 결제 실패: ${rsp.error_msg}`);
+      } else {
+        isLoading.value = false;
+        alert("❌ 결제가 취소되었습니다.");
       }
       // 모바일 리디렉션 플로우는 finalizeIfRedirected()에서 처리
     },
@@ -185,7 +193,7 @@ const handlePayment = async (pg) => {
   <div
     class="flex min-h-screen flex-col overflow-y-auto bg-realBlack px-6 pb-20 pt-4"
   >
-    <main v-if="trainingData" class="flex-1 px-6">
+    <main v-if="trainingData">
       <BaseHeader title="트레이닝 상세" @back="goBack" />
 
       <div class="mt-4 flex items-center gap-2">
@@ -256,6 +264,7 @@ const handlePayment = async (pg) => {
       <div class="mt-12 pb-8">
         <button
           @click="proceedToPayment"
+          :disabled="isLoading"
           class="h-14 w-full rounded-xl bg-white text-lg font-bold text-black active:bg-gray-200"
         >
           결제하기
@@ -268,5 +277,7 @@ const handlePayment = async (pg) => {
       @close="modalVisible = false"
       @select="handlePayment"
     />
+
+    <LoadingOverlay :show="isLoading" title="결제 처리 중입니다" />
   </div>
 </template>

@@ -9,7 +9,7 @@ const description = defineModel("description");
 const difficulty = defineModel("difficulty");
 const routines = defineModel("routines");
 
-const emit = defineEmits(["open-routine-modal"]);
+const emit = defineEmits(["open-routine-modal", "edit-routine"]);
 
 const DIFFICULTY_LEVELS = ["초급", "중급", "고급"];
 const ROUTINE_SECTIONS = [
@@ -91,6 +91,7 @@ const handleSectionToggle = (sectionKey) => {
           :is-expanded="isSectionExpanded(section.key)"
           @toggle="handleSectionToggle(section.key)"
           @add-routine="emit('open-routine-modal', section.key)"
+          @edit-routine="emit('edit-routine', $event)"
         />
       </div>
     </main>
