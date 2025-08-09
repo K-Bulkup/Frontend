@@ -80,16 +80,18 @@ onMounted(() => {
         <div
           v-for="(item, index) in qnaData"
           :key="item.id"
-          class="mb-4 rounded-xl bg-gray-100"
+          class="mb-4 overflow-hidden rounded-xl bg-gray-100"
         >
           <!-- Question Header -->
           <div
             class="flex cursor-pointer items-center justify-between p-4"
             @click="toggleExpand(index)"
           >
-            <div class="flex items-center space-x-3">
+            <div class="flex min-w-0 items-center space-x-3">
               <!-- Question Icon -->
-              <div class="flex h-5 w-5 items-center justify-center">
+              <div
+                class="flex h-5 w-5 flex-shrink-0 items-center justify-center"
+              >
                 <svg
                   class="h-5 w-5"
                   :class="item.hasAnswer ? 'text-green-500' : 'text-gray-200'"
@@ -112,12 +114,16 @@ onMounted(() => {
                   />
                 </svg>
               </div>
-              <!-- Question Title -->
-              <h3 class="flex-1 text-heading text-black">{{ item.title }}</h3>
+              <!-- Question Title (한 줄 말줄임) -->
+              <h3
+                class="min-w-0 flex-1 truncate break-words text-heading text-black"
+              >
+                {{ item.title }}
+              </h3>
             </div>
             <!-- Chevron Icon -->
             <svg
-              class="h-5 w-5 text-black transition-transform"
+              class="h-5 w-5 flex-shrink-0 text-black transition-transform"
               :class="{ 'rotate-180': item.isExpanded }"
               fill="none"
               stroke="currentColor"
@@ -136,14 +142,17 @@ onMounted(() => {
           <div v-if="item.isExpanded && item.content" class="px-4 pb-4">
             <!-- Question Content -->
             <div class="mb-4 rounded-lg bg-white p-4">
-              <p class="mb-4 text-subtext leading-relaxed text-black">
+              <!-- 본문 2줄 말줄임 -->
+              <p
+                class="multi-ellipsis-2 mb-4 line-clamp-2 break-words text-subtext leading-relaxed text-black"
+              >
                 {{ item.content }}
               </p>
               <div class="border-t border-gray-200 pt-2">
                 <div class="flex items-center justify-between">
-                  <span class="text-extra text-gray-800">{{
-                    item.author
-                  }}</span>
+                  <span class="text-extra text-gray-800">
+                    {{ item.author }}
+                  </span>
                   <span class="text-extra text-gray-700">
                     {{ item.questionDate }}
                   </span>
@@ -156,7 +165,10 @@ onMounted(() => {
               v-if="item.hasAnswer && item.answer"
               class="rounded-lg bg-white p-4"
             >
-              <p class="mb-4 text-subtext leading-relaxed text-black">
+              <!-- 답변 3줄 말줄임 -->
+              <p
+                class="multi-ellipsis-3 mb-4 line-clamp-3 break-words text-subtext leading-relaxed text-black"
+              >
                 {{ item.answer }}
               </p>
               <div class="border-t border-gray-200 pt-2">
@@ -211,11 +223,33 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Custom size for floating button */
+/* FAB custom size */
 .h-15 {
   height: 3.75rem;
 }
 .w-15 {
   width: 3.75rem;
+}
+
+/* ====== 멀티라인 말줄임 fallback (Tailwind line-clamp 미사용 시) ====== */
+/* 2줄 말줄임 */
+.multi-ellipsis-2 {
+  display: -webkit-box;
+  display: box; /* 오래된 브라우저 지원용 */
+  -webkit-line-clamp: 2;
+  line-clamp: 2; /* 표준 속성 */
+  -webkit-box-orient: vertical;
+  box-orient: vertical; /* 오래된 브라우저 지원용 */
+  overflow: hidden;
+}
+
+.multi-ellipsis-3 {
+  display: -webkit-box;
+  display: box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  box-orient: vertical;
+  overflow: hidden;
 }
 </style>

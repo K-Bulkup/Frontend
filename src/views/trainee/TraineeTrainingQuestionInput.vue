@@ -104,7 +104,7 @@ const handleSubmit = async () => {
             : 'cursor-not-allowed border border-gray-700 bg-gray-700 text-gray-200',
         ]"
       >
-        답변 작성 완료
+        질문 작성 완료
       </button>
     </div>
   </div>

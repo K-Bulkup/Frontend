@@ -35,10 +35,6 @@ const formatTimestamp = (dateInput) => {
   }
 };
 
-const handleBack = () => {
-  router.back();
-};
-
 const handleChatClick = (chatData) => {
   router.push(`/common/pt-chat/${chatData.roomId}`);
 };
@@ -137,9 +133,6 @@ onBeforeUnmount(async () => {
       class="flex items-center justify-between border-b border-gray-800 py-4"
     >
       <div class="flex items-center space-x-3">
-        <button @click="handleBack" class="p-1">
-          <ChevronLeftIcon class="h-6 w-6 text-white" />
-        </button>
         <h1 class="text-lg font-semibold text-white">
           1:1 PT 관리 ({{ chatList.length }})
         </h1>
