@@ -28,6 +28,8 @@ const trainingData = ref(null);
 const hasWrittenReview = ref(false);
 const trainingId = ref(route.params.trainingId);
 const userId = authStore.userId;
+// 숫자 보정 헬퍼
+const num = (v) => (v == null ? 0 : Number(v));
 
 // 서버 응답에서 "PASS"만 true가 되도록 넓게 판정
 const isServerPass = (r) =>
@@ -91,7 +93,10 @@ const loadTrainingData = async () => {
       trainerProfileUrl: raw.trainerProfileUrl || null,
       trainerId: raw.trainerId,
       trainerRating: raw.averageRating,
-      studentCount: raw.traineeCount,
+      // ✅ traineeCount 우선, 없으면 enrolled/total 대체
+      studentCount: num(
+        raw.traineeCount ?? raw.enrolledTraineeCount ?? raw.totalTraineeCount,
+      ),
       totalWeeks: 4,
       title: raw.title,
       progress: raw.progress,

@@ -23,6 +23,7 @@ const trainingData = ref(null);
 const reviewList = ref([]);
 const modalVisible = ref(false);
 const isLoading = ref(false);
+const num = (v) => (v == null ? 0 : Number(v));
 
 // 로그인 유저 ID
 const userId = authStore.userId || 0;
@@ -39,11 +40,13 @@ const loadTrainingDetail = async () => {
       category: raw.category,
       reward: `${raw.totalRoutineScore}P`,
       trainerName: raw.trainerNickname || "트레이너명 준비중",
-      trainerId: raw.trainerID,
+      trainerId: raw.trainerId ?? raw.trainerID, // 중복 키 정리
       trainerProfileUrl: raw.trainerProfileUrl,
-      trainerId: raw.trainerId,
       trainerRating: raw.averageRating,
-      studentCount: raw.traineeCount,
+      // ✅ traineeCount 우선, 없으면 enrolled/total 대체
+      studentCount: num(
+        raw.traineeCount ?? raw.enrolledTraineeCount ?? raw.totalTraineeCount,
+      ),
       totalWeeks: 4,
       title: raw.title,
       description: raw.description,
