@@ -2,10 +2,8 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useEnrollmentStore } from "@/stores/enrollment";
-import {
-  getTraineeTrainingDetail,
-  getTraineeTrainingReviewBoolean,
-} from "@/composables/api/trainee/training/traineeTrainingDetailAPI";
+import { getTraineeTrainingDetail } from "@/composables/api/trainee/training/traineeTrainingDetailAPI";
+import { getTraineeTrainingStatus } from "@/composables/api/trainee/training/traineeTrainingDetailAPI";
 import { createCounseling } from "@/composables/api/useCounselingApi";
 
 import BaseHeader from "@/components/common/BaseHeader.vue";
@@ -21,6 +19,7 @@ const authStore = useAuthStore();
 
 const trainingData = ref(null);
 const hasWrittenReview = ref(false);
+const chatRoomCreated = ref(false);
 const trainingId = ref(route.params.trainingId);
 const userId = authStore.userId;
 const enrollmentStore = useEnrollmentStore();
@@ -68,18 +67,19 @@ const loadTrainingData = async () => {
   }
 };
 
-const checkReviewExist = async () => {
+const checkTrainingStatus = async () => {
   try {
-    const res = await getTraineeTrainingReviewBoolean(trainingId.value);
-    hasWrittenReview.value = res.data.data;
+    const res = await getTraineeTrainingStatus(trainingId.value);
+    hasWrittenReview.value = res.data.data.hasWrittenReview;
+    chatRoomCreated.value = res.data.data.chatRoomCreated;
   } catch (err) {
-    console.error("리뷰 존재 여부 확인 실패:", err);
+    console.error("트레이닝 상태 조회 실패:", err);
   }
 };
 
 onMounted(() => {
   loadTrainingData();
-  checkReviewExist();
+  checkTrainingStatus();
 });
 
 // 트레이너 상세 페이지로 이동
@@ -194,31 +194,12 @@ const trainingDeadline = computed(() => {
   ).padStart(2, "0")}`;
 });
 
-// 단일 루틴 케이스 포함 (너의 개선된 로직 유지)
-const showChatButton = computed(() => {
-  const routines = trainingData.value?.routines;
-  if (!routines) return false;
-  const allRoutines = Object.values(routines)
-    .flat()
-    .filter((r) => r && r.id);
-  if (allRoutines.length === 0) return false;
-  const isSingleRoutine = allRoutines.length === 1;
-  const singleCompleted = isSingleRoutine && allRoutines[0].completed;
-  return areAllQuestsComplete.value || singleCompleted;
+const showReviewButton = computed(() => {
+  return areAllQuestsComplete.value || isTrainingExpired.value;
 });
 
-const showReviewButton = computed(() => {
-  const routines = trainingData.value?.routines;
-  if (!routines) return false;
-  const allRoutines = Object.values(routines)
-    .flat()
-    .filter((r) => r && r.id);
-  if (allRoutines.length === 0) return false;
-  const isSingleRoutine = allRoutines.length === 1;
-  const singleCompleted = isSingleRoutine && allRoutines[0].completed;
-  return (
-    areAllQuestsComplete.value || singleCompleted || isTrainingExpired.value
-  );
+const showChatButton = computed(() => {
+  return areAllQuestsComplete.value;
 });
 
 // 다른 사람이 추가한 startChat 유지 (웹소켓 관련 로직)
@@ -377,6 +358,7 @@ const goToQnaPage = () => {
           v-if="showChatButton"
           text="트레이너와 1:1 채팅하기"
           variant="primary"
+          :disabled="chatRoomCreated"
           @click="startChat"
         >
           <template #icon>

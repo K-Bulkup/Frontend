@@ -6,6 +6,6 @@ export const getTraineeTrainingDetail = (trainingId) => {
 };
 
 // 트레이닝 리뷰 여부
-export const getTraineeTrainingReviewBoolean = (trainingId) => {
-  return apiClient.get(`/api/trainee/reviews/${trainingId}`);
+export const getTraineeTrainingStatus = (trainingId) => {
+  return apiClient.get(`/api/trainee/training/${trainingId}/status`);
 };
