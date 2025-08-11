@@ -76,15 +76,9 @@ const safeRating = computed(() => {
       <div class="absolute right-1 top-0.5">
         <span
           v-if="levelBadge"
-          class="rounded-xl px-1 py-1 text-[7px] text-white"
+          class="inline-block break-words rounded-xl bg-gray-900 px-2 py-1 text-center text-[7px] leading-tight text-white"
           :style="{
             backgroundColor: levelBadge.backgroundColor,
-            width: '26px',
-            height: '13px',
-            fontSize: '7px',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
           }"
         >
           {{ levelBadge.text }}
