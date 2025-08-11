@@ -24,6 +24,7 @@ export default {
         body: "15px", // 본문 텍스트 1
         body2: "12px", // 본문 텍스트 2
         body3: "10px", // 본문 텍스트 3
+        body4: "8px", // 본문 텍스트 4
         button: "11px", // 버튼
       },
       colors: {
