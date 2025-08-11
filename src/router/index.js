@@ -2,7 +2,7 @@
 import SplashPage from "@/views/auth/SplashPage.vue";
 import SignupPage from "@/views/auth/SignupPage.vue";
 import LoginPage from "@/views/auth/LoginPage.vue";
-import adminLoginPage from "@/views/admin/adminLoginPage.vue";
+import AdminLoginPage from "@/views/admin/AdminLoginPage.vue";
 import AdminTrainingApprovalPage from "@/views/admin/AdminTrainingApprovalPage.vue";
 import AdminUserMainPage from "@/views/admin/AdminUserMainPage.vue";
 import AdminUserCreatePage from "@/views/admin/AdminUserCreatePage.vue";
@@ -51,7 +51,7 @@ const routes = [
   { path: "/signup", component: SignupPage, meta: { hideNavbar: true } },
   {
     path: "/admin/login",
-    component: adminLoginPage,
+    component: AdminLoginPage,
     meta: { hideNavbar: true },
   },
   {
