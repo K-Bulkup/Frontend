@@ -83,7 +83,7 @@ const modalTitle = computed(() => {
 
 <template>
   <div
-    class="absolute inset-0 z-50 flex h-full w-full flex-col justify-between overflow-y-auto bg-realBlack px-6 py-10 scrollbar-hide"
+    class="bg-background absolute inset-0 z-50 flex h-full w-full flex-col justify-between overflow-y-auto px-6 py-10 scrollbar-hide"
   >
     <div>
       <BaseHeader :title="modalTitle" @back="handleClose" />
@@ -113,7 +113,6 @@ const modalTitle = computed(() => {
             label="루틴 내용"
             placeholder="루틴 내용을 입력해주세요"
             v-model="form.description"
-            :isTextarea="true"
           />
 
           <div>
@@ -141,7 +140,6 @@ const modalTitle = computed(() => {
             label="루틴 답안"
             placeholder="루틴 답안을 입력해주세요"
             v-model="form.routineAnswer"
-            :isTextarea="true"
           />
         </div>
       </main>

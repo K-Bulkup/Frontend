@@ -12,7 +12,6 @@ onMounted(async () => {
     authStore.setToken(token);
     try {
       await authStore.fetchUserInfo();
-      
     } catch (err) {
       authStore.logout();
       router.push("/login");
@@ -23,10 +22,10 @@ onMounted(async () => {
 
 <template>
   <div
-    class="flex min-h-screen items-center justify-center bg-realBlack text-white"
+    class="bg-background flex min-h-screen items-center justify-center text-white"
   >
     <div
-      class="relative flex h-[852px] w-[393px] flex-col overflow-hidden bg-realBlack shadow-2xl"
+      class="bg-background relative flex h-[852px] w-[393px] flex-col overflow-hidden shadow-2xl"
     >
       <main class="flex-1 overflow-y-auto scrollbar-hide">
         <RouterView />

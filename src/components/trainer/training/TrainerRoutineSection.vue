@@ -1,4 +1,6 @@
 <script setup>
+import BaseTag from "@/components/common/BaseTag.vue";
+
 defineProps({
   title: {
     type: String,
@@ -22,49 +24,52 @@ const emit = defineEmits(["toggle", "add-routine", "edit-routine"]);
 </script>
 
 <template>
-  <div class="mb-2.5">
+  <div class="mb-4">
     <div
       @click="emit('toggle')"
-      class="flex cursor-pointer items-center justify-between rounded-xl bg-gray-100 p-4"
+      class="flex cursor-pointer items-center justify-between p-4"
     >
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-3">
+        <div class="h-[60px] w-[60px] rounded-[15px] bg-gray-800"></div>
+        <div class="flex flex-col">
+          <span class="text-body text-white">{{ title }}</span>
+          <span class="text-caption text-gray-400">루틴을 입력해주세요</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button
+          v-if="showAddButton"
+          @click.stop="emit('add-routine')"
+          class="hover:text-primary-dark flex items-center justify-center gap-2 text-body text-primary transition-colors"
+        >
+          <span class="text-xl">+</span>
+          <span>루틴 추가</span>
+        </button>
         <img
-          src="@/assets/images/Chevron_Down_M.svg"
+          src="@/assets/images/Chevron_Down_XL.svg"
           alt="펼치기"
           class="h-5 w-5 transition-transform"
           :class="{ 'rotate-180': isExpanded }"
         />
-        <span class="text-body text-black">{{ title }}</span>
       </div>
-
-      <button
-        v-if="showAddButton"
-        @click.stop="emit('add-routine')"
-        class="flex h-6 w-6 items-center justify-center rounded-full bg-primary"
-      >
-        <img src="@/assets/images/plus.svg" alt="추가 버튼" />
-      </button>
     </div>
 
-    <div v-if="isExpanded" class="mt-2.5">
-      <div
-        v-if="routines.length > 0"
-        class="flex flex-col gap-2.5 rounded-xl bg-gray-100 p-4"
-      >
+    <div v-if="isExpanded" class="mt-2 space-y-2">
+      <div v-if="routines.length > 0" class="space-y-2">
         <div
           v-for="routine in routines"
           :key="routine.id"
           @click="emit('edit-routine', routine)"
-          class="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4"
+          class="bg-gray-custom rounded-15 flex cursor-pointer items-center p-3 transition-colors hover:bg-gray-700"
         >
-          <span class="flex-1 text-body text-black">{{ routine.title }}</span>
+          <div class="flex items-center gap-4">
+            <span class="pl-2 text-body text-white">{{ routine.title }}</span>
+            <BaseTag :text="routine.tag" />
+          </div>
         </div>
       </div>
-      <div
-        v-else
-        class="rounded-xl bg-gray-800 p-4 text-center text-subtext text-gray-700"
-      >
-        최소 1개 이상의 루틴을 등록해주세요
+      <div v-else class="p-4 text-center">
+        <p class="mb-3 text-subtext text-gray-400">루틴이 없습니다</p>
       </div>
     </div>
   </div>
