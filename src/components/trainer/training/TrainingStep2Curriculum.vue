@@ -10,6 +10,7 @@ const description = defineModel("description");
 const difficulty = defineModel("difficulty");
 const routines = defineModel("routines");
 
+// [수정됨] 이제 부모에게 카테고리 키 없이 모달을 열어달라는 신호만 보냄
 const emit = defineEmits(["open-routine-modal", "edit-routine"]);
 
 const DIFFICULTY_LEVELS = ["초급", "중급", "고급"];
@@ -70,7 +71,21 @@ const handleSectionToggle = (sectionKey) => {
       </div>
 
       <div>
-        <div class="mb-4 text-input text-gray-50">루틴</div>
+        <div class="mb-4 flex items-center justify-between">
+          <div class="text-input text-gray-50">루틴</div>
+          <!-- 루틴 추가 버튼 -->
+          <button
+            @click="emit('open-routine-modal')"
+            class="flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 transition-colors active:bg-gray-800"
+          >
+            <img
+              src="@/assets/images/plus_green.svg"
+              alt="추가"
+              class="h-5 w-5"
+            />
+            <span class="text-button text-white">루틴 추가</span>
+          </button>
+        </div>
         <TrainerRoutineSection
           v-for="section in ROUTINE_SECTIONS"
           :key="section.key"
@@ -79,7 +94,6 @@ const handleSectionToggle = (sectionKey) => {
           :routines="routines[section.key]"
           :is-expanded="isSectionExpanded(section.key)"
           @toggle="handleSectionToggle(section.key)"
-          @add-routine="emit('open-routine-modal', section.key)"
           @edit-routine="emit('edit-routine', $event)"
         />
       </div>

@@ -18,13 +18,9 @@ defineProps({
     type: Boolean,
     default: false,
   },
-  showAddButton: {
-    type: Boolean,
-    default: true,
-  },
 });
 
-const emit = defineEmits(["toggle", "add-routine", "edit-routine"]);
+const emit = defineEmits(["toggle", "edit-routine"]);
 
 const convertQuizTypeToLabel = (type) => {
   switch (type) {
@@ -54,21 +50,6 @@ const convertQuizTypeToLabel = (type) => {
         </div>
       </div>
       <div class="flex items-center gap-3">
-        <button
-          v-if="showAddButton"
-          @click.stop="emit('add-routine')"
-          class="flex items-center justify-center"
-        >
-          <div
-            class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-800"
-          >
-            <img
-              src="@/assets/images/plus.svg"
-              alt="루틴 추가"
-              class="h-4 w-4"
-            />
-          </div>
-        </button>
         <img
           src="@/assets/images/Chevron_Down_XL.svg"
           alt="펼치기"
