@@ -104,25 +104,39 @@ const openVideo = () => {
 };
 
 // 제출 처리
+// submission: { text: string, file?: File, imageUrl?: string }
+//  - file 존재 시 → 멀티파트로 파일 함께 전송
+//  - file 없을 시 → 멀티파트지만 파일 파트 없이 JSON만 전송
 const handleCertificationSubmit = async (submission) => {
   if (isLoading.value || isLocked.value) return;
   isLoading.value = true;
 
+  // 미리보기용 URL (파일이면 로컬 Object URL, 아니면 전달받은 imageUrl)
+  const previewUrl = submission.file
+    ? URL.createObjectURL(submission.file)
+    : (submission.imageUrl ?? null);
+
   certificationPhotos.value.push({
     id: Date.now(),
     description: submission.text,
-    imageUrl: submission.imageUrl,
+    imageUrl: previewUrl,
     timestamp: new Date(),
     isUser: true,
   });
 
   try {
     const id = String(route.params.routineId); // ✅ 항상 문자열 키 사용
-    const res = await submitRoutineResult(id, {
+    const payload = {
       enrollmentId: Number(route.query.enrollmentId),
       answerText: submission.text,
-      evidenceUrl: submission.imageUrl ?? null,
-    });
+      // ✅ evidenceUrl 같은 문자열 필드는 더 이상 보낼 필요 없음
+    };
+
+    const res = await submitRoutineResult(
+      id,
+      payload,
+      submission.imageFile ?? null, // ✅ 파일이 있으면 전달, 없으면 null
+    );
 
     const result = res.data.passFailResult;
 

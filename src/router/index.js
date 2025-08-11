@@ -27,6 +27,7 @@ import AssetAiChatPage from "@/views/trainee/asset/AssetAiChatPage.vue";
 
 //trainer
 import TrainerMyPage from "@/views/trainer/TrainerMyPage.vue";
+import TrainerReportPage from "@/views/trainer/TrainerReportPage.vue";
 import TrainerVerifyPage from "@/views/trainer/TrainerVerifyPage.vue";
 import TrainerTrainingPage from "@/views/trainer/TrainerTrainingPage.vue";
 import TrainerTrainingDetailPage from "@/views/trainer/TrainerTrainingDetailPage.vue";
@@ -147,6 +148,11 @@ const routes = [
   {
     path: "/trainer/mypage",
     component: TrainerMyPage,
+    meta: { requiresAuth: true, roles: ["TRAINER"] },
+  },
+  {
+    path: "/trainer/mypage/report",
+    component: TrainerReportPage,
     meta: { requiresAuth: true, roles: ["TRAINER"] },
   },
   {

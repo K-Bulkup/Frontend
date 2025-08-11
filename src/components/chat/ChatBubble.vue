@@ -47,7 +47,10 @@ const profileImage = computed(() => {
     </div>
 
     <div class="max-w-xs lg:max-w-md">
-      <div class="rounded-2xl px-4 py-3 text-sm" :class="messageClasses">
+      <div
+        class="whitespace-pre-wrap break-words rounded-2xl px-4 py-3 text-sm"
+        :class="messageClasses"
+      >
         {{ message }}
       </div>
       <div
