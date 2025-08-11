@@ -2,6 +2,7 @@
 import { ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import TrainingCard from "@/components/trainee/training/TrainingCard.vue";
+import BaseHeaderWithoutBack from "@/components/common/BaseHeaderWithoutBack.vue";
 import {
   getAllTrainings,
   searchTrainings,
@@ -12,7 +13,7 @@ const searchQuery = ref("");
 const trainings = ref([]);
 const allTrainingsCache = ref([]); // 전체 목록 캐시
 
-// ✅ 전체 트레이닝 불러오기
+// 전체 트레이닝 불러오기
 const fetchAllTrainings = async () => {
   try {
     const res = await getAllTrainings();
@@ -26,7 +27,7 @@ const fetchAllTrainings = async () => {
       rating: t.averageRating,
       tags: [t.category, t.level],
       thumbnailUrl: t.thumbnailUrl,
-      isPurchased: t.purchased ?? false, // ✅ 필드명 수정
+      isPurchased: t.purchased ?? false, // 필드명 수정
     }));
     trainings.value = [...allTrainingsCache.value];
   } catch (err) {
@@ -34,7 +35,7 @@ const fetchAllTrainings = async () => {
   }
 };
 
-// ✅ 검색 API 호출
+// 검색 API 호출
 const fetchSearchResults = async (keyword) => {
   try {
     const res = await searchTrainings(keyword);
@@ -48,14 +49,14 @@ const fetchSearchResults = async (keyword) => {
       rating: t.averageRating,
       tags: [t.category, t.level],
       thumbnailUrl: t.thumbnailUrl,
-      isPurchased: t.purchased ?? false, // ✅ 백엔드에서 안 내려오면 false
+      isPurchased: t.purchased ?? false, // 백엔드에서 안 내려오면 false
     }));
   } catch (err) {
     console.error("🚨 검색 실패:", err);
   }
 };
 
-// ✅ 검색어 감지 (디바운스)
+// 검색어 감지 (디바운스)
 let debounceTimer;
 watch(searchQuery, (newValue) => {
   clearTimeout(debounceTimer);
@@ -68,7 +69,7 @@ watch(searchQuery, (newValue) => {
   }, 300);
 });
 
-// ✅ 상세 페이지 이동
+// 상세 페이지 이동
 const goToDetail = (training) => {
   console.log("📌 클릭한 트레이닝:", training);
 
@@ -85,17 +86,18 @@ const goToDetail = (training) => {
   }
 };
 
-// ✅ PT 페이지 이동
+// PT 페이지 이동
 const goToPtPage = () => {
   router.push("/common/pt-history");
 };
 
-// ✅ 최초 전체 목록 로딩
+// 최초 전체 목록 로딩
 fetchAllTrainings();
 </script>
 
 <template>
   <div class="relative min-h-screen bg-realBlack px-4 pb-24 pt-4">
+    <BaseHeaderWithoutBack title="트레이닝 목록" />
     <div class="relative mb-6">
       <input
         type="text"

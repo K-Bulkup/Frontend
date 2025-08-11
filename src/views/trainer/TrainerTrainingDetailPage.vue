@@ -20,6 +20,7 @@ const router = useRouter();
 
 const trainingData = ref(null);
 const reviewList = ref([]);
+const num = (v) => (v == null ? 0 : Number(v));
 
 const expandedSections = ref({
   stretching: true,
@@ -65,8 +66,8 @@ onMounted(async () => {
       trainerProfileUrl: detail.trainerProfileImage,
       trainerName: detail.trainerName,
       trainerRating: detail.trainerRating,
-      studentCount: detail.enrolledTraineeCount,
-      totalWeeks: 1, // 루틴 주 수는 고정값 또는 추후 계산 가능
+      studentCount: num(detail.enrolledTraineeCount ?? detail.traineeCount),
+      totalWeeks: 4,
     };
 
     // ✅ 루틴 목록 조회 및 분류

@@ -1,11 +1,15 @@
 <script setup>
-import { ref, computed } from "vue";
+import { reactive, computed, onMounted } from "vue";
 import BaseButton from "@/components/common/BaseButton.vue";
 import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseFormField from "@/components/common/BaseFormField.vue";
 
 const props = defineProps({
+  initialData: {
+    type: Object,
+    default: null,
+  },
   routineCategoryKey: {
     type: String,
     required: true,
@@ -20,24 +24,31 @@ const QUIZ_TYPES = [
   { key: "OX", label: "OX" },
 ];
 
-const routineTitle = ref("");
-const routineUrl = ref("");
-const routineDescription = ref("");
-const routineAnswer = ref("");
-const selectedQuizType = ref("PHOTO");
+const form = reactive({
+  id: null,
+  title: "",
+  videoUrl: "",
+  description: "",
+  routineType: "",
+  quizType: "PHOTO",
+  routineAnswer: "",
+});
+
+// 컴포넌트가 생성될 때(key가 바뀔 때마다) 실행되는 로직 추가
+onMounted(() => {
+  // 수정 모드이면 initialData 복사해서 넣기
+  if (props.initialData) {
+    Object.assign(form, props.initialData);
+  }
+  form.routineType = convertCategoryToKorean(props.routineCategoryKey);
+});
 
 const isSaveButtonDisabled = computed(() => {
-  const hasRequiredInfo =
-    !routineTitle.value.trim() || !routineDescription.value.trim();
-
-  if (hasRequiredInfo) {
-    return true;
+  const hasRequiredInfo = !form.title.trim() || !form.description.trim();
+  if (hasRequiredInfo) return true;
+  if (form.quizType !== "PHOTO") {
+    return !form.routineAnswer.trim();
   }
-
-  if (selectedQuizType.value !== "PHOTO") {
-    return !routineAnswer.value.trim();
-  }
-
   return false;
 });
 
@@ -60,21 +71,14 @@ const convertCategoryToKorean = (key) => {
 
 const handleSave = () => {
   if (isSaveButtonDisabled.value) return;
-
-  const routineData = {
-    title: routineTitle.value,
-    description: routineDescription.value,
-    routineType: convertCategoryToKorean(props.routineCategoryKey), // DB에 저장할 한글 값으로 변환
-    quizType: selectedQuizType.value,
-    videoUrl: routineUrl.value || null,
-    routineAnswer: routineAnswer.value || null,
-  };
-
-  console.log("DB로 전송될 실제 데이터:", routineData);
-  console.log("routineCategoryKey Prop 값:", props.routineCategoryKey);
-
-  emit("save", routineData);
+  // form 객체의 복사본을 부모에게 전달 (id가 있으면 수정, 없으면 추가로 인식)
+  emit("save", { ...form });
 };
+
+const modalTitle = computed(() => {
+  const action = props.initialData ? "루틴 수정" : "루틴 추가";
+  return action;
+});
 </script>
 
 <template>
@@ -82,7 +86,7 @@ const handleSave = () => {
     class="absolute inset-0 z-50 flex h-full w-full flex-col justify-between overflow-y-auto bg-realBlack px-6 py-10 scrollbar-hide"
   >
     <div>
-      <BaseHeader title="루틴 추가" @back="handleClose" />
+      <BaseHeader :title="modalTitle" @back="handleClose" />
 
       <main>
         <BaseStatusMessage
@@ -96,19 +100,19 @@ const handleSave = () => {
             variant="dark"
             label="루틴 제목"
             placeholder="루틴 제목을 입력해주세요"
-            v-model="routineTitle"
+            v-model="form.title"
           />
           <BaseFormField
             variant="dark"
             label="영상 URL"
             placeholder="영상 URL을 입력해주세요"
-            v-model="routineUrl"
+            v-model="form.videoUrl"
           />
           <BaseFormField
             variant="dark"
             label="루틴 내용"
             placeholder="루틴 내용을 입력해주세요"
-            v-model="routineDescription"
+            v-model="form.description"
             :isTextarea="true"
           />
 
@@ -120,11 +124,11 @@ const handleSave = () => {
                 :key="type.key"
                 :class="[
                   'flex-1 rounded-xl py-3 text-center text-subtext transition-colors',
-                  selectedQuizType === type.key
+                  form.quizType === type.key
                     ? 'bg-primary text-black'
                     : 'bg-gray-100 text-black hover:bg-gray-200',
                 ]"
-                @click="selectedQuizType = type.key"
+                @click="form.quizType = type.key"
               >
                 {{ type.label }}
               </button>
@@ -133,10 +137,10 @@ const handleSave = () => {
 
           <BaseFormField
             variant="dark"
-            v-if="selectedQuizType !== 'PHOTO'"
+            v-if="form.quizType !== 'PHOTO'"
             label="루틴 답안"
             placeholder="루틴 답안을 입력해주세요"
-            v-model="routineAnswer"
+            v-model="form.routineAnswer"
             :isTextarea="true"
           />
         </div>

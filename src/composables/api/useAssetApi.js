@@ -10,6 +10,10 @@ export const getTraineeAsset = async () => {
   return await apiClient.get(`/api/trainee/assets`);
 };
 
+export const updateAndGetTraineeAsset = async () => {
+  return await apiClient.put(`/api/trainee/assets`);
+};
+
 export async function getTraineeAssetByRoomId(roomId) {
   const res = await apiClient.get(
     `/api/trainee/assets/trainer-share/${roomId}`,
