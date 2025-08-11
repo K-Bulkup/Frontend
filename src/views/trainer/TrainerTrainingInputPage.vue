@@ -177,7 +177,7 @@ const handleCompletion = () => {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col bg-realBlack px-6 pb-20 pt-4">
+  <div class="flex min-h-screen flex-col px-6 pb-20 pt-4">
     <BaseHeader v-if="step < 4" title="트레이닝 오픈" @back="handleGoBack" />
 
     <div class="flex-grow">
