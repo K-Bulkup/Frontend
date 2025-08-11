@@ -5,12 +5,16 @@ import { useRouter, useRoute } from "vue-router";
 import apiClient from "@/plugins/axios";
 import { useLogin } from "@/composables/user/useLogin";
 import { useAuthStore } from "@/stores/auth";
+
 import BaseButton from "@/components/common/BaseButton.vue";
 import BaseInput from "@/components/common/BaseInput.vue";
 import BaseSelectRole from "@/components/common/BaseSelectRole.vue";
 import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
 import ConnectSuccessModal from "@/components/common/ConnectSuccessModal.vue";
 import ConnectFailureModal from "@/components/common/ConnectFailureModal.vue";
+import BaseBottomIllustration from "@/components/common/BaseBottomIllustration.vue";
+
+import theme1 from "@/assets/images/background/theme1.png";
 
 const router = useRouter();
 const route = useRoute();
@@ -26,41 +30,33 @@ const form = ref({
 });
 
 const result = ref(null);
-const selectedRole = ref(null); // 새로 추가: 선택된 역할을 저장
+const selectedRole = ref(null);
 
-const naverProfileData = ref(null); // 네이버 프로필 데이터 저장
-const isNaverSignupFlow = ref(false); // 네이버 신규 가입 흐름인지 여부
+const naverProfileData = ref(null);
+const isNaverSignupFlow = ref(false);
 
-const kakaoProfileData = ref(null); // 카카오 프로필 데이터 저장
-const isKakaoSignupFlow = ref(false); // 카카오 신규 가입 흐름인지 여부
+const kakaoProfileData = ref(null);
+const isKakaoSignupFlow = ref(false);
 
 onMounted(() => {
-  console.log("LoginPage received query:", route.query); // 디버깅을 위한 로그 추가
-  console.log("Current step on mount:", step.value); // 현재 step 값 로깅 추가
-
   const { accessToken, role, isNewUser, email, providerId, name, loginType } =
     route.query;
 
-  // Case 1: Social login redirect that requires role selection (HIGHEST PRIORITY)
   if (loginType && isNewUser === "true") {
-    step.value = 2; // Move to role selection
-    form.value.email = email; // Pre-fill email if available
-    form.value.loginType = loginType; // Set loginType
+    step.value = 2;
+    form.value.email = email;
+    form.value.loginType = loginType;
 
-    // Store profile data for social signup/login completion
-    naverProfileData.value = { providerId, name }; // 네이버 프로필 데이터 저장 (재활용)
-    kakaoProfileData.value = { providerId, name }; // 카카오 프로필 데이터 저장 (재활용)
+    naverProfileData.value = { providerId, name };
+    kakaoProfileData.value = { providerId, name };
 
-    // Set flags for social signup flow
     isNaverSignupFlow.value = loginType === "NAVER";
     isKakaoSignupFlow.value = loginType === "KAKAO";
   } else if (accessToken && role) {
-    // Case 2: Fully logged in (accessToken and role present, and isNewUser is not 'true')
     authStore.setToken(accessToken);
     authStore.setRole(role);
-    result.value = "success"; // 로그인 성공 화면 표시
+    result.value = "success";
   }
-  // If neither of the above, step remains 1 (local login screen)
 });
 
 const goNext = () => {
@@ -78,16 +74,13 @@ const goNext = () => {
   }
 };
 
-// 역할 카드 클릭 시 호출될 함수
 const handleRoleSelection = (role) => {
   form.value.role = role;
-  selectedRole.value = role; // 선택된 역할 업데이트
+  selectedRole.value = role;
 };
 
-// "다음" 버튼 클릭 시 호출될 로그인 함수
 const handleLogin = async () => {
   if (!form.value.role) {
-    // 역할이 선택되지 않았다면 경고 또는 처리
     alert("역할을 선택해주세요.");
     return;
   }
@@ -95,11 +88,6 @@ const handleLogin = async () => {
   let success = false;
 
   if (isNaverSignupFlow.value || isKakaoSignupFlow.value) {
-    console.log(
-      "Sending social signup complete request with form data:",
-      form.value,
-    ); // 로그 추가
-    // 네이버/카카오 신규 가입 흐름인 경우 social-signup-complete API 호출
     try {
       const profileData = isNaverSignupFlow.value
         ? naverProfileData.value
@@ -109,8 +97,8 @@ const handleLogin = async () => {
       const response = await apiClient.post(
         "/api/common/auth/social-signup-complete",
         {
-          tempAccessToken: route.query.accessToken, // 백엔드에서 받은 accessToken을 tempAccessToken으로 사용
-          role: form.value.role, // 사용자가 선택한 역할
+          tempAccessToken: route.query.accessToken,
+          role: form.value.role,
         },
       );
       authStore.setToken(response.data.accessToken);
@@ -122,19 +110,16 @@ const handleLogin = async () => {
       success = false;
     }
   } else {
-    console.log("Sending local login request with form data:", form.value); // 로그 추가
-    // 일반 로컬 로그인 흐름인 경우 로그인 API 호출
     if (!form.value.loginType) {
-      form.value.loginType = "LOCAL"; // loginType이 설정되지 않은 경우 LOCAL로 명시
+      form.value.loginType = "LOCAL";
     }
 
-    // 로컬 로그인 시 이메일과 비밀번호 유효성 검사 추가
     if (
       form.value.loginType === "LOCAL" &&
       (!form.value.email || !form.value.password)
     ) {
       alert("이메일과 비밀번호를 입력해주세요.");
-      return; // 로그인 시도 중단
+      return;
     }
 
     const { success: loginSuccess } = await loginAndHandle(form.value);
@@ -142,8 +127,6 @@ const handleLogin = async () => {
   }
 
   if (success) {
-    // result.value = "success";
-    // 리디렉션은 useAuthStore에서 처리하므로 여기서는 별도 처리하지 않음
     if (authStore.role === "TRAINER") {
       router.push("/trainer/mypage");
     } else {
@@ -155,11 +138,11 @@ const handleLogin = async () => {
 };
 
 const handleNaverLogin = () => {
-  window.location.href = "/api/common/auth/naver/start"; // 정확한 경로로 변경
+  window.location.href = "/api/common/auth/naver/start";
 };
 
 const handleKakaoLogin = () => {
-  window.location.href = "/api/common/auth/kakao/start"; // 정확한 경로로 변경
+  window.location.href = "/api/common/auth/kakao/start";
 };
 </script>
 
@@ -169,7 +152,7 @@ const handleKakaoLogin = () => {
     v-if="result === 'success'"
     class="flex min-h-screen flex-col justify-between px-1 py-20"
   >
-    <ConnectSuccessModal> </ConnectSuccessModal>
+    <ConnectSuccessModal />
     <div class="mt-10 flex w-full justify-center">
       <BaseButton
         @click="
@@ -177,8 +160,9 @@ const handleKakaoLogin = () => {
             ? router.push('/trainer/mypage')
             : router.push('/trainee/mypage')
         "
-        >홈으로 가기</BaseButton
       >
+        홈으로 가기
+      </BaseButton>
     </div>
   </div>
 
@@ -187,43 +171,77 @@ const handleKakaoLogin = () => {
     v-else-if="result === 'fail'"
     class="flex min-h-screen flex-col justify-between px-1 py-20"
   >
-    <ConnectFailureModal
-      @retry="
-        () => {
+    <ConnectFailureModal />
+    <div class="mt-10 flex w-full justify-center">
+      <BaseButton
+        @click="
           result = null;
           step = 1;
-        }
-      "
-    />
+          router.push('login');
+        "
+      >
+        다시 시도
+      </BaseButton>
+    </div>
+
   </div>
 
-  <!-- 로그인 입력 화면 -->
-  <div v-else class="flex min-h-screen flex-col justify-center px-4 py-12">
-    <div class="mx-auto w-full max-w-md">
+  <!-- 로그인 입력 / 역할 선택 공용 래퍼 -->
+  <div
+    v-else
+    class="relative flex min-h-screen flex-col px-4 py-12"
+    :class="
+      step === 2
+        ? 'justify-start overflow-hidden overscroll-none pt-12'
+        : 'justify-center py-12'
+    "
+  >
+    <!-- theme1: 하단 고정 이미지 (컴포넌트로 교체) -->
+    <BaseBottomIllustration
+      v-if="step === 2"
+      :src="theme1"
+      :bottom="-140"
+      :width="460"
+      :mdWidth="520"
+    />
+
+    <div class="relative z-10 mx-auto w-full max-w-md">
+      <!-- 로그인 입력 화면 -->
       <div v-if="step === 1">
-        <h2 class="text-center text-4xl font-extrabold text-white">K-Bulkup</h2>
-        <form @submit.prevent="goNext" class="mt-8 space-y-6">
-          <BaseInput v-model="form.email" placeholder="아이디" type="email" />
-          <BaseInput
-            v-model="form.password"
-            placeholder="비밀번호"
-            type="password"
-            class="rounded-full"
+        <div class="flex justify-center">
+          <img
+            src="@/assets/images/kbulkup-logo.png"
+            alt="K-Bulkup"
+            class="h-30 mx-auto mb-2 w-auto"
           />
+        </div>
+
+        <form @submit.prevent="goNext" class="mx-auto mt-8 w-[332px]">
+          <div class="space-y-3">
+            <BaseInput v-model="form.email" placeholder="아이디" type="email" />
+            <BaseInput
+              v-model="form.password"
+              placeholder="비밀번호"
+              type="password"
+            />
+          </div>
+
           <BaseButton
             type="submit"
-            class="w-full border-white bg-[#2D2D40] py-3 text-white"
+            class="mx-auto mt-6 block h-[50px] w-[332px]"
           >
             로그인
           </BaseButton>
         </form>
+
         <button
           @click="router.push('/signup')"
           class="w-full text-center text-sm text-white underline"
-          style="margin-top: 5vh"
+          style="margin-top: 3vh"
         >
           회원가입
         </button>
+
         <p class="text-center text-sm text-white" style="margin-top: 10vh">
           SNS 계정으로 로그인하기
         </p>
@@ -245,23 +263,32 @@ const handleKakaoLogin = () => {
 
       <!-- 역할 선택 화면 -->
       <div v-if="step === 2">
-        <BaseStatusMessage
-          title="어떤 유형으로 로그인하시겠어요?"
-          subtitle="트레이너 또는 회원 중 선택해주세요."
-          variant="guide"
-        />
-        <BaseSelectRole
-          :selected="selectedRole"
-          @select="handleRoleSelection"
-        />
-        <div class="mt-10 flex justify-center">
-          <BaseButton
-            @click="handleLogin"
-            :isDisabled="!form.role"
-            class="w-full max-w-sm rounded-full text-white"
+        <div class="mx-auto w-[332px] pt-14">
+          <BaseStatusMessage
+            title="어떤 유형으로 로그인하시겠어요?"
+            variant="guide"
+          />
+
+          <div class="space-y-3">
+            <BaseSelectRole
+              :selected="selectedRole"
+              @select="handleRoleSelection"
+            />
+          </div>
+
+          <!-- (기존 유지) 하단 고정 버튼은 바깥에 있음 -->
+          <div
+            v-if="step === 2"
+            class="fixed inset-x-0 bottom-16 z-20 flex justify-center"
           >
-            선택 완료
-          </BaseButton>
+            <BaseButton
+              @click="handleLogin"
+              :isDisabled="!form.role"
+              class="h-[50px] w-[332px] shadow-lg"
+            >
+              선택 완료
+            </BaseButton>
+          </div>
         </div>
       </div>
     </div>
