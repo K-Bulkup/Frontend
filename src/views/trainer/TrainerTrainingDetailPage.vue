@@ -20,6 +20,7 @@ const router = useRouter();
 
 const trainingData = ref(null);
 const reviewList = ref([]);
+const num = (v) => (v == null ? 0 : Number(v));
 
 const expandedSections = ref({
   stretching: true,
@@ -65,7 +66,7 @@ onMounted(async () => {
       trainerProfileUrl: detail.trainerProfileImage,
       trainerName: detail.trainerName,
       trainerRating: detail.trainerRating,
-      studentCount: detail.enrolledTraineeCount,
+      studentCount: num(detail.enrolledTraineeCount ?? detail.traineeCount),
       totalWeeks: 4,
     };
 

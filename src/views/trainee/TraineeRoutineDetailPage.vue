@@ -1,10 +1,10 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { getRoutineDetail } from "@/composables/api/trainee/training/routineDetailAPI";
 import { submitRoutineResult } from "@/composables/api/trainee/training/routineResultAPI";
 import { useEnrollmentStore } from "@/stores/enrollment";
-import { watch } from "vue";
+import { useRoutineLockStore } from "@/stores/routineLock";
 
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseBadge from "@/components/common/BaseBadge.vue";
@@ -16,6 +16,7 @@ import RoutineResultModal from "@/components/trainee/training/RoutineResultModal
 const router = useRouter();
 const route = useRoute();
 const enrollmentStore = useEnrollmentStore();
+const routineLock = useRoutineLockStore();
 
 // API 데이터 상태
 const currentRoutine = ref(null);
@@ -24,8 +25,14 @@ const currentRoutine = ref(null);
 const certificationPhotos = ref([]);
 const isLoading = ref(false);
 const isResultModalVisible = ref(false);
-const submissionStatus = ref("success");
+const submissionStatus = ref("success"); // 'success' | 'failure'
 const acquiredReward = ref(0);
+
+// 잠금/입력 모드
+const isLocked = ref(false); // 로컬락(정답) → true
+const isEntryMode = computed(
+  () => !!route.query.enrollmentId && !isLocked.value,
+);
 
 // API 호출 → 루틴 상세 로드
 const loadRoutineDetail = async () => {
@@ -33,23 +40,34 @@ const loadRoutineDetail = async () => {
     const res = await getRoutineDetail(route.params.routineId);
     const raw = res.data;
 
+    const id = String(route.params.routineId); // ✅ 키 타입 통일
+    const localLocked = routineLock.isLocked(id);
+
     currentRoutine.value = {
-      id: route.params.routineId,
+      id,
       title: raw.routineTitle,
       description: raw.routineDescription,
       level: raw.level,
       category: raw.category,
       reward: raw.routineScore,
       videoUrl: raw.routineVideoUrl || null,
-      completed: false,
+      completed: localLocked, // 보기 모드 표기용
     };
+    isLocked.value = localLocked;
+
+    // 잠금 상태인데 응시 URL로 들어왔으면 쿼리 제거하여 보기모드로
+    if (isLocked.value && route.query.enrollmentId) {
+      const { enrollmentId, ...rest } = route.query;
+      router.replace({ path: route.path, query: rest });
+    }
   } catch (err) {
     console.error(" 루틴 상세 조회 실패:", err);
     router.back();
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
+  // 응시 모드 진입(쿼리 없으면 store의 enrollmentId를 부여)
   if (!route.query.enrollmentId && enrollmentStore.enrollmentId) {
     router.replace({
       path: route.path,
@@ -58,16 +76,21 @@ onMounted(() => {
         enrollmentId: enrollmentStore.enrollmentId,
       },
     });
+  } else {
+    // 보기 모드로 직접 진입한 경우도 상세 로드
+    await loadRoutineDetail();
   }
 });
+
 watch(
   () => route.query.enrollmentId,
   async (val) => {
+    // 응시 모드가 되면 상세 로드
     if (val) {
       await loadRoutineDetail();
     }
   },
-  { immediate: true },
+  { immediate: false },
 );
 
 // 뒤로 가기
@@ -80,9 +103,9 @@ const openVideo = () => {
   }
 };
 
-// 제출 처리 (AI 판별 or API 검증 로직 연결 예정)
+// 제출 처리
 const handleCertificationSubmit = async (submission) => {
-  if (isLoading.value) return;
+  if (isLoading.value || isLocked.value) return;
   isLoading.value = true;
 
   certificationPhotos.value.push({
@@ -94,7 +117,8 @@ const handleCertificationSubmit = async (submission) => {
   });
 
   try {
-    const res = await submitRoutineResult(currentRoutine.value.id, {
+    const id = String(route.params.routineId); // ✅ 항상 문자열 키 사용
+    const res = await submitRoutineResult(id, {
       enrollmentId: Number(route.query.enrollmentId),
       answerText: submission.text,
       evidenceUrl: submission.imageUrl ?? null,
@@ -103,7 +127,25 @@ const handleCertificationSubmit = async (submission) => {
     const result = res.data.passFailResult;
 
     submissionStatus.value = result === "PASS" ? "success" : "failure";
-    acquiredReward.value = result === "PASS" ? currentRoutine.value.reward : 0;
+    if (result === "PASS") {
+      // ✅ PASS 때만 잠금
+      routineLock.lock(id);
+      isLocked.value = true;
+      currentRoutine.value.completed = true;
+      acquiredReward.value = currentRoutine.value.reward;
+
+      // URL에서 enrollmentId 제거 → 재입력 방지(보기모드 고정)
+      if (route.query.enrollmentId) {
+        const { enrollmentId, ...rest } = route.query;
+        router.replace({ path: route.path, query: rest });
+      }
+    } else {
+      // 오답이면 잠금 해제
+      routineLock.unlock(id);
+      isLocked.value = false;
+      currentRoutine.value.completed = false;
+      acquiredReward.value = 0;
+    }
   } catch (e) {
     console.error("루틴 제출 실패", e);
     submissionStatus.value = "failure";
@@ -113,13 +155,10 @@ const handleCertificationSubmit = async (submission) => {
     isResultModalVisible.value = true;
   }
 };
+
 // 모달 닫기
 const closeModal = () => {
   isResultModalVisible.value = false;
-  if (submissionStatus.value === "success") {
-    currentRoutine.value.completed = true;
-    router.back();
-  }
 };
 
 // 재시도
@@ -129,7 +168,7 @@ const retrySubmission = () => {
 </script>
 
 <template>
-  <div class="flex h-screen flex-col bg-realBlack">
+  <div class="flex h-screen flex-col bg-realBlack pb-40">
     <header class="flex-shrink-0 px-6 pt-4">
       <BaseHeader title="루틴 상세" @back="handleGoBack" />
     </header>
@@ -167,10 +206,20 @@ const retrySubmission = () => {
       </div>
     </main>
 
+    <!-- 입력창: 응시 모드일 때만 노출 -->
     <RoutineSubmitBar
+      v-if="isEntryMode"
       :is-loading="isLoading"
       @submit="handleCertificationSubmit"
     />
+
+    <!-- 보기 모드(완료됨) 안내 -->
+    <div
+      v-else-if="isLocked"
+      class="mx-6 mb-6 rounded-xl bg-[#2A2A2A] px-4 py-6 text-center text-white/70"
+    >
+      이미 완료된 루틴입니다.
+    </div>
 
     <RoutineResultModal
       :is-visible="isResultModalVisible"

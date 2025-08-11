@@ -27,6 +27,7 @@ const trainerData = reactive({
   totalAverageRating: 0.0,
 });
 
+const num = (v) => (v == null ? 0 : Number(v));
 const trainingList = ref([]);
 const showTooltip = ref(false);
 
@@ -42,7 +43,10 @@ const fetchTrainerDetail = async () => {
     trainerData.username = trainer.name;
     trainerData.userProfileUrl = trainer.profileUrl || profileDefault;
     trainerData.career = trainer.description;
-    trainerData.totalTraineeCount = trainer.traineeCount;
+    // ✅ totalTraineeCount(누적) 우선, 없으면 traineeCount로 대체
+    trainerData.totalTraineeCount = num(
+      trainer.totalTraineeCount ?? trainer.traineeCount,
+    );
     trainerData.totalAverageRating = trainer.averageRating;
     trainerData.certificates = trainer.isCertified ? ["자격증 있음"] : [];
 
