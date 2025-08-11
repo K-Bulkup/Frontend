@@ -1,9 +1,9 @@
 <template>
   <div class="admin-user-edit-page p-4">
-    <h1 class="mb-4 text-2xl font-bold">사용자 정보 수정</h1>
+    <h1 class="mb-4 text-2xl font-bold">회원 정보 수정</h1>
 
     <div v-if="loading" class="text-center text-gray-500">
-      사용자 정보를 불러오는 중...
+      회원 정보를 불러오는 중...
     </div>
     <div v-else-if="error" class="text-center text-red-500">{{ error }}</div>
     <div v-else class="mb-6 rounded-lg border bg-white p-4 shadow-sm">

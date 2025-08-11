@@ -50,14 +50,14 @@ const rejectTraining = async (trainingId) => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#111111] p-6 text-white">
-    <h1 class="mb-6 text-center text-2xl font-bold">강좌 승인 관리</h1>
+  <div class="min-h-screen bg-white p-6 text-black">
+    <h1 class="mb-6 text-3xl font-bold">강좌 승인 관리</h1>
 
-    <div class="mx-auto max-w-6xl rounded-xl bg-gray-800 p-4 shadow">
-      <div class="overflow-x-auto rounded">
+    <div class="mx-auto max-w-6xl rounded-xl p-4 shadow">
+      <div class="overflow-x-auto rounded-lg">
         <table class="min-w-full text-sm">
-          <thead>
-            <tr class="bg-gray-700 text-gray-300">
+          <thead class="bg-gray-100 text-gray-800">
+            <tr>
               <th class="px-4 py-3 text-left font-semibold">강좌명</th>
               <th class="px-4 py-3 text-left font-semibold">트레이너</th>
               <th class="px-4 py-3 text-center font-semibold">수강생 수</th>
@@ -65,7 +65,7 @@ const rejectTraining = async (trainingId) => {
               <th class="px-4 py-3 text-center font-semibold">관리</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-700">
+          <tbody class="divide-y divide-gray-200">
             <tr v-if="pendingTrainings.length === 0">
               <td colspan="5" class="px-4 py-6 text-center text-gray-400">
                 승인 대기 중인 강좌가 없습니다.
@@ -74,7 +74,7 @@ const rejectTraining = async (trainingId) => {
             <tr
               v-for="training in pendingTrainings"
               :key="training.trainingId"
-              class="transition hover:bg-gray-700"
+              class="transition hover:bg-gray-50"
             >
               <td class="whitespace-nowrap px-4 py-3">
                 {{ training.trainingName }}
@@ -91,13 +91,13 @@ const rejectTraining = async (trainingId) => {
               <td class="space-x-2 px-4 py-3 text-center">
                 <button
                   @click="approveTraining(training.trainingId)"
-                  class="rounded bg-green-600 px-3 py-1 text-xs text-white hover:bg-green-700"
+                  class="rounded-md bg-green-600 px-3 py-1 text-sm font-bold text-white hover:bg-green-700"
                 >
                   승인
                 </button>
                 <button
                   @click="rejectTraining(training.trainingId)"
-                  class="rounded bg-red-600 px-3 py-1 text-xs text-white hover:bg-red-700"
+                  class="rounded-md bg-red-600 px-3 py-1 text-sm font-bold text-white hover:bg-red-700"
                 >
                   거절
                 </button>

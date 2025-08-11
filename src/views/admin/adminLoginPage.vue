@@ -53,7 +53,7 @@ const handleLogin = async () => {
       }
 
       step.value = 2;
-      router.push("/admin/dashboard");
+      router.push("/admin/user-management"); // Redirect to user management
     } else {
       step.value = 3;
     }
@@ -71,8 +71,8 @@ const handleLogin = async () => {
   >
     <ConnectSuccessModal />
     <div class="mt-10 flex w-full justify-center">
-      <BaseButton @click="router.push('/admin/dashboard')"
-        >대시보드로 가기</BaseButton
+      <BaseButton @click="router.push('/admin/user-management')"
+        >회원 관리로 가기</BaseButton
       >
     </div>
   </div>

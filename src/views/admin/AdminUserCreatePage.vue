@@ -1,9 +1,9 @@
 <template>
-  <div class="admin-user-create-page p-4">
-    <h1 class="mb-4 text-2xl font-bold">새 사용자 생성</h1>
+  <div class="admin-user-create-page mx-auto max-w-3xl bg-white p-6 text-black">
+    <h1 class="mb-6 text-2xl font-bold">새 사용자 생성</h1>
 
-    <div class="mb-6 rounded-lg border bg-white p-4 text-black shadow-sm">
-      <form @submit.prevent="handleCreateUser">
+    <div class="mb-6 rounded-lg border border-gray-300 bg-white p-6 shadow-sm">
+      <form @submit.prevent="handleCreateUser" class="space-y-5">
         <BaseFormField label="사용자 이름" class="text-black">
           <BaseInput type="text" v-model="newUser.username" required />
         </BaseFormField>
@@ -20,18 +20,18 @@
           </p>
         </BaseFormField>
 
-        <BaseFormField label="전화번호">
+        <BaseFormField label="전화번호" class="text-black">
           <BaseInput type="text" v-model="newUser.phone" />
         </BaseFormField>
 
-        <BaseFormField label="주소">
+        <BaseFormField label="주소" class="text-black">
           <BaseInput type="text" v-model="newUser.address" />
         </BaseFormField>
 
-        <BaseFormField label="역할">
+        <BaseFormField label="역할" class="text-black">
           <select
             v-model="newUser.role"
-            class="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm"
+            class="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
             required
           >
             <option value="">역할 선택</option>
@@ -41,7 +41,7 @@
           </select>
         </BaseFormField>
 
-        <BaseFormField label="생년월일">
+        <BaseFormField label="생년월일" class="text-black">
           <BaseInput
             type="text"
             v-model="newUser.birthdate"
@@ -52,18 +52,20 @@
           </p>
         </BaseFormField>
 
-        <div class="mt-4 flex space-x-2">
+        <div class="mt-6 flex space-x-4">
           <BaseButton
             type="submit"
-            class="rounded-md bg-black py-2 text-sm font-bold text-white hover:bg-gray-800"
-            >사용자 생성</BaseButton
+            class="rounded-md bg-black px-6 py-2 text-sm font-bold text-white transition hover:bg-gray-800"
           >
+            사용자 생성
+          </BaseButton>
           <BaseButton
             type="button"
             @click="$router.back()"
-            class="rounded-md bg-gray-300 py-2 text-sm font-bold text-gray-800 hover:bg-gray-400"
-            >취소</BaseButton
+            class="rounded-md bg-gray-300 px-6 py-2 text-sm font-bold text-gray-800 transition hover:bg-gray-400"
           >
+            취소
+          </BaseButton>
         </div>
       </form>
     </div>
