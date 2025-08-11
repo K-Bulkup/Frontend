@@ -49,6 +49,14 @@ const fetchAssets = async () => {
   }
 };
 
+const formatAiSections = (s) => {
+  if (!s) return s;
+  let t = String(s).replace(/\r\n/g, "\n").trim();
+  t = t.replace(/\n\[(분석|개선점|조언)\]\n/g, (_m, sec) => `\n[${sec}]\n`);
+  t = t.replace(/^\n+/, "");
+  return t;
+};
+
 const handleSendMessage = async (
   text,
   isAiChat = false,
@@ -75,9 +83,12 @@ const handleSendMessage = async (
     const aiText = await requestAiConsulting(messageToSend, isAsset);
     remainingChats.value = aiText.remainingChats;
 
+    const raw = aiText.choices[0].message.content;
+    const formatted = formatAiSections(raw);
+
     messages.value.push({
       id: Date.now() + 1,
-      text: aiText.choices[0].message.content,
+      text: formatted,
       isOwn: false,
       sendAt: new Date(),
       isAiChat,
@@ -136,10 +147,11 @@ onMounted(async () => {
 
     messages.value = chatList.map((msg) => {
       const [year, month, day, hour, minute, second] = msg.sendAt;
+      const isOwn = msg.role === "user";
       return {
         id: msg.id,
-        text: msg.message,
-        isOwn: msg.role === "user",
+        text: isOwn ? msg.message : formatAiSections(msg.message),
+        isOwn,
         sendAt: new Date(year, month - 1, day, hour, minute, second),
       };
     });
