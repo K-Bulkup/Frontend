@@ -187,17 +187,14 @@ const handleKakaoLogin = () => {
     v-else-if="result === 'fail'"
     class="flex min-h-screen flex-col justify-between px-1 py-20"
   >
-    <ConnectFailureModal> </ConnectFailureModal>
-    <div class="mt-10 flex w-full justify-center">
-      <BaseButton
-        @click="
+    <ConnectFailureModal
+      @retry="
+        () => {
           result = null;
           step = 1;
-          router.push('login');
-        "
-        >다시 시도</BaseButton
-      >
-    </div>
+        }
+      "
+    />
   </div>
 
   <!-- 로그인 입력 화면 -->
