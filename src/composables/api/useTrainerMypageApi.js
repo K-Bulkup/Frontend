@@ -56,6 +56,42 @@ export const trainerMyPageApi = {
       throw error;
     }
   },
+
+  // 수익 리포트 요약 데이터 조회
+  async getRevenueReport(trainingId = null) {
+    try {
+      const url = trainingId
+        ? `/api/trainer/mypage/report?trainingId=${trainingId}`
+        : "/api/trainer/mypage/report";
+      const response = await apiClient.get(url);
+      return response.data.data;
+    } catch (error) {
+      console.error("수익 리포트 요약 데이터 조회 실패:", error);
+      throw error;
+    }
+  },
+
+  // 일별 수익 데이터 조회 (전체)
+  async getDailyRevenue() {
+    try {
+      const response = await apiClient.get("/api/trainer/mypage/report/daily");
+      return response.data.data;
+    } catch (error) {
+      console.error("일별 수익 데이터 조회 실패:", error);
+      throw error;
+    }
+  },
+
+  // 특정 트레이닝의 일별 수익 데이터 조회
+  async getTrainingDailyRevenue(trainingId) {
+    try {
+      const response = await apiClient.get(`/api/trainer/mypage/report/${trainingId}/daily`);
+      return response.data.data;
+    } catch (error) {
+      console.error("특정 트레이닝 일별 수익 데이터 조회 실패:", error);
+      throw error;
+    }
+  },
 };
 
 // 개별 함수들도 export (필요한 경우)
@@ -64,4 +100,7 @@ export const {
   updateIntroduction,
   uploadProfileImage,
   getCertifications,
+  getRevenueReport,
+  getDailyRevenue,
+  getTrainingDailyRevenue,
 } = trainerMyPageApi;
