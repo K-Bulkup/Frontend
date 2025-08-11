@@ -1,13 +1,17 @@
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useSignup } from "@/composables/user/useSignup";
+
 import BaseButton from "@/components/common/BaseButton.vue";
 import BaseInput from "@/components/common/BaseInput.vue";
 import BaseSelectRole from "@/components/common/BaseSelectRole.vue";
 import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
 import ConnectSuccessModal from "@/components/common/ConnectSuccessModal.vue";
 import ConnectFailureModal from "@/components/common/ConnectFailureModal.vue";
+import BaseBottomIllustration from "@/components/common/BaseBottomIllustration.vue";
+
+import coin from "@/assets/images/background/coin.png";
 
 const router = useRouter();
 const step = ref(1);
@@ -23,17 +27,13 @@ const form = ref({
   loginType: "LOCAL",
 });
 
-const selectedRole = ref(null); // 선택된 역할을 저장
+const selectedRole = ref(null);
 
 const isEmailValid = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
 const isPasswordValid = (password) => /^(?=.*[^\w\s]).{8,}$/.test(password);
-
 const isPasswordConfirmed = () =>
   form.value.password === form.value.passwordConfirm;
-
 const isUsernameValid = (username) => /^[^\s]{1,12}$/.test(username);
-
 const isBirthdateValid = (birthdate) => /^\d{8}$/.test(birthdate);
 
 const goNext = () => {
@@ -49,14 +49,13 @@ const goNext = () => {
     step.value++;
   } else if (step.value === 3) {
     if (!isBirthdateValid(form.value.birthdate)) return;
-    step.value++; // 4단계로 이동
+    step.value++;
   }
 };
 
-// 역할 카드 클릭 시 호출될 함수
 const handleRoleSelection = (role) => {
   form.value.role = role;
-  selectedRole.value = role; // 선택된 역할 업데이트
+  selectedRole.value = role;
 };
 
 const result = ref(null);
@@ -78,27 +77,12 @@ const resetForm = () => {
 
 const handleSubmit = async () => {
   if (!form.value.role) return;
-
   await submit();
 };
+
 const submit = async () => {
-  // 8자리 숫자 형식의 생년월일 (예: 19900101)
   const rawBirthdate = form.value.birthdate;
-
-  // YYYY-MM-DD 형식으로 변환
-  const year = rawBirthdate.substring(0, 4);
-  const month = rawBirthdate.substring(4, 6);
-  const day = rawBirthdate.substring(6, 8);
-  const formattedBirthdate = `${rawBirthdate}000000`; // 8자리 날짜 뒤에 000000 붙이기
-
-  console.log("Sending signup request with form data:", {
-    email: form.value.email,
-    password: form.value.password,
-    username: form.value.username,
-    birthdate: formattedBirthdate,
-    role: form.value.role,
-    loginType: form.value.loginType,
-  });
+  const formattedBirthdate = `${rawBirthdate}000000`;
 
   const response = await signupAndHandle({
     email: form.value.email,
@@ -109,12 +93,27 @@ const submit = async () => {
     loginType: form.value.loginType,
   });
 
-  console.log('Signup response in component:', response); // 디버깅 로그
-  console.log('Value of response.success:', response.success); // 값 확인
-  console.log('Type of response.success:', typeof response.success); // 타입 확인
-
   result.value = response.success ? "success" : "fail";
-  console.log('result.value is set to:', result.value); // 최종 결과 확인
+};
+
+/* ▼ 하단 고정 버튼: 라벨/비활성/액션을 단계에 따라 통일 */
+const btnLabel = computed(() => (step.value === 4 ? "가입완료" : "다음"));
+const btnDisabled = computed(() => {
+  if (step.value === 1)
+    return (
+      !isEmailValid(form.value.email) ||
+      !isPasswordValid(form.value.password) ||
+      !isPasswordConfirmed()
+    );
+  if (step.value === 2)
+    return !form.value.username || form.value.username.length > 12;
+  if (step.value === 3) return !isBirthdateValid(form.value.birthdate);
+  if (step.value === 4) return !form.value.role;
+  return false;
+});
+const btnAction = () => {
+  if (step.value === 4) handleSubmit();
+  else goNext();
 };
 </script>
 
@@ -133,8 +132,24 @@ const submit = async () => {
     <ConnectFailureModal @retry="resetForm" />
   </div>
 
-  <div v-else class="flex min-h-screen flex-col justify-between px-1 py-20">
-    <div>
+  <!-- 코인 배경 + 하단 고정 버튼 레이아웃 -->
+  <div
+    v-else
+    class="relative flex min-h-screen flex-col justify-start overflow-hidden px-4 pb-[160px] pt-12"
+  >
+    <!-- 하단 코인 배경 (컴포넌트로 교체) -->
+    <BaseBottomIllustration
+      :src="coin"
+      :bottom="-8"
+      :width="420"
+      :mdWidth="520"
+      :opacity="0.9"
+      :brightness="0.9"
+      :contrast="0.9"
+    />
+
+    <!-- 내용 -->
+    <div class="relative z-10 mx-auto w-[332px] pt-20">
       <BaseStatusMessage
         :title="
           step === 1
@@ -234,41 +249,14 @@ const submit = async () => {
       </div>
     </div>
 
-    <div class="mt-10 flex flex-col items-center">
+    <!-- 하단 고정 버튼 -->
+    <div class="fixed inset-x-0 bottom-12 z-20 flex justify-center">
       <BaseButton
-        v-if="step === 1"
-        @click="goNext"
-        :isDisabled="
-          !isEmailValid(form.email) ||
-          !isPasswordValid(form.password) ||
-          !isPasswordConfirmed()
-        "
+        :isDisabled="btnDisabled"
+        @click="btnAction"
+        class="h-[50px] w-[332px] !opacity-100 shadow-lg hover:!opacity-100"
       >
-        다음
-      </BaseButton>
-
-      <BaseButton
-        v-else-if="step === 2"
-        @click="goNext"
-        :isDisabled="!form.username || form.username.length > 12"
-      >
-        다음
-      </BaseButton>
-
-      <BaseButton
-        v-else-if="step === 3"
-        @click="goNext"
-        :isDisabled="!isBirthdateValid(form.birthdate)"
-      >
-        다음
-      </BaseButton>
-
-      <BaseButton
-        v-if="step === 4"
-        @click="handleSubmit"
-        :isDisabled="!form.role"
-      >
-        가입완료
+        {{ btnLabel }}
       </BaseButton>
     </div>
   </div>

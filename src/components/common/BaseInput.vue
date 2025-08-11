@@ -23,14 +23,14 @@ const inputAttrs = useAttrs();
 </script>
 
 <template>
-  <div class="flex w-full flex-col items-center pb-3">
+  <div class="flex w-full flex-col items-center">
     <div
-      class="flex items-center gap-3 rounded-xl border bg-gray-100 px-4 py-3"
+      class="flex items-center gap-3 rounded-xl border bg-gray-600 px-4 py-3"
       :class="[
-        isInvalid ? 'border-error' : 'border-gray-200',
+        isInvalid ? 'border-error' : 'border-gray-600',
         'transition duration-200',
       ]"
-      style="width: 360px; height: 60px"
+      style="width: 332px; height: 64px"
     >
       <slot name="icon" />
 
@@ -40,7 +40,7 @@ const inputAttrs = useAttrs();
         @input="(e) => emit('update:modelValue', e.target.value)"
         :type="type"
         :placeholder="placeholder"
-        class="placeholder-gray700 flex-1 bg-transparent text-sm text-black outline-none"
+        class="flex-1 appearance-none !bg-transparent text-white placeholder-gray-500 outline-none [caret-color:#fff] focus:outline-none focus:ring-0"
         :class="$slots.icon ? 'ml-2' : ''"
       />
     </div>
@@ -52,3 +52,20 @@ const inputAttrs = useAttrs();
     </div>
   </div>
 </template>
+<style scoped>
+/* 크롬/사파리 자동완성 및 기본 배경 강제 덮기 */
+:deep(input:-webkit-autofill),
+:deep(input:-webkit-autofill:hover),
+:deep(input:-webkit-autofill:focus) {
+  -webkit-text-fill-color: #ffffff;
+  caret-color: #ffffff;
+  -webkit-box-shadow: 0 0 0 1000px #424242 inset; /* bg-gray-600 */
+  box-shadow: 0 0 0 1000px #424242 inset;
+  transition: background-color 9999s ease-out 0s;
+}
+/* 파이어폭스 */
+:deep(input:autofill) {
+  color: #ffffff;
+  box-shadow: 0 0 0 1000px #424242 inset;
+}
+</style>
