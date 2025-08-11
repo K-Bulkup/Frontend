@@ -1,23 +1,33 @@
 <script setup>
 import { ref, onMounted, computed, watch } from "vue";
 import { useRouter } from "vue-router";
-import TrainingCard from "@/components/trainee/training/TrainingCard.vue";
-import TrainerGreetingSimple from "@/components/trainer/training/TrainerGreetingSimple.vue";
 
+import TrainingCard from "@/components/trainee/training/home/TrainingCard.vue";
+import BaseHeaderWithLogo from "@/components/trainer/mypage/HeaderWithLogo.vue";
 import { getMyTrainings } from "@/composables/api/trainer/training/trainerTrainingAPI";
 
 const router = useRouter();
 const searchQuery = ref("");
 const trainings = ref([]);
+const selectedStatus = ref("open"); // 선택된 상태 필터
 
-// "트레이닝 오픈" 버튼 클릭 시 호출되는 함수
 const goToTrainingInput = () => {
   router.push("/trainer/training/input");
 };
 
-// 트레이닝 상세 페이지로 이동하는 함수
 const goToDetail = (trainingId) => {
   router.push(`/trainer/mypage/training/${trainingId}`);
+};
+
+const handleProfileClick = () => {
+  // 프로필 클릭 시 동작 구현
+  console.log("Profile clicked");
+  // router.push('/profile');
+};
+
+// 상태 필터 변경 함수
+const setStatusFilter = (status) => {
+  selectedStatus.value = status;
 };
 
 // API 호출: 내 트레이닝 목록 + 검색
@@ -32,19 +42,44 @@ const fetchMyTrainings = async (keyword = "") => {
       rating: t.averageRating,
       tags: [t.category, t.level],
       thumbnailUrl: t.thumbnailUrl,
-      status: t.status,
+      status: t.approvalStatus,
+      category: t.category,
     }));
   } catch (error) {
     console.error("내 트레이닝 목록 조회 실패:", error);
   }
 };
 
+// 필터링된 트레이닝 목록
 const filteredTrainings = computed(() => {
-  if (!searchQuery.value) return trainings.value;
-  return trainings.value.filter((t) =>
-    t.title.toLowerCase().includes(searchQuery.value.toLowerCase()),
-  );
+  let filtered = trainings.value;
+
+  // 검색어 필터
+  if (searchQuery.value) {
+    filtered = filtered.filter((t) =>
+      t.title.toLowerCase().includes(searchQuery.value.toLowerCase()),
+    );
+  }
+
+  // 트레이닝 승인 상태 필터
+  if (selectedStatus.value !== "") {
+    filtered = filtered.filter((t) => {
+      const statusMapping = {
+        open: "승인",
+        pending: "대기",
+        rejected: "거부",
+      };
+      return t.status === statusMapping[selectedStatus.value];
+    });
+  }
+
+  return filtered;
 });
+
+// 버튼 활성화 상태를 위한 computed
+const isStatusActive = (status) => {
+  return selectedStatus.value === status;
+};
 
 // 검색어 변화 감지 (디바운스 처리)
 let debounceTimer;
@@ -55,56 +90,95 @@ watch(searchQuery, (newVal) => {
   }, 300);
 });
 
-// 최초 렌더링 시 내 강의 목록 호출
-fetchMyTrainings();
+onMounted(() => {
+  fetchMyTrainings();
+});
 </script>
 
 <template>
-  <div class="relative min-h-screen bg-realBlack px-4 pb-24 pt-4">
-    <div class="justify-betwee mb-6 flex items-center">
-      <!-- 트레이너 인사말 -->
-      <TrainerGreetingSimple></TrainerGreetingSimple>
+  <div class="bg-background min-h-screen px-4 pb-20">
+    <!-- 상단 헤더 -->
+    <div>
+      <BaseHeaderWithLogo @profile-click="handleProfileClick" />
+    </div>
 
+    <!-- 트레이닝 추가 버튼과 카테고리 필터 -->
+    <div class="mb-6 flex items-center justify-center gap-3">
+      <!-- 트레이닝 추가 버튼 -->
       <button
         @click="goToTrainingInput"
-        class="fixed bottom-24 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg transition-transform hover:scale-105 active:scale-95"
-        style="right: max(1rem, calc(50vw - 180px))"
+        class="text-button flex h-[37px] w-[107px] items-center justify-center gap-1 rounded-full bg-gray-900 px-2 text-white transition-colors hover:bg-gray-800"
       >
-        <img
-          src="@/assets/images/plus.svg"
-          alt="트레이닝 오픈"
-          class="h-8 w-8"
-        />
+        <span>+</span>
+        <span>트레이닝 추가</span>
+      </button>
+
+      <!-- 오픈 필터 -->
+      <button
+        @click="setStatusFilter('open')"
+        :class="[
+          'text-button flex h-[37px] w-[76px] items-center justify-center rounded-full border transition-colors',
+          isStatusActive('open')
+            ? 'border-[#22E481] bg-[#22E481]/20 text-white'
+            : 'border-gray-600 text-white hover:border-[#22E481] hover:bg-[#22E481]/20 hover:text-white',
+        ]"
+      >
+        오픈
+      </button>
+
+      <!-- 대기 필터 -->
+      <button
+        @click="setStatusFilter('pending')"
+        :class="[
+          'text-button flex h-[37px] w-[76px] items-center justify-center rounded-full border transition-colors',
+          isStatusActive('pending')
+            ? 'border-[#22E481] bg-[#22E481]/20 text-white'
+            : 'border-gray-600 text-white hover:border-[#22E481] hover:bg-[#22E481]/20 hover:text-white',
+        ]"
+      >
+        대기
+      </button>
+
+      <!-- 반려 필터 -->
+      <button
+        @click="setStatusFilter('rejected')"
+        :class="[
+          'text-button flex h-[37px] w-[76px] items-center justify-center rounded-full border transition-colors',
+          isStatusActive('rejected')
+            ? 'border-[#22E481] bg-[#22E481]/20 text-white'
+            : 'border-gray-600 text-white hover:border-[#22E481] hover:bg-[#22E481]/20 hover:text-white',
+        ]"
+      >
+        반려
       </button>
     </div>
 
-    <div class="relative mb-6">
-      <input
-        type="text"
-        v-model="searchQuery"
-        placeholder="강의명 / 강사명 입력"
-        class="h-12 w-full rounded-3xl bg-gray-800 py-2 pl-10 pr-4 text-white placeholder-gray-200 focus:outline-none"
-      />
-      <img
-        src="@/assets/images/search.svg"
-        alt="검색"
-        class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2"
-      />
-    </div>
-
-    <main v-if="trainings.length > 0" class="grid grid-cols-2 gap-4">
+    <!-- 트레이닝 카드 그리드 -->
+    <main
+      v-if="filteredTrainings.length > 0"
+      class="mb-6 grid grid-cols-3 gap-3"
+    >
       <TrainingCard
-        v-for="training in trainings"
+        v-for="training in filteredTrainings"
         :key="training.id"
         :training="training"
-        :status="training.status"
         @click="goToDetail(training.id)"
         class="cursor-pointer"
       />
     </main>
 
     <div v-else class="flex h-64 items-center justify-center text-center">
-      <p class="text-gray-400">오픈된 트레이닝이 없습니다.</p>
+      <p class="text-gray-400">
+        {{
+          selectedStatus === "all"
+            ? "트레이닝이 없습니다."
+            : selectedStatus === "open"
+              ? "오픈된 트레이닝이 없습니다."
+              : selectedStatus === "pending"
+                ? "대기 중인 트레이닝이 없습니다."
+                : "반려된 트레이닝이 없습니다."
+        }}
+      </p>
     </div>
   </div>
 </template>

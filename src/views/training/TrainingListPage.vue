@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch } from "vue";
 import { useRouter } from "vue-router";
-import TrainingCard from "@/components/trainee/training/TrainingCard.vue";
+import TrainingCard from "@/components/trainee/training/home/TrainingCard.vue";
 import BaseHeaderWithoutBack from "@/components/common/BaseHeaderWithoutBack.vue";
 import {
   getAllTrainings,
