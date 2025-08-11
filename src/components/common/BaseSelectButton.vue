@@ -6,6 +6,14 @@ defineProps({
     type: Array,
     required: true,
   },
+  valueKey: {
+    type: String,
+    default: "key",
+  },
+  labelKey: {
+    type: String,
+    default: "label",
+  },
 });
 </script>
 
@@ -13,17 +21,19 @@ defineProps({
   <div class="flex w-full items-center gap-2.5">
     <button
       v-for="option in options"
-      :key="option"
+      :key="typeof option === 'object' ? option[valueKey] : option"
       type="button"
-      @click="modelValue = option"
+      @click="
+        modelValue = typeof option === 'object' ? option[valueKey] : option
+      "
       :class="[
-        'text-button rounded-bt flex-1 border py-3 text-center transition-colors',
-        modelValue === option
-          ? 'border-primary bg-primary/30'
-          : 'border-gray-800 bg-transparent hover:hover:bg-[#353535]/60',
+        'rounded-pill flex-1 border py-3 text-center text-button transition-colors',
+        modelValue === (typeof option === 'object' ? option[valueKey] : option)
+          ? 'border-primary bg-primary/30 text-white'
+          : 'border-gray-800 bg-transparent text-white hover:bg-[#353535]/60',
       ]"
     >
-      {{ option }}
+      {{ typeof option === "object" ? option[labelKey] : option }}
     </button>
   </div>
 </template>

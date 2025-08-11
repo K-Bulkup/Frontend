@@ -15,7 +15,7 @@ const props = defineProps({
 const emit = defineEmits(["select"]);
 
 const buttonClass = computed(() => [
-  "w-full rounded-15 border border-solid py-[18px] text-center text-input transition-colors",
+  "w-full rounded-r15 border border-solid py-[18px] text-center text-input transition-colors",
   props.isSelected
     ? "border-primary bg-primary/20"
     : "border-transparent bg-gray-custom text-white hover:bg-[#353535]/60",

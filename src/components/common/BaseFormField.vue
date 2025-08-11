@@ -38,7 +38,7 @@ const labelClasses = computed(() => [
       :value="modelValue"
       @input="$emit('update:modelValue', $event.target.value)"
       :placeholder="placeholder"
-      class="bg-gray-custom rounded-15 w-full border-none p-4 text-center text-body text-white outline-none placeholder:text-gray-300"
+      class="rounded-r15 w-full border-none bg-gray-custom p-4 text-center text-input text-white outline-none placeholder:text-gray-300"
     />
   </div>
 </template>

@@ -12,7 +12,7 @@ defineProps({
 
 <template>
   <div class="mb-6 text-center">
-    <div v-if="icon" class="mb-4 text-display">
+    <div v-if="icon" class="text-display mb-4">
       {{ icon }}
     </div>
 
@@ -25,7 +25,7 @@ defineProps({
       {{ title }}
     </h2>
 
-    <p class="text-input mt-1 text-gray-50">
+    <p class="mt-1 text-input text-gray-50">
       {{ subtitle }}
     </p>
   </div>
