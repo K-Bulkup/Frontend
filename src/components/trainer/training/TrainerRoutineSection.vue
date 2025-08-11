@@ -6,6 +6,10 @@ defineProps({
     type: String,
     required: true,
   },
+  subtitle: {
+    type: String,
+    default: "루틴을 입력해주세요",
+  },
   routines: {
     type: Array,
     default: () => [],
@@ -21,29 +25,49 @@ defineProps({
 });
 
 const emit = defineEmits(["toggle", "add-routine", "edit-routine"]);
+
+const convertQuizTypeToLabel = (type) => {
+  switch (type) {
+    case "PHOTO":
+      return "실천형";
+    case "SHORT_ANSWER":
+      return "주관식";
+    case "OX":
+      return "OX";
+    default:
+      return "";
+  }
+};
 </script>
 
 <template>
-  <div class="mb-4">
+  <div :class="isExpanded ? 'mb-8' : 'mb-1'">
     <div
       @click="emit('toggle')"
-      class="flex cursor-pointer items-center justify-between p-4"
+      class="flex cursor-pointer items-center justify-between px-4 py-1"
     >
       <div class="flex items-center gap-3">
         <div class="h-[60px] w-[60px] rounded-[15px] bg-gray-800"></div>
-        <div class="flex flex-col">
+        <div class="flex flex-col pl-2">
           <span class="text-body text-white">{{ title }}</span>
-          <span class="text-caption text-gray-400">루틴을 입력해주세요</span>
+          <span class="text-body3 text-gray-50">{{ subtitle }}</span>
         </div>
       </div>
       <div class="flex items-center gap-3">
         <button
           v-if="showAddButton"
           @click.stop="emit('add-routine')"
-          class="hover:text-primary-dark flex items-center justify-center gap-2 text-body text-primary transition-colors"
+          class="flex items-center justify-center"
         >
-          <span class="text-xl">+</span>
-          <span>루틴 추가</span>
+          <div
+            class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-800"
+          >
+            <img
+              src="@/assets/images/plus.svg"
+              alt="루틴 추가"
+              class="h-4 w-4"
+            />
+          </div>
         </button>
         <img
           src="@/assets/images/Chevron_Down_XL.svg"
@@ -54,22 +78,24 @@ const emit = defineEmits(["toggle", "add-routine", "edit-routine"]);
       </div>
     </div>
 
-    <div v-if="isExpanded" class="mt-2 space-y-2">
+    <div v-if="isExpanded" class="mt-2 space-y-2 px-4">
       <div v-if="routines.length > 0" class="space-y-2">
         <div
           v-for="routine in routines"
           :key="routine.id"
           @click="emit('edit-routine', routine)"
-          class="bg-gray-custom rounded-15 flex cursor-pointer items-center p-3 transition-colors hover:bg-gray-700"
+          class="rounded-r15 flex cursor-pointer items-center justify-between bg-gray-custom p-3 transition-colors hover:bg-gray-900"
         >
           <div class="flex items-center gap-4">
             <span class="pl-2 text-body text-white">{{ routine.title }}</span>
-            <BaseTag :text="routine.tag" />
+            <BaseTag :text="convertQuizTypeToLabel(routine.quizType)" />
           </div>
         </div>
       </div>
       <div v-else class="p-4 text-center">
-        <p class="mb-3 text-subtext text-gray-400">루틴이 없습니다</p>
+        <p class="mb-3 text-body2 text-gray-300">
+          최소 1개 이상의 루틴을 등록해주세요
+        </p>
       </div>
     </div>
   </div>
