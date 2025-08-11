@@ -291,11 +291,11 @@ const goToQnaPage = () => {
 
     <main v-if="trainingData" class="flex-1">
       <!-- 제목 + 기한 (SAFE: trainingData 안에서 사용) -->
-      <div class="mb-7 mt-7 flex items-end justify-between">
-        <h1 class="text-title font-bold leading-tight text-white">
+      <div class="mb-8 mt-7 flex items-end justify-between">
+        <h1 class="text-subTitle font-bold leading-tight text-white">
           {{ trainingData.title }}
         </h1>
-        <span class="text-caption text-gray-400"
+        <span class="text-body3 text-gray-400"
           >수강 종료: {{ trainingDeadline }}</span
         >
       </div>
@@ -304,41 +304,8 @@ const goToQnaPage = () => {
         <ProgressBar :value="trainingData.progress" />
       </div>
 
-      <!-- 트레이너 정보
-      <div class="mb-6 mt-6 flex items-center justify-between">
-        <div
-          @click="goToTrainerPage"
-          class="flex cursor-pointer items-center gap-3 rounded-lg p-2 transition-colors hover:bg-gray-800"
-        >
-          <div
-            class="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-700"
-          >
-            <img
-              v-if="trainingData.trainerProfileUrl"
-              :src="trainingData.trainerProfileUrl"
-              alt="프로필"
-              class="h-full w-full object-cover"
-            />
-            <img
-              v-else
-              :src="profileDefault"
-              alt="기본 프로필"
-              class="h-full w-full"
-            />
-          </div>
-          <p class="font-bold text-white">{{ trainingData.trainerName }}</p>
-        </div>
-
-        <div class="flex items-center gap-2 text-caption text-gray-200">
-          <div class="flex items-center gap-1">
-            <img src="@/assets/images/star.svg" alt="별점" class="h-3 w-3" />
-            <span>{{ trainingData.trainerRating }}</span>
-          </div>
-          <span>|</span>
-          <span>{{ trainingData.studentCount }}명 수강</span>
-          <span>|</span> -->
       <!-- 트레이너 카드 (AFTER) -->
-      <div class="mb-10 rounded-xl bg-gray-900 p-4">
+      <div class="mb-12 rounded-xl bg-gray-900 p-4">
         <div class="flex items-center gap-3">
           <button @click="goToTrainerPage" class="flex items-center gap-3">
             <div class="h-10 w-10 overflow-hidden rounded-full bg-gray-700">
@@ -354,8 +321,10 @@ const goToQnaPage = () => {
               />
             </div>
             <div class="text-left">
-              <p class="font-bold text-white">{{ trainingData.trainerName }}</p>
-              <p class="flex items-center gap-1 text-caption text-gray-300">
+              <p class="text-input font-bold text-white">
+                {{ trainingData.trainerName }}
+              </p>
+              <p class="text-body2 flex items-center gap-1 text-gray-300">
                 수강생 {{ trainingData.studentCount.toLocaleString() }}
                 <img :src="StarIcon" alt="star" class="inline-block h-3 w-3" />
                 {{ trainingData.trainerRating || "-" }}
@@ -366,7 +335,7 @@ const goToQnaPage = () => {
           <!-- Q&A 버튼 -->
           <button
             @click="goToQnaPage"
-            class="ml-auto rounded-full bg-primary px-3 py-1.5 text-caption font-semibold text-black shadow"
+            class="text-input ml-auto rounded-full bg-primary px-3 py-1.5 font-bold text-black shadow"
           >
             Q&A
           </button>

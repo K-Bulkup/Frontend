@@ -36,14 +36,14 @@ const displayQuests = computed(() => {
 <template>
   <section class="w-full">
     <!-- 플랫 헤더: 아이콘 큼 + 타이틀 옆 서브타이틀 -->
-    <button class="flex w-full items-center gap-3 py-3" @click="emit('toggle')">
+    <button class="flex w-full items-center gap-3 py-4" @click="emit('toggle')">
       <!-- 큰 아이콘 자리 -->
       <div class="h-12 w-12 rounded-xl bg-gray-900/80"></div>
 
       <!-- 타이틀 + 서브(같은 줄) -->
       <div class="flex min-w-0 flex-1 items-center gap-2">
-        <h3 class="truncate font-semibold text-white">{{ title }}</h3>
-        <span class="shrink-0 text-caption text-gray-400">{{ subtitle }}</span>
+        <h3 class="truncate text-body font-bold text-white">{{ title }}</h3>
+        <span class="text-button shrink-0 text-gray-400">{{ subtitle }}</span>
       </div>
 
       <!-- 토글 -->
@@ -70,24 +70,29 @@ const displayQuests = computed(() => {
       <div
         class="flex items-center justify-center gap-2 rounded-xl border border-gray-800 px-4 py-4"
       >
-        <img :src="LockIcon" alt="locked" class="h-4 w-4 opacity-100" />
-        <span class="text-caption text-gray-500">{{ lockMessage }}</span>
+        <img
+          :src="LockIcon"
+          alt="locked"
+          class="h-4 w-4 object-contain brightness-200 contrast-150 filter"
+        />
+
+        <span class="text-body3 text-gray-500">{{ lockMessage }}</span>
       </div>
     </div>
 
     <!-- 리스트: 플랫(배경/보더 제거) -->
-    <div v-show="isExpanded && !isLocked" class="px-1 pb-3">
+    <div v-show="isExpanded && !isLocked" class="space-y-3 px-1 pb-4">
       <div
         v-for="q in displayQuests"
         :key="q.id"
-        class="group flex items-center justify-between rounded-lg px-2 py-2 transition-colors hover:bg-white/5"
+        class="group flex min-h-[48px] items-center justify-between rounded-xl px-3 py-3.5 transition-colors hover:bg-white/5"
         @click="$emit('routine-click', q)"
       >
         <!-- 왼쪽: 이름 옆 태그(같은 줄) -->
         <div class="flex min-w-0 items-center gap-2">
-          <p class="truncate text-white">{{ q.name }}</p>
+          <p class="text-body2 truncate font-bold text-white">{{ q.name }}</p>
           <span
-            class="shrink-0 rounded-full border border-gray-600 bg-gray-600 px-2 py-0.5 text-caption text-white"
+            class="text-button inline-flex items-center whitespace-nowrap rounded-full border border-gray-600 bg-gray-600 px-2 py-[2px] leading-none text-white"
           >
             {{ q.tag }}
           </span>
@@ -97,7 +102,7 @@ const displayQuests = computed(() => {
         <div class="ml-3 flex items-center gap-2">
           <span
             v-if="!q.completed"
-            class="rounded-full bg-primary/10 px-2 py-0.5 text-caption font-medium text-primary"
+            class="text-button rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary"
           >
             +{{ q.rewardPoint }}
           </span>
