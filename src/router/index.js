@@ -2,14 +2,13 @@
 import SplashPage from "@/views/auth/SplashPage.vue";
 import SignupPage from "@/views/auth/SignupPage.vue";
 import LoginPage from "@/views/auth/LoginPage.vue";
-import adminLoginPage from "@/views/admin/adminLoginPage.vue";
-import TrainingApprovalPage from "@/views/admin/TrainingApprovalPage.vue";
-import AdminDashboard from "@/views/admin/AdminDashboard.vue";
+import AdminLoginPage from "@/views/admin/AdminLoginPage.vue";
+import AdminTrainingApprovalPage from "@/views/admin/AdminTrainingApprovalPage.vue";
 import AdminUserMainPage from "@/views/admin/AdminUserMainPage.vue";
-import AdminUserListPage from "@/views/admin/AdminUserListPage.vue";
 import AdminUserCreatePage from "@/views/admin/AdminUserCreatePage.vue";
 import AdminUserEditPage from "@/views/admin/AdminUserEditPage.vue";
 import AdminUserStatisticsPage from "@/views/admin/AdminUserStatisticsPage.vue";
+import AdminLayout from "@/components/layout/AdminLayout.vue"; // New import
 //training
 import TrainingListPage from "@/views/training/TrainingListPage.vue";
 import TrainingDetailPage from "@/views/training/TrainingDetailPage.vue";
@@ -53,43 +52,40 @@ const routes = [
   { path: "/signup", component: SignupPage, meta: { hideNavbar: true } },
   {
     path: "/admin/login",
-    component: adminLoginPage,
+    component: AdminLoginPage,
     meta: { hideNavbar: true },
   },
   {
-    path: "/admin/training-approval",
-    component: TrainingApprovalPage,
-    meta: { hideNavbar: true, requiresAuth: true, roles: ["ADMIN"] },
-  },
-  {
-    path: "/admin/dashboard",
-    component: AdminDashboard,
-    meta: { hideNavbar: true, requiresAuth: true, roles: ["ADMIN"] },
-  },
-  {
-    path: "/admin/user-management",
-    component: AdminUserMainPage,
-    meta: { hideNavbar: true, requiresAuth: true, roles: ["ADMIN"] },
-  },
-  {
-    path: "/admin/user-management/list",
-    component: AdminUserListPage,
-    meta: { hideNavbar: true, requiresAuth: true, roles: ["ADMIN"] },
-  },
-  {
-    path: "/admin/user-management/create",
-    component: AdminUserCreatePage,
-    meta: { hideNavbar: true, requiresAuth: true, roles: ["ADMIN"] },
-  },
-  {
-    path: "/admin/user-management/edit/:userId",
-    component: AdminUserEditPage,
-    meta: { hideNavbar: true, requiresAuth: true, roles: ["ADMIN"] },
-  },
-  {
-    path: "/admin/user-statistics",
-    component: AdminUserStatisticsPage,
-    meta: { hideNavbar: true, requiresAuth: true, roles: ["ADMIN"] },
+    path: "/admin",
+    component: AdminLayout,
+    meta: { requiresAuth: true, roles: ["ADMIN"] },
+    children: [
+      {
+        path: "training-approval",
+        component: AdminTrainingApprovalPage,
+      },
+      {
+        path: "user-management",
+        component: AdminUserMainPage,
+      },
+      {
+        path: "user-management/create",
+        component: AdminUserCreatePage,
+      },
+      {
+        path: "user-management/edit/:userId",
+        component: AdminUserEditPage,
+      },
+      {
+        path: "user-statistics",
+        component: AdminUserStatisticsPage,
+      },
+      // Add a redirect for the base /admin path if needed
+      {
+        path: "",
+        redirect: "user-management", // Redirect to user-management
+      },
+    ],
   },
 
   //training
