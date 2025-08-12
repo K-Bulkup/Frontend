@@ -7,6 +7,7 @@ import { trainerMyPageApi } from "@/composables/api/useTrainerMypageApi";
 
 import starIcon from "@/assets/images/star.svg";
 import profileDefault from "@/assets/images/trainer/mypage/profile.png";
+import badgeIcon from "@/assets/images/trainer/mypage/badge.png"; // 배지 아이콘 import
 
 // 반응형 데이터
 const trainerData = reactive({
@@ -21,6 +22,16 @@ const trainerData = reactive({
 const introText = ref("");
 const showImageModal = ref(false);
 const showTooltip = ref(false); // 툴팁 표시 상태
+
+// 자격증이 있는지 확인하는 computed
+const hasCertificates = computed(() => {
+  return trainerData.certificates && trainerData.certificates.length > 0;
+});
+
+// 툴팁에 표시할 자격증 목록
+const certificateList = computed(() => {
+  return trainerData.certificates.join(", ");
+});
 
 // 트레이너 정보 조회
 const fetchTrainerInfo = async () => {
@@ -67,6 +78,15 @@ const handleImageUpload = async (imageFile) => {
   }
 };
 
+// 툴팁 표시/숨기기 함수들
+const showCertificateTooltip = () => {
+  showTooltip.value = true;
+};
+
+const hideCertificateTooltip = () => {
+  showTooltip.value = false;
+};
+
 onMounted(() => {
   fetchTrainerInfo();
 });
@@ -79,11 +99,9 @@ defineExpose({
 
 <template>
   <div class="flex flex-col items-center overflow-hidden px-6">
-    <!-- 프로필 카드 -->
     <div
       class="flex w-full max-w-md flex-col items-center rounded-3xl px-8 py-5"
     >
-      <!-- 프로필 이미지 -->
       <div class="relative mb-3">
         <div
           class="flex h-40 w-40 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-gray-700 shadow-lg transition-transform hover:scale-105"
@@ -98,12 +116,36 @@ defineExpose({
         </div>
       </div>
 
-      <!-- 트레이너 이름 -->
-      <div class="text-center text-title font-semibold text-white">
-        {{ trainerData.username }}
+      <div class="flex items-center gap-2 text-center">
+        <div
+          v-if="hasCertificates"
+          class="relative"
+          @mouseenter="showCertificateTooltip"
+          @mouseleave="hideCertificateTooltip"
+        >
+          <img :src="badgeIcon" alt="자격증" class="h-6 w-6 cursor-pointer" />
+
+          <div
+            v-if="showTooltip"
+            class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 transform"
+          >
+            <div class="relative">
+              <div
+                class="min-w-[225px] whitespace-normal rounded-full border border-primary bg-primary bg-opacity-30 px-4 py-2 text-body text-white shadow-lg"
+              >
+                {{ certificateList }}
+              </div>
+              <div
+                class="absolute bottom-full left-1/2 h-0 w-0 -translate-x-1/2 border-b-4 border-l-4 border-r-4 border-transparent border-b-gray-900"
+              ></div>
+            </div>
+          </div>
+        </div>
+        <div class="text-title font-semibold text-white">
+          {{ trainerData.username }}
+        </div>
       </div>
 
-      <!-- 통계 정보 -->
       <div class="flex w-full items-center justify-center gap-3 text-lg">
         <div class="flex items-center gap-0.5 text-white">
           <span class="text-body">수강생</span>
@@ -121,12 +163,10 @@ defineExpose({
       </div>
     </div>
 
-    <!-- 경력 정보 -->
     <div class="w-full items-center">
       <TrainerCareer :career="introText" />
     </div>
 
-    <!-- 이미지 업로드 모달 -->
     <ImageUploadModal
       v-if="showImageModal"
       @close="closeImageModal"
