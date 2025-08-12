@@ -1,8 +1,12 @@
 <template>
-  <div class="admin-user-create-page mx-auto max-w-3xl bg-realblack p-6 text-white">
+  <div
+    class="admin-user-create-page bg-realblack mx-auto max-w-3xl p-6 text-white"
+  >
     <h1 class="mb-6 text-2xl font-bold">새 사용자 생성</h1>
 
-    <div class="mb-6 rounded-lg border border-gray-300 bg-realblack p-6 shadow-sm">
+    <div
+      class="bg-realblack mb-6 rounded-lg border border-gray-300 p-6 shadow-sm"
+    >
       <form @submit.prevent="handleCreateUser" class="space-y-5">
         <BaseFormField label="사용자 이름">
           <BaseInput type="text" v-model="newUser.username" required />
@@ -55,7 +59,7 @@
         <div class="mt-6 flex space-x-4">
           <BaseButton
             type="submit"
-            class="rounded-md bg-realblack px-6 py-2 text-sm font-bold text-white transition hover:bg-gray-800"
+            class="bg-realblack rounded-md px-6 py-2 text-sm font-bold text-white transition hover:bg-gray-800"
           >
             사용자 생성
           </BaseButton>
@@ -76,7 +80,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAdminUserApi } from "@/composables/api/useAdminUserApi";
-import BaseButton from "@/components/common/BaseButton.vue";
+import BaseButton from "@/components/admin/AdminBaseButton.vue";
 import BaseInput from "@/components/common/BaseInput.vue";
 import BaseFormField from "@/components/common/BaseFormField.vue";
 
