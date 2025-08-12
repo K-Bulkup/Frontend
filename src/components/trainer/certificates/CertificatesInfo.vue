@@ -221,9 +221,9 @@ const closeModal = () => {
 
       <!-- v-for로 Input 반복 -->
       <div v-for="field in inputFields" :key="field.id">
-        <div class="mb-1 block px-5 text-sm text-white">
+        <div class="mt-3 block px-9 text-input text-gray-300">
           {{ field.label }}
-          <span v-if="field.subLabel" class="ml-1 text-xs text-gray-400">
+          <span v-if="field.subLabel" class="ml-1 text-xs text-gray-300">
             {{ field.subLabel }}
           </span>
         </div>
