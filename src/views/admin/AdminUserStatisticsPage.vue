@@ -3,49 +3,34 @@
     <h1 class="mb-6 text-3xl font-bold">회원 통계</h1>
 
     <div class="mx-auto max-w-6xl space-y-6">
-      <!-- 역할 선택 버튼 -->
-      <div class="flex space-x-2">
-        <BaseButton
-          v-for="role in [
+      <div class="flex max-w-md space-x-4">
+        <BaseDropdown
+          label="역할 선택"
+          v-model="selectedRole"
+          :options="[
             { key: 'ALL', label: '전체' },
             { key: 'TRAINER', label: '트레이너' },
             { key: 'TRAINEE', label: '회원' },
           ]"
-          :key="role.key"
-          @click="selectRole(role.key)"
-          class="rounded-md px-4 py-2 text-sm font-bold transition-colors"
-          :class="
-            selectedRole === role.key
-              ? 'bg-green-500 text-white'
-              : 'bg-gray-500 text-white'
-          "
-        >
-          {{ role.label }}
-        </BaseButton>
-      </div>
+          displayKey="label"
+          valueKey="key"
+          class="flex-1"
+        />
 
-      <!-- 기간 선택 버튼 -->
-      <div class="flex space-x-2">
-        <BaseButton
-          v-for="period in [
+        <BaseDropdown
+          label="기간 선택"
+          v-model="selectedPeriod"
+          :options="[
             { key: 'daily', label: '일별' },
             { key: 'weekly', label: '주별' },
             { key: 'monthly', label: '월별' },
             { key: 'yearly', label: '년별' },
           ]"
-          :key="period.key"
-          @click="selectPeriod(period.key)"
-          class="rounded-md px-2 py-2 text-sm font-bold transition-colors"
-          :class="
-            selectedPeriod === period.key
-              ? 'bg-green-500 text-white'
-              : 'bg-gray-500 text-white'
-          "
-        >
-          {{ period.label }}
-        </BaseButton>
+          displayKey="label"
+          valueKey="key"
+          class="flex-1"
+        />
       </div>
-
       <!-- 요약 통계 -->
       <div class="rounded-xl bg-gray-800 p-4 shadow">
         <h2 class="mb-2 text-xl font-semibold">요약 통계</h2>
@@ -81,6 +66,7 @@ import { ref, onMounted, watch, computed } from "vue";
 import { useAdminUserApi } from "@/composables/api/useAdminUserApi";
 import { Line } from "vue-chartjs";
 import BaseButton from "@/components/admin/AdminBaseButton.vue";
+import BaseDropdown from "@/components/common/BaseDropdown.vue";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -174,13 +160,6 @@ const loadStatistics = async () => {
   } catch (error) {
     console.error("회원 통계 가져오기 실패:", error);
   }
-};
-
-const selectRole = (role) => {
-  selectedRole.value = role;
-};
-const selectPeriod = (period) => {
-  selectedPeriod.value = period;
 };
 
 watch([selectedRole, selectedPeriod], loadStatistics);

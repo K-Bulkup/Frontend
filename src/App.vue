@@ -28,6 +28,7 @@ onMounted(async () => {
 </script>
 <template>
   <div
+    v-if="!isAdminRoute"
     class="flex min-h-screen items-center justify-center bg-background text-white"
   >
     <div
@@ -38,7 +39,10 @@ onMounted(async () => {
         <RouterView />
       </main>
 
-      <NavigationBar v-if="!$route.meta.hideNavbar && !isAdminRoute" />
+      <NavigationBar v-if="!$route.meta.hideNavbar" />
     </div>
+  </div>
+  <div v-else>
+    <RouterView />
   </div>
 </template>
