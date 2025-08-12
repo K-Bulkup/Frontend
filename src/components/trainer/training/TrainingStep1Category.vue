@@ -1,5 +1,6 @@
 <script setup>
 import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
+import SelectCategory from "@/components/trainer/training/SelectCategory.vue";
 
 const props = defineProps({
   modelValue: {
@@ -33,19 +34,13 @@ const handleCategorySelect = (category) => {
       variant="guide"
     />
     <div class="mt-12 flex flex-col space-y-3.5">
-      <button
+      <SelectCategory
         v-for="category in FINANCE_CATEGORIES"
         :key="category"
-        @click="handleCategorySelect(category)"
-        :class="[
-          'w-full rounded-xl border-2 border-solid py-3 text-center text-body transition-colors',
-          modelValue === category
-            ? 'border-primary bg-primary text-black'
-            : 'border-gray-100 bg-gray-100 text-black hover:bg-gray-200',
-        ]"
-      >
-        {{ category }}
-      </button>
+        :label="category"
+        :isSelected="modelValue === category"
+        @select="handleCategorySelect"
+      />
     </div>
   </div>
 </template>
