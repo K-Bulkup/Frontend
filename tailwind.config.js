@@ -15,6 +15,7 @@ export default {
         body3: "10px",
         input: "14px",
         button: "11px",
+        body4: "8px",
       },
       colors: {
         primary: "#22E481",
@@ -28,7 +29,9 @@ export default {
           700: "#595959",
           800: "#383838",
           900: "#262626",
+          custom: "rgba(53, 53, 53, 0.5)",
         },
+        background: "#191919",
         white: "#FFFFFF",
         black: "#333446",
         background: "#191919",
@@ -37,6 +40,8 @@ export default {
       },
       borderRadius: {
         md: "8px",
+        r15: "15px",
+        pill: "33554400px",
         full: "9999px",
       },
       width: { btn: "332px", input: "332px" }, // 입력칸 폭

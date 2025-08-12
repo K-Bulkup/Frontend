@@ -38,8 +38,8 @@ watch(
 <template>
   <div>
     <BaseStatusMessage
-      title="회원을 모집하겠습니까?"
-      subtitle="커버 이미지를 등록하고 회원을 모집해주세요"
+      title="트레이닝을 오픈하시겠습니까?"
+      subtitle="썸네일을 등록해주세요"
     />
     <div class="mt-12 flex flex-col items-center">
       <input
@@ -51,7 +51,7 @@ watch(
       />
       <div
         @click="triggerFileInput"
-        class="flex h-64 w-full cursor-pointer items-center justify-center rounded-xl bg-gray-100 transition-colors hover:bg-gray-200"
+        class="bg-gray-custom flex h-64 w-full cursor-pointer items-center justify-center rounded-xl transition-colors hover:bg-gray-900"
       >
         <img
           v-if="thumbnailUrl"
@@ -65,7 +65,6 @@ watch(
             alt="이미지 업로드"
             class="mx-auto h-12 w-12"
           />
-          <p class="mt-2 text-subtext">클릭하여 이미지 업로드</p>
         </div>
       </div>
     </div>

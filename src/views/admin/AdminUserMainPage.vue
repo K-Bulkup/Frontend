@@ -1,71 +1,90 @@
 <template>
-  <div class="admin-user-main-page min-h-screen bg-realblack p-6 text-white">
+  <div class="bg-realblack min-h-screen p-6 text-white">
     <h1 class="mb-6 text-3xl font-bold">사용자 관리</h1>
+    <!-- Add User Button -->
 
-    <div class="mx-auto max-w-6xl rounded-xl p-4 shadow">
-      <!-- Add User Button -->
-      <div class="mb-4 flex justify-end">
-        <BaseButton
-          @click="$router.push('/admin/user-management/create')"
-          class="rounded-md bg-gray-200 px-3 py-1 text-sm font-bold text-black transition hover:bg-gray-300"
-        >
-          + 사용자 추가
-        </BaseButton>
-      </div>
+    <Button
+      @click="$router.push('/admin/user-management/create')"
+      class="fixed bottom-8 right-8 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-4xl font-extrabold text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
+      aria-label="사용자 추가"
+    >
+      +
+    </Button>
 
-      <!-- User List -->
-      <div class="rounded-lg bg-realblack p-4 shadow-sm">
-        <div v-if="loading" class="text-center text-gray-500">
-          사용자 정보를 불러오는 중...
-        </div>
-        <div v-else-if="error" class="text-center text-red-500">
-          {{ error }}
-        </div>
-        <ul v-else class="divide-y divide-gray-200">
-          <li
-            v-for="user in users"
-            :key="user.userId"
-            class="flex items-center justify-between py-4"
-          >
-            <div>
-              <p class="text-lg font-medium">
-                {{ user.username }} (ID: {{ user.userId }})
-              </p>
-              <p class="text-sm">{{ user.email }}</p>
-              <p class="text-sm">
-                역할: {{ user.roles ? user.roles.join(", ") : "N/A" }}
-              </p>
-              <p v-if="user.createdAt" class="text-xs">
-                생성일: {{ new Date(user.createdAt).toLocaleString() }}
-              </p>
-              <p v-if="user.updatedAt" class="text-xs">
-                수정일: {{ new Date(user.updatedAt).toLocaleString() }}
-              </p>
-            </div>
-            <div class="flex space-x-2">
-              <BaseButton
-                @click="
-                  $router.push(`/admin/user-management/edit/${user.userId}`)
-                "
-                class="rounded-md bg-realblack px-3 py-1 text-sm font-bold text-white transition hover:bg-gray-800"
+    <div class="mx-auto max-w-6xl rounded-xl bg-gray-800 p-4 shadow">
+      <div class="overflow-x-auto rounded-lg">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-900 text-white">
+            <tr>
+              <th class="px-4 py-3 text-left font-semibold">사용자명</th>
+              <th class="px-4 py-3 text-left font-semibold">이메일</th>
+              <th class="px-4 py-3 text-left font-semibold">역할</th>
+              <th class="px-4 py-3 text-center font-semibold">생성일</th>
+              <th class="px-4 py-3 text-center font-semibold">관리</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr v-if="users.length === 0 && !loading && !error">
+              <td colspan="5" class="px-4 py-6 text-center text-gray-400">
+                등록된 사용자가 없습니다.
+              </td>
+            </tr>
+            <tr
+              v-for="user in users"
+              :key="user.userId"
+              class="transition hover:bg-gray-600"
+            >
+              <td class="whitespace-nowrap px-4 py-3 font-medium">
+                {{ user.username }}
+              </td>
+              <td class="whitespace-nowrap px-4 py-3 text-gray-300">
+                {{ user.email }}
+              </td>
+              <td class="whitespace-nowrap px-4 py-3 text-gray-300">
+                {{ user.roles ? user.roles.join(", ") : "N/A" }}
+              </td>
+              <td class="whitespace-nowrap px-4 py-3 text-center text-gray-300">
+                {{
+                  user.createdAt
+                    ? new Date(user.createdAt).toLocaleDateString()
+                    : "-"
+                }}
+              </td>
+              <td class="space-x-2 px-4 py-3 text-center">
+                <button
+                  @click="
+                    $router.push(`/admin/user-management/edit/${user.userId}`)
+                  "
+                  class="bg-realblack rounded-md px-3 py-1 text-sm font-semibold text-white hover:bg-gray-800"
+                >
+                  수정
+                </button>
+                <button
+                  @click="deleteUser(user.userId)"
+                  class="bg-realblack rounded-md px-3 py-1 text-sm font-semibold text-white hover:bg-gray-800"
+                >
+                  삭제
+                </button>
+              </td>
+            </tr>
+            <tr v-if="loading">
+              <td
+                colspan="5"
+                class="px-4 py-6 text-center font-semibold text-gray-400"
               >
-                수정
-              </BaseButton>
-              <BaseButton
-                @click="deleteUser(user.userId)"
-                class="rounded-md bg-realblack px-3 py-1 text-sm font-bold text-white transition hover:bg-gray-800"
+                사용자 정보를 불러오는 중...
+              </td>
+            </tr>
+            <tr v-if="error">
+              <td
+                colspan="5"
+                class="px-4 py-6 text-center font-semibold text-red-500"
               >
-                삭제
-              </BaseButton>
-            </div>
-          </li>
-        </ul>
-        <div
-          v-if="users.length === 0 && !loading && !error"
-          class="mt-4 text-center text-gray-500"
-        >
-          등록된 사용자가 없습니다.
-        </div>
+                {{ error }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -74,7 +93,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useAdminUserApi } from "@/composables/api/useAdminUserApi";
-import BaseButton from "@/components/common/BaseButton.vue";
+import BaseButton from "@/components/admin/AdminBaseButton.vue";
 
 const { getAllUsers, deleteUser: deleteUserApi } = useAdminUserApi();
 

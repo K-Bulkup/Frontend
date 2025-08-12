@@ -37,8 +37,6 @@ const thumbnail = ref(null);
 
 // 모달 상태
 const isModalVisible = ref(false);
-const currentRoutineCategory = ref(null);
-
 const modalKey = ref(0);
 const routineToEdit = ref(null);
 
@@ -46,18 +44,16 @@ const routineToEdit = ref(null);
 const isNextButtonDisabled = computed(() => {
   if (step.value === 1) return !selectedCategory.value;
   if (step.value === 2) {
-    // 각 섹션별로 최소 1개의 루틴이 있는지 확인하는 로직
     const isCurriculumInvalid =
       !trainerName.value.trim() ||
       !trainingDescription.value.trim() ||
       !selectedDifficulty.value ||
-      routines.value.stretching.length === 0 || // 스트레칭 루틴이 없거나
-      routines.value.strength.length === 0 || // 근력 루틴이 없거나
-      routines.value.cardio.length === 0; // 유산소 루틴이 없는 경우 true
+      routines.value.stretching.length === 0 ||
+      routines.value.strength.length === 0 ||
+      routines.value.cardio.length === 0;
 
     return isCurriculumInvalid;
   }
-
   if (step.value === 3) return !thumbnail.value;
   return step.value >= 4;
 });
@@ -76,20 +72,17 @@ const handleGoBack = () => {
 };
 
 // '새로 추가' 버튼 클릭 시
-const handleOpenRoutineModal = (categoryKey) => {
-  routineToEdit.value = null;
-  currentRoutineCategory.value = categoryKey;
+const handleOpenRoutineModal = () => {
+  routineToEdit.value = null; // 수정이 아니므로 null로 설정
   isModalVisible.value = true;
-  modalKey.value++;
+  modalKey.value++; // 모달을 새로 띄우기 위해 key 변경
 };
 
-// '기존 루틴' 클릭 시
+// '기존 루틴' 클릭 시 (수정)
 const handleEditRoutine = (routine) => {
   routineToEdit.value = routine;
-  // 루틴이 속한 카테고리를 찾아 설정
-  currentRoutineCategory.value = findRoutineCategory(routine.id);
   isModalVisible.value = true;
-  modalKey.value++; // key를 변경해서 모달을 새로고침
+  modalKey.value++;
 };
 
 // 루틴 ID로 카테고리(stretching, strength, cardio)를 찾는 헬퍼 함수
@@ -102,22 +95,59 @@ const findRoutineCategory = (routineId) => {
   return null;
 };
 
-const onRoutineSaved = (savedRoutineData) => {
-  // 수정일 경우 (ID가 이미 존재)
-  if (savedRoutineData.id) {
-    const category = findRoutineCategory(savedRoutineData.id);
-    const index = routines.value[category].findIndex(
-      (r) => r.id === savedRoutineData.id,
-    );
-    // 기존 루틴을 덮어쓰기
-    if (index !== -1) routines.value[category][index] = savedRoutineData;
+const convertKoreanToCategoryKey = (koreanType) => {
+  switch (koreanType) {
+    case "스트레칭":
+      return "stretching";
+    case "근력":
+      return "strength";
+    case "유산소":
+      return "cardio";
+    default:
+      return null;
   }
-  // 새로 추가일 경우
+};
+
+const onRoutineSaved = (savedRoutineData) => {
+  // 1. 루틴 수정일 경우 (루틴 타입 수정 가능)
+  if (savedRoutineData.id) {
+    // 기존 루틴의 위치(카테고리 키, 배열 인덱스) 찾기
+    const oldCategoryKey = findRoutineCategory(savedRoutineData.id);
+    const oldIndex = oldCategoryKey
+      ? routines.value[oldCategoryKey].findIndex(
+          (r) => r.id === savedRoutineData.id,
+        )
+      : -1;
+
+    // 수정된 데이터에서 새로운 카테고리 키 가져오기
+    const newCategoryKey = convertKoreanToCategoryKey(
+      savedRoutineData.routineType,
+    );
+
+    // 기존 루틴을 찾았고, 새 카테고리도 유효하다면 로직 실행
+    if (oldCategoryKey && oldIndex !== -1 && newCategoryKey) {
+      // 카테고리가 변경되지 않은 경우 (예: '스트레칭' -> '스트레칭')
+      if (oldCategoryKey === newCategoryKey) {
+        routines.value[oldCategoryKey][oldIndex] = savedRoutineData;
+      }
+      // 카테고리가 변경된 경우 (예: '스트레칭' -> '근력')
+      else {
+        routines.value[oldCategoryKey].splice(oldIndex, 1);
+        routines.value[newCategoryKey].push(savedRoutineData);
+      }
+    }
+  }
+  // 2. 루틴 새로 추가일 경우
   else {
-    routines.value[currentRoutineCategory.value].push({
-      ...savedRoutineData,
-      id: Date.now(), // 새 ID 발급
-    });
+    const targetCategoryKey = convertKoreanToCategoryKey(
+      savedRoutineData.routineType,
+    );
+    if (targetCategoryKey && routines.value[targetCategoryKey]) {
+      routines.value[targetCategoryKey].push({
+        ...savedRoutineData,
+        id: Date.now(),
+      });
+    }
   }
 
   isModalVisible.value = false;
@@ -177,7 +207,7 @@ const handleCompletion = () => {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col bg-realBlack px-6 pb-20 pt-4">
+  <div class="flex min-h-screen flex-col px-6 pb-20 pt-4">
     <BaseHeader v-if="step < 4" title="트레이닝 오픈" @back="handleGoBack" />
 
     <div class="flex-grow">
@@ -213,7 +243,6 @@ const handleCompletion = () => {
       :initial-data="routineToEdit"
       @close="isModalVisible = false"
       @save="onRoutineSaved"
-      :routineCategoryKey="currentRoutineCategory"
     />
 
     <LoadingOverlay :show="isLoading" title="트레이닝을 오픈 중입니다" />
