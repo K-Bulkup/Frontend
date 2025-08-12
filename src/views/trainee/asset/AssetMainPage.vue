@@ -8,6 +8,7 @@ import CompositionDonutChart from "@/components/assetCharts/CompositionDonutChar
 import WithdrawalDonutChart from "@/components/assetCharts/WithdrawalDonutChart.vue";
 import BaseHeaderWithoutBack from "@/components/common/BaseHeaderWithoutBack.vue";
 import { updateAndGetTraineeAsset } from "@/composables/api/useAssetApi";
+import plusGreen from "@/assets/images/plus_green.svg";
 
 // Initialize composables at the very top
 const router = useRouter();
@@ -176,9 +177,15 @@ onMounted(async () => {
             <button
               v-if="!isLoading"
               @click="handleAssetButton"
-              class="rounded-full bg-gray-900 px-4 py-2 text-body font-normal text-white"
+              class="text-caption inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-gray-900 px-4 py-2 font-normal text-white"
             >
-              자산 갱신하기
+              <img
+                :src="plusGreen"
+                alt=""
+                class="block h-4 w-4"
+                aria-hidden="true"
+              />
+              <span class="text-button">자산 갱신</span>
             </button>
           </div>
 
@@ -202,7 +209,7 @@ onMounted(async () => {
           <!-- 현재 선택된 항목 표시 (항상 표시) -->
           <div class="rounded-xl bg-gray-900 p-4 shadow-lg">
             <div class="flex items-center justify-between">
-              <span class="text-subtext text-white">{{
+              <span class="text-input text-white">{{
                 viewOptions.find((v) => v.id === selectedView)?.title
               }}</span>
               <button @click="toggleExpanded" class="text-primary">
@@ -359,9 +366,15 @@ onMounted(async () => {
             <button
               v-if="!isLoading"
               @click="handleAssetButton"
-              class="text-caption rounded-full bg-gray-600 px-4 py-2 font-normal text-white"
+              class="text-caption inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-gray-900 px-4 py-2 font-normal text-white"
             >
-              자산 갱신하기
+              <img
+                :src="plusGreen"
+                alt=""
+                class="block h-4 w-4"
+                aria-hidden="true"
+              />
+              <span class="text-button">자산 연동</span>
             </button>
           </div>
 
@@ -401,7 +414,7 @@ onMounted(async () => {
       >
         <button
           @click="goToAiChat"
-          class="flex h-14 w-14 items-center justify-center rounded-full bg-gray-900 shadow-lg ring-1 ring-black/20 transition-transform hover:scale-105 active:scale-95"
+          class="flex h-14 w-14 items-center justify-center rounded-full bg-gray-800 shadow-lg ring-1 ring-black/20 transition-transform hover:scale-105 active:scale-95"
           aria-label="AI 채팅 열기"
         >
           <!-- 말풍선 아이콘: 선색을 primary로 -->
