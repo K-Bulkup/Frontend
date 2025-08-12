@@ -1,10 +1,15 @@
 <script setup>
-import { ref, reactive, computed, onMounted } from "vue";
+import { ref, reactive, computed, onMounted, watch } from "vue";
 import BaseButton from "@/components/common/BaseButton.vue";
 import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseFormField from "@/components/common/BaseFormField.vue";
 import BaseSelectButton from "@/components/common/BaseSelectButton.vue";
+import CategoryIconBox from "@/components/common/CategoryIconBox.vue";
+
+import stretchingIcon from "@/assets/images/mascot/routine/Geumyuk_stretching.png";
+import strengthIcon from "@/assets/images/mascot/routine/Geumyuk_strength.png";
+import cardioIcon from "@/assets/images/mascot/routine/Geumyuk_cardio.png";
 
 const props = defineProps({
   initialData: {
@@ -16,9 +21,24 @@ const props = defineProps({
 const emit = defineEmits(["close", "save"]);
 
 const ROUTINE_CATEGORIES = [
-  { key: "스트레칭", title: "스트레칭", subtitle: "준비와<br>기초 다지기" },
-  { key: "근력", title: "근력", subtitle: "성장을 위한<br>역량 축적" },
-  { key: "유산소", title: "유산소", subtitle: "꾸준한<br>관리 습관 형성" },
+  {
+    key: "스트레칭",
+    title: "스트레칭",
+    subtitle: "준비와<br>기초 다지기",
+    image: stretchingIcon,
+  },
+  {
+    key: "근력",
+    title: "근력",
+    subtitle: "성장을 위한<br>역량 축적",
+    image: strengthIcon,
+  },
+  {
+    key: "유산소",
+    title: "유산소",
+    subtitle: "꾸준한<br>관리 습관 형성",
+    image: cardioIcon,
+  },
 ];
 
 const QUIZ_TYPES = [
@@ -27,6 +47,8 @@ const QUIZ_TYPES = [
   { key: "OX", label: "OX" },
 ];
 
+const OX_OPTIONS = ["O", "X"];
+
 const form = reactive({
   id: null,
   title: "",
@@ -34,6 +56,7 @@ const form = reactive({
   videoUrl: "",
   routineType: "",
   quizType: "",
+  routineAnswer: "",
 });
 
 const isUrlInputVisible = ref(false);
@@ -51,8 +74,22 @@ onMounted(() => {
 });
 
 const isSaveButtonDisabled = computed(() => {
-  return !form.title.trim() || !form.description.trim() || !form.routineType;
+  const isBaseInvalid =
+    !form.title.trim() || !form.description.trim() || !form.routineType;
+  if (form.quizType === "OX") {
+    return isBaseInvalid || !form.routineAnswer;
+  }
+  return isBaseInvalid;
 });
+
+watch(
+  () => form.quizType,
+  (newQuizType) => {
+    if (newQuizType !== "OX") {
+      form.routineAnswer = "";
+    }
+  },
+);
 
 const handleClose = () => {
   emit("close");
@@ -84,7 +121,7 @@ const modalTitle = computed(() => {
 
         <div class="mb-4 text-input text-gray-50">루틴 카테고리</div>
         <div
-          class="rounded-r15 mb-6 flex items-center justify-around bg-gray-custom px-3 py-5"
+          class="mb-6 flex items-center justify-around rounded-r15 bg-gray-custom px-3 py-5"
         >
           <div
             v-for="category in ROUTINE_CATEGORIES"
@@ -92,14 +129,18 @@ const modalTitle = computed(() => {
             class="flex cursor-pointer flex-col items-center gap-2 text-center"
             @click="form.routineType = category.key"
           >
-            <div
-              :class="[
-                'rounded-r15 flex h-[60px] w-[60px] items-center justify-center bg-gray-600 transition-all',
-                {
-                  'border-2 border-primary': form.routineType === category.key,
-                },
-              ]"
-            ></div>
+            <CategoryIconBox
+              :bg-color="
+                form.routineType === category.key
+                  ? 'bg-gray-800'
+                  : 'bg-gray-600'
+              "
+              :class="{
+                'border-2 border-primary': form.routineType === category.key,
+              }"
+              :icon-src="category.image"
+              :alt-text="category.title"
+            />
             <div class="flex flex-col">
               <span class="text-body text-white">{{ category.title }}</span>
               <span
@@ -111,7 +152,7 @@ const modalTitle = computed(() => {
         </div>
 
         <div class="mb-6">
-          <div class="mb-4 text-input text-gray-50">퀴즈 유형</div>
+          <div class="mb-4 text-input text-gray-50">루틴 유형</div>
           <BaseSelectButton v-model="form.quizType" :options="QUIZ_TYPES" />
         </div>
 
@@ -129,6 +170,15 @@ const modalTitle = computed(() => {
               placeholder="루틴 내용을 입력해주세요"
               v-model="form.description"
             />
+
+            <div v-if="form.quizType === 'OX'">
+              <div class="mb-4 text-input text-gray-50">루틴 답안</div>
+              <BaseSelectButton
+                v-model="form.routineAnswer"
+                :options="OX_OPTIONS"
+              />
+            </div>
+
             <div>
               <div v-if="!isUrlInputVisible" class="flex items-center gap-2">
                 <label class="text-input text-gray-50">영상 URL</label>
