@@ -35,24 +35,21 @@ const inputFields = ref([
   {
     id: "successDocNo",
     label: "합격증 번호",
-    subLabel: "('-' 없이)",
-    placeholder: "합격증 번호를 입력해주세요 (8자리)",
+    placeholder: "'-'없이 합격증 번호 8자리를 입력해주세요",
     value: "",
     requireExactLength: 8,
   },
   {
     id: "birth",
     label: "생년월일",
-    subLabel: "(6자리, 예: 19941225)",
-    placeholder: "생년월일을 입력해주세요 (8자리)",
+    placeholder: "생년월일 8자리를 입력해주세요",
     value: "",
     requireExactLength: 8,
   },
   {
     id: "successCtfyNoLic",
     label: "발급 번호",
-    subLabel: "(하단 발급번호의 마지막 6자리)",
-    placeholder: "발급 번호를 입력해주세요 (6자리)",
+    placeholder: "하단 발급번호의 마지막 6자리를 입력해주세요",
     value: "",
     requireExactLength: 6,
   },
@@ -221,9 +218,9 @@ const closeModal = () => {
 
       <!-- v-for로 Input 반복 -->
       <div v-for="field in inputFields" :key="field.id">
-        <div class="mt-3 block px-9 text-input text-gray-300">
+        <div class="mb-1 mt-3 block px-9 text-input text-gray-300">
           {{ field.label }}
-          <span v-if="field.subLabel" class="ml-1 text-xs text-gray-300">
+          <span v-if="field.subLabel" class="ml-1 text-xs text-gray-500">
             {{ field.subLabel }}
           </span>
         </div>
@@ -236,7 +233,7 @@ const closeModal = () => {
         />
       </div>
 
-      <div class="px-4 pt-5">
+      <div class="px-4 pt-10">
         <BaseButton :isDisabled="isButtonDisabled" @click="handleSubmit">
           확인
         </BaseButton>
