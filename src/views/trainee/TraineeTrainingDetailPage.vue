@@ -324,7 +324,7 @@ const goToQnaPage = () => {
               <p class="text-input font-bold text-white">
                 {{ trainingData.trainerName }}
               </p>
-              <p class="text-body2 flex items-center gap-1 text-gray-300">
+              <p class="flex items-center gap-1 text-body2 text-gray-300">
                 수강생 {{ trainingData.studentCount.toLocaleString() }}
                 <img :src="StarIcon" alt="star" class="inline-block h-3 w-3" />
                 {{ trainingData.trainerRating || "-" }}
@@ -335,7 +335,7 @@ const goToQnaPage = () => {
           <!-- Q&A 버튼 -->
           <button
             @click="goToQnaPage"
-            class="text-input ml-auto rounded-full bg-primary px-3 py-1.5 font-bold text-black shadow"
+            class="ml-auto rounded-full bg-primary px-3 py-1.5 text-input font-bold text-black shadow"
           >
             Q&A
           </button>
@@ -397,7 +397,7 @@ const goToQnaPage = () => {
           :text="hasWrittenReview ? '리뷰 작성 완료' : '리뷰 작성하기'"
           :variant="hasWrittenReview ? 'disabled' : 'secondary'"
           :disabled="hasWrittenReview"
-          class="w-full"
+          class="bg-gray-custom w-full !text-body !font-medium !text-white"
           @click="!hasWrittenReview && goToReviewPage()"
         />
         <ActionButton
@@ -405,7 +405,7 @@ const goToQnaPage = () => {
           text="트레이너와 1:1 PT"
           variant="primary"
           :disabled="chatRoomCreated"
-          class="w-full"
+          class="!bg-gray-custom w-full !text-body !font-medium !text-white"
           @click="startChat"
         />
       </div>

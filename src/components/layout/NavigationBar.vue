@@ -26,10 +26,10 @@ const navItems = {
   trainer: [
     // 수정 필요함 !
     {
-      id: "",
-      icon: "",
+      id: "report",
+      icon: "coins",
       label: "자산",
-      path: "",
+      path: "/trainer/mypage/report",
     },
     {
       id: "training",
@@ -53,7 +53,7 @@ const navigate = (path) => {
 
 <template>
   <nav
-    class="bg-background/50 absolute bottom-0 left-0 right-0 flex h-16 items-center justify-around backdrop-blur-md"
+    class="absolute bottom-0 left-0 right-0 flex h-16 items-center justify-around bg-background/50 backdrop-blur-md"
   >
     <div
       v-for="item in navItems[userType]"
