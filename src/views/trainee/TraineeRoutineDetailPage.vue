@@ -7,40 +7,51 @@ import { useEnrollmentStore } from "@/stores/enrollment";
 import { useRoutineLockStore } from "@/stores/routineLock";
 
 import BaseHeader from "@/components/common/BaseHeader.vue";
-import BaseBadge from "@/components/common/BaseBadge.vue";
-import RoutineSubmitBar from "@/components/trainee/training/RoutineSubmitBar.vue";
 import RoutineChat from "@/components/trainee/training/RoutineChat.vue";
 import RoutineVideo from "@/components/trainee/training/RoutineVideo.vue";
 import RoutineResultModal from "@/components/trainee/training/RoutineResultModal.vue";
+
+// 타입별 폼
+import RoutineTypeSubjective from "@/components/trainee/training/RoutineTypeSubjective.vue";
+import RoutineTypeOX from "@/components/trainee/training/RoutineTypeOX.vue";
+import RoutineTypePractice from "@/components/trainee/training/RoutineTypePractice.vue";
 
 const router = useRouter();
 const route = useRoute();
 const enrollmentStore = useEnrollmentStore();
 const routineLock = useRoutineLockStore();
 
-// API 데이터 상태
 const currentRoutine = ref(null);
 
-// AI 채팅/인증 상태
+// 제출/채팅
 const certificationPhotos = ref([]);
 const isLoading = ref(false);
 const isResultModalVisible = ref(false);
-const submissionStatus = ref("success"); // 'success' | 'failure'
+const submissionStatus = ref("success");
 const acquiredReward = ref(0);
 
 // 잠금/입력 모드
-const isLocked = ref(false); // 로컬락(정답) → true
+const isLocked = ref(false);
 const isEntryMode = computed(
   () => !!route.query.enrollmentId && !isLocked.value,
 );
 
-// API 호출 → 루틴 상세 로드
+// 타입/레이블
+const routineType = computed(() => currentRoutine.value?.type || "SUBJECTIVE");
+const isSubjective = computed(() => routineType.value === "SUBJECTIVE");
+const isOX = computed(() => routineType.value === "OX");
+const isPractice = computed(() => routineType.value === "PRACTICE");
+const typeLabel = computed(() =>
+  isOX.value ? "OX" : isPractice.value ? "실천형" : "주관식",
+);
+
+// 상세 로드
 const loadRoutineDetail = async () => {
   try {
     const res = await getRoutineDetail(route.params.routineId);
     const raw = res.data;
 
-    const id = String(route.params.routineId); // ✅ 키 타입 통일
+    const id = String(route.params.routineId);
     const localLocked = routineLock.isLocked(id);
 
     currentRoutine.value = {
@@ -51,33 +62,30 @@ const loadRoutineDetail = async () => {
       category: raw.category,
       reward: raw.routineScore,
       videoUrl: raw.routineVideoUrl || null,
-      completed: localLocked, // 보기 모드 표기용
+      type: String(
+        raw.routineType ?? route.query.type ?? "SUBJECTIVE",
+      ).toUpperCase(),
+      completed: localLocked,
     };
     isLocked.value = localLocked;
 
-    // 잠금 상태인데 응시 URL로 들어왔으면 쿼리 제거하여 보기모드로
     if (isLocked.value && route.query.enrollmentId) {
       const { enrollmentId, ...rest } = route.query;
       router.replace({ path: route.path, query: rest });
     }
   } catch (err) {
-    console.error(" 루틴 상세 조회 실패:", err);
+    console.error("루틴 상세 조회 실패:", err);
     router.back();
   }
 };
 
 onMounted(async () => {
-  // 응시 모드 진입(쿼리 없으면 store의 enrollmentId를 부여)
   if (!route.query.enrollmentId && enrollmentStore.enrollmentId) {
     router.replace({
       path: route.path,
-      query: {
-        ...route.query,
-        enrollmentId: enrollmentStore.enrollmentId,
-      },
+      query: { ...route.query, enrollmentId: enrollmentStore.enrollmentId },
     });
   } else {
-    // 보기 모드로 직접 진입한 경우도 상세 로드
     await loadRoutineDetail();
   }
 });
@@ -85,36 +93,25 @@ onMounted(async () => {
 watch(
   () => route.query.enrollmentId,
   async (val) => {
-    // 응시 모드가 되면 상세 로드
-    if (val) {
-      await loadRoutineDetail();
-    }
+    if (val) await loadRoutineDetail();
   },
-  { immediate: false },
 );
 
-// 뒤로 가기
 const handleGoBack = () => router.back();
 
-// 영상 열기
 const openVideo = () => {
-  if (currentRoutine.value?.videoUrl) {
+  if (currentRoutine.value?.videoUrl)
     window.open(currentRoutine.value.videoUrl, "_blank");
-  }
 };
 
-// 제출 처리
-// submission: { text: string, file?: File, imageUrl?: string }
-//  - file 존재 시 → 멀티파트로 파일 함께 전송
-//  - file 없을 시 → 멀티파트지만 파일 파트 없이 JSON만 전송
 const handleCertificationSubmit = async (submission) => {
   if (isLoading.value || isLocked.value) return;
   isLoading.value = true;
 
-  // 미리보기용 URL (파일이면 로컬 Object URL, 아니면 전달받은 imageUrl)
-  const previewUrl = submission.file
-    ? URL.createObjectURL(submission.file)
-    : (submission.imageUrl ?? null);
+  const file = submission?.imageFile ?? submission?.file ?? null;
+  const previewUrl = file
+    ? URL.createObjectURL(file)
+    : (submission?.imageUrl ?? null);
 
   certificationPhotos.value.push({
     id: Date.now(),
@@ -125,36 +122,28 @@ const handleCertificationSubmit = async (submission) => {
   });
 
   try {
-    const id = String(route.params.routineId); // ✅ 항상 문자열 키 사용
+    const id = String(route.params.routineId);
     const payload = {
       enrollmentId: Number(route.query.enrollmentId),
       answerText: submission.text,
-      // ✅ evidenceUrl 같은 문자열 필드는 더 이상 보낼 필요 없음
     };
 
-    const res = await submitRoutineResult(
-      id,
-      payload,
-      submission.imageFile ?? null, // ✅ 파일이 있으면 전달, 없으면 null
-    );
-
+    const res = await submitRoutineResult(id, payload, file);
     const result = res.data.passFailResult;
 
     submissionStatus.value = result === "PASS" ? "success" : "failure";
+
     if (result === "PASS") {
-      // ✅ PASS 때만 잠금
       routineLock.lock(id);
       isLocked.value = true;
       currentRoutine.value.completed = true;
       acquiredReward.value = currentRoutine.value.reward;
 
-      // URL에서 enrollmentId 제거 → 재입력 방지(보기모드 고정)
       if (route.query.enrollmentId) {
         const { enrollmentId, ...rest } = route.query;
         router.replace({ path: route.path, query: rest });
       }
     } else {
-      // 오답이면 잠금 해제
       routineLock.unlock(id);
       isLocked.value = false;
       currentRoutine.value.completed = false;
@@ -170,48 +159,154 @@ const handleCertificationSubmit = async (submission) => {
   }
 };
 
-// 모달 닫기
 const closeModal = () => {
+  router.back();
+};
+const closeResult = () => {
   isResultModalVisible.value = false;
 };
-
-// 재시도
 const retrySubmission = () => {
   isResultModalVisible.value = false;
 };
 </script>
 
 <template>
-  <div class="flex h-screen flex-col bg-realBlack pb-40">
+  <div class="flex h-screen flex-col bg-realBlack">
+    <!-- 헤더 -->
     <header class="flex-shrink-0 px-6 pt-4">
       <BaseHeader title="루틴 상세" @back="handleGoBack" />
     </header>
 
+    <!-- 본문 -->
     <main
       v-if="currentRoutine"
-      class="flex-1 overflow-y-auto px-6 pb-40 pt-4 scrollbar-hide"
+      class="relative flex-1 overflow-y-auto px-6 pb-24 pt-4 scrollbar-hide"
     >
-      <div class="mt-4 flex items-center gap-2">
-        <BaseBadge>{{ currentRoutine.level }}</BaseBadge>
-        <BaseBadge>{{ currentRoutine.category }}</BaseBadge>
-        <BaseBadge variant="primary" class="ml-auto">
-          리워드 {{ currentRoutine.reward }}P
-        </BaseBadge>
-      </div>
+      <!-- ====== 1) 영상 있는 케이스: 페이지 레이아웃 ====== -->
+      <template v-if="currentRoutine.videoUrl">
+        <!-- 타이틀/타입칩/설명 -->
+        <div class="mb-6">
+          <div class="mb-1 flex items-center gap-2">
+            <h2 class="text-title font-bold text-white">
+              {{ currentRoutine.title }}
+            </h2>
+            <span
+              class="rounded-full bg-[#3A3A3A] px-2 py-[2px] text-[11px] leading-none text-white"
+            >
+              {{ typeLabel }}
+            </span>
+          </div>
+          <p class="text-gray-300">{{ currentRoutine.description }}</p>
+        </div>
 
-      <RoutineVideo :video-url="currentRoutine.videoUrl" @play="openVideo" />
+        <!-- 영상 (라벨 숨김) -->
+        <RoutineVideo
+          :video-url="currentRoutine.videoUrl"
+          :show-label="false"
+          class="mb-8"
+          @play="openVideo"
+        />
 
-      <h3 class="mb-4 mt-8 text-heading text-white">현재 루틴</h3>
-      <div class="mb-6 rounded-xl bg-white p-4">
-        <h3 class="mb-2 text-body font-bold text-realBlack">
-          {{ currentRoutine.title }}
-        </h3>
-        <p class="text-subtext leading-relaxed text-gray-700">
-          {{ currentRoutine.description }}
-        </p>
-      </div>
+        <!-- 입력폼(응시 모드일 때만) / 완료 시 안내 -->
+        <div v-if="isEntryMode" class="space-y-8">
+          <div class="text-subtext text-gray-200">답안 작성</div>
 
-      <div class="flex flex-col items-end space-y-3">
+          <RoutineTypeSubjective
+            v-if="isSubjective"
+            :minimal="true"
+            :loading="isLoading"
+            @submit="handleCertificationSubmit"
+          />
+          <RoutineTypeOX
+            v-else-if="isOX"
+            :minimal="true"
+            :loading="isLoading"
+            @submit="handleCertificationSubmit"
+          />
+          <RoutineTypePractice
+            v-else
+            :minimal="true"
+            :loading="isLoading"
+            @submit="handleCertificationSubmit"
+          />
+        </div>
+        <div
+          v-else-if="isLocked"
+          class="mt-8 rounded-xl bg-gray-800 px-4 py-5 text-center text-gray-300"
+        >
+          이미 완료된 루틴입니다.
+        </div>
+      </template>
+
+      <!-- ====== 2) 영상 없는 케이스: 풀블랙 모달 (겉 카드만 테두리 유지) ====== -->
+      <template v-else>
+        <div
+          class="fixed inset-0 z-20 flex items-center justify-center bg-realBlack px-6"
+        >
+          <div
+            class="w-full max-w-[340px] rounded-2xl border border-[#2A2A2A] bg-[#1A1A1A] p-4 shadow-[0_12px_32px_rgba(0,0,0,0.6)]"
+          >
+            <!-- 닫기 -->
+            <button
+              class="ml-auto block rounded-full p-1 text-gray-400 hover:text-white"
+              @click="closeModal"
+            >
+              ✕
+            </button>
+
+            <!-- 타이틀/설명 -->
+            <div class="mb-6">
+              <div class="mb-1 flex items-center gap-2">
+                <h2 class="text-heading font-bold text-white">
+                  {{ currentRoutine.title }}
+                </h2>
+                <span
+                  class="rounded-full bg-[#3A3A3A] px-2 py-[2px] text-[11px] leading-none text-white"
+                >
+                  {{ typeLabel }}
+                </span>
+              </div>
+              <p class="text-gray-300">{{ currentRoutine.description }}</p>
+            </div>
+
+            <!-- 입력폼(응시 모드) / 완료 안내 -->
+            <div v-if="isEntryMode" class="space-y-6">
+              <div class="text-subtext text-gray-200">답안 작성</div>
+
+              <RoutineTypeSubjective
+                v-if="isSubjective"
+                :minimal="true"
+                :loading="isLoading"
+                @submit="handleCertificationSubmit"
+              />
+              <RoutineTypeOX
+                v-else-if="isOX"
+                :minimal="true"
+                :loading="isLoading"
+                @submit="handleCertificationSubmit"
+              />
+              <RoutineTypePractice
+                v-else
+                :minimal="true"
+                :loading="isLoading"
+                @submit="handleCertificationSubmit"
+              />
+            </div>
+            <div
+              v-else-if="isLocked"
+              class="mt-6 rounded-xl bg-gray-800 px-4 py-5 text-center text-gray-300"
+            >
+              이미 완료된 루틴입니다.
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- 인증 채팅 피드 -->
+      <div
+        v-if="certificationPhotos.length"
+        class="mt-8 flex flex-col items-end space-y-3"
+      >
         <RoutineChat
           v-for="photo in certificationPhotos"
           :key="photo.id"
@@ -220,26 +315,12 @@ const retrySubmission = () => {
       </div>
     </main>
 
-    <!-- 입력창: 응시 모드일 때만 노출 -->
-    <RoutineSubmitBar
-      v-if="isEntryMode"
-      :is-loading="isLoading"
-      @submit="handleCertificationSubmit"
-    />
-
-    <!-- 보기 모드(완료됨) 안내 -->
-    <div
-      v-else-if="isLocked"
-      class="mx-6 mb-6 rounded-xl bg-[#2A2A2A] px-4 py-6 text-center text-white/70"
-    >
-      이미 완료된 루틴입니다.
-    </div>
-
+    <!-- 결과 모달 -->
     <RoutineResultModal
       :is-visible="isResultModalVisible"
       :status="submissionStatus"
       :reward="acquiredReward"
-      @close="closeModal"
+      @close="closeResult"
       @retry="retrySubmission"
     />
   </div>

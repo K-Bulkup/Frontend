@@ -128,7 +128,7 @@ const handleLogin = async () => {
 
   if (success) {
     if (authStore.role === "TRAINER") {
-      router.push("/trainer/mypage");
+      router.push("/trainer/mypage/training");
     } else {
       router.push("/trainee/mypage");
     }
@@ -183,6 +183,7 @@ const handleKakaoLogin = () => {
         다시 시도
       </BaseButton>
     </div>
+
   </div>
 
   <!-- 로그인 입력 / 역할 선택 공용 래퍼 -->
