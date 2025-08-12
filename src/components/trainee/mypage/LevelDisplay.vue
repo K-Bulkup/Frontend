@@ -8,15 +8,9 @@ import background3 from "@/assets/images/background/background3.png";
 import background4 from "@/assets/images/background/background4.png";
 import background5 from "@/assets/images/background/background5.png";
 
-// 레벨별 캐릭터 이미지
-import lev1_img from "@/assets/images/mascot/Lev100/Geumyuk_100_1.png";
-import lev2_img from "@/assets/images/mascot/Lev100/Geumyuk_100_2.png";
-import lev3_img from "@/assets/images/mascot/Lev100/Geumyuk_100_3.png";
-import lev4_img from "@/assets/images/mascot/Lev100/Geumyuk_100_4.png";
-import lev5_img from "@/assets/images/mascot/Lev100/Geumyuk_100_5.png";
-
 const props = defineProps({
   growthScore: { type: Number, required: true },
+  applyBackdropBlur: { type: Boolean, default: false },
 });
 
 // growthScore에 따른 배경 이미지 결정
@@ -30,16 +24,21 @@ const backgroundImage = computed(() => {
 
 // growthScore에 따른 캐릭터 이미지 결정
 const characterImage = computed(() => {
-  if (props.growthScore <= 20) return lev1_img;
-  if (props.growthScore <= 40) return lev2_img;
-  if (props.growthScore <= 60) return lev3_img;
-  if (props.growthScore <= 80) return lev4_img;
-  return lev5_img;
+  const imageIndex = Math.floor(props.growthScore / 20);
+
+  const finalIndex = Math.min(imageIndex, 24);
+  const imagePath = `../../../assets/images/mascot/level/Geumyuk_${finalIndex + 1}.png`;
+  return new URL(imagePath, import.meta.url).href;
 });
 </script>
 
 <template>
-  <div class="relative min-h-screen w-full overflow-hidden">
+  <div
+    :class="[
+      'relative min-h-screen w-full overflow-hidden',
+      { 'bg-black/10 backdrop-blur-sm': applyBackdropBlur },
+    ]"
+  >
     <img
       :src="backgroundImage"
       alt="레벨 배경화면"
@@ -56,8 +55,14 @@ const characterImage = computed(() => {
       />
     </div>
 
-    <div class="relative z-20">
-      <slot></slot>
+    <div
+      class="pointer-events-none relative z-20 flex min-h-screen flex-col justify-between p-6 pb-24"
+    >
+      <div></div>
+
+      <div class="pointer-events-auto">
+        <slot></slot>
+      </div>
     </div>
   </div>
 </template>
