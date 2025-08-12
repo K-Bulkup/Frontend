@@ -60,6 +60,26 @@ const handleAssetButton = async () => {
 
 const chartsReady = computed(() => hasAsset.value && !isLoading.value);
 
+// 차트 선택 상태 관리
+const selectedView = ref('composition'); // 'composition', 'trend', 'transactions'
+const isExpanded = ref(false); // 차트 선택 목록 확장/접기 상태
+
+const viewOptions = [
+  { id: 'composition', title: '자산 구성' },
+  { id: 'trend', title: '자산 추이' },
+  { id: 'withdrawal', title: '지출 카테고리' },
+  { id: 'transactions', title: '거래 내역' }
+];
+
+const setSelectedView = (viewId) => {
+  selectedView.value = viewId;
+  isExpanded.value = false; // 선택 후 접기
+};
+
+const toggleExpanded = () => {
+  isExpanded.value = !isExpanded.value;
+};
+
 onMounted(async () => {
   userId.value = await awaitUserReady();
   const result = await getTraineeAsset(userId.value); // 최초 GET
@@ -72,100 +92,266 @@ onMounted(async () => {
   <div>
     <BaseHeaderWithoutBack title="자산 관리" />
 
-    <div class="flex-1 overflow-y-auto px-6 pb-32 pt-10">
-      <div class="space-y-6">
+    <div class="flex-1 overflow-y-auto px-4 pb-32 pt-6">
+      <!-- 데이터가 있을 때 -->
+      <div v-if="hasAsset" class="space-y-4">
         <!-- Total Assets Section -->
-        <div class="rounded-xl bg-gray-100 p-6 shadow-lg">
+        <div class="rounded-xl bg-gray-800 p-4 shadow-lg">
           <div class="flex items-start justify-between">
-            <div>
-              <h2 class="mb-2 text-heading font-semibold text-black">
-                현재 자산
-              </h2>
-              <p class="text-title font-bold text-black">
-                {{ balance.toLocaleString() }} 원
-              </p>
+            <div class="flex items-center space-x-3">
+              <img
+                src="@/assets/images/mascot/keumyook.png"
+                alt="keumyook"
+                class="h-10 w-10"
+              />
+              <div>
+                <p class="text-caption text-gray-300">총 자산</p>
+                <p class="text-title font-bold text-white">
+                  {{ balance.toLocaleString() }} 원
+                </p>
+              </div>
             </div>
 
             <!-- 단일 버튼: 없으면 불러오기 / 있으면 갱신하기 -->
             <button
               v-if="!isLoading"
               @click="handleAssetButton"
-              class="rounded-lg bg-primary px-4 py-2 text-subtext font-normal text-realBlack"
+              class="rounded-full bg-gray-600 px-4 py-2 text-caption font-normal text-white"
             >
-              {{ hasAsset ? "자산 갱신하기" : "자산 불러오기" }}
+              자산 갱신하기
+            </button>
+          </div>
+
+          <div class="mt-4 flex items-center space-x-3">
+            <img
+              src="@/assets/images/mascot/keumyook.png"
+              alt="keumyook"
+              class="h-10 w-10"
+            />
+            <div>
+              <p class="text-caption text-gray-300">8월에 쓴 돈</p>
+              <p class="text-title font-bold text-white">
+                298,000 원
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 차트 선택 영역 -->
+        <div>
+          <!-- 접혀있을 때: 현재 선택된 항목만 표시 -->
+          <div v-if="!isExpanded" class="rounded-xl bg-gray-800 p-4 shadow-lg">
+            <div class="flex items-center justify-between">
+              <span class="text-subtext text-white">{{ viewOptions.find(v => v.id === selectedView)?.title }}</span>
+              <button @click="toggleExpanded" class="text-primary">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- 펼쳐졌을 ��: 모든 선택 옵션 표시 -->
+          <div v-else class="space-y-1">
+            <button
+              v-for="option in viewOptions"
+              :key="option.id"
+              @click="setSelectedView(option.id)"
+              class="flex w-full items-center justify-center rounded-xl border-2 p-3 text-subtext transition-all"
+              :class="{
+                'border-primary bg-primary bg-opacity-20 text-white': selectedView === option.id,
+                'border-gray-600 bg-gray-600 text-white hover:border-gray-500': selectedView !== option.id
+              }"
+            >
+              {{ option.title }}
             </button>
           </div>
         </div>
 
-        <!-- 자산 구성 -->
-        <div class="rounded-xl bg-gray-100 p-6 shadow-lg">
-          <h3 class="mb-4 text-heading font-semibold text-black">자산 구성</h3>
-          <div class="flex items-center justify-center">
-            <CompositionDonutChart
-              :composition="assetData?.composition ?? null"
-              :balance="balance"
-            />
+        <!-- 차트 컨텐츠 영역 (접혀있을 때만 표시) -->
+        <div v-if="!isExpanded" class="rounded-xl bg-gray-800 p-6 shadow-lg min-h-[300px]">
+          <!-- 자산 구성 차트 -->
+          <div v-if="selectedView === 'composition'" class="p-6">
+            <div class="flex items-center justify-center">
+              <CompositionDonutChart
+                :composition="assetData?.composition ?? null"
+                :balance="balance"
+              />
+            </div>
           </div>
-        </div>
 
-        <!-- 자산 추이 -->
-        <div class="rounded-xl bg-gray-100 p-6 shadow-lg">
-          <h3 class="mb-4 text-heading font-semibold text-black">자산 추이</h3>
-          <div class="flex h-32 items-center justify-center text-gray-700">
+          <!-- 자산 추이 차트 -->
+          <div v-else-if="selectedView === 'trend'" class="flex h-48 items-center justify-center text-gray-300">
             <template v-if="assetData?.snapshots?.length">
               <BalanceLineChart :assetData="assetData" />
             </template>
             <template v-else>
-              <span class="text-sm text-subtext text-gray-500"
+              <span class="text-sm text-subtext text-gray-300"
                 >자산 추이 데이터가 없습니다.</span
               >
             </template>
           </div>
-        </div>
 
-        <!-- 지출 카테고리 -->
-        <div class="rounded-xl bg-gray-100 p-6 shadow-lg">
-          <h3 class="mb-4 text-heading font-semibold text-black">
-            지출 카테고리
-          </h3>
-          <div class="flex items-center justify-center">
+          <!-- 지출 카테고리 차트 -->
+          <div v-else-if="selectedView === 'withdrawal'" class="flex items-center justify-center">
             <WithdrawalDonutChart
               :transactions="assetData?.transactions ?? []"
             />
           </div>
+
+          <!-- 거래 내역 -->
+          <div v-else-if="selectedView === 'transactions'">
+            <div class="space-y-4">
+              <template v-if="assetData?.transactions?.length">
+                <div
+                  v-for="(transaction, index) in assetData.transactions.slice(0, 6)"
+                  :key="index"
+                  class="flex items-center justify-between py-3 border-b border-gray-700 last:border-b-0"
+                >
+                  <div>
+                    <p class="text-caption text-gray-300">{{ transaction.date || '2025.07.15' }}</p>
+                    <p class="text-body font-semibold text-white">{{ transaction.category || '생필품' }}</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-body font-semibold text-white">
+                      출금 {{ (transaction.amount || 1300).toLocaleString() }}원
+                    </p>
+                  </div>
+                </div>
+              </template>
+              <template v-else>
+                <!-- 샘플 거래 내역 데이터 -->
+                <div class="flex items-center justify-between py-3 border-b border-gray-700">
+                  <div>
+                    <p class="text-caption text-gray-300">2025.07.15</p>
+                    <p class="text-body font-semibold text-white">생필품</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-body font-semibold text-white">출금 1,300원</p>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between py-3 border-b border-gray-700">
+                  <div>
+                    <p class="text-caption text-gray-300">2025.07.15</p>
+                    <p class="text-body font-semibold text-white">교통비</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-body font-semibold text-white">출금 1,300원</p>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between py-3 border-b border-gray-700">
+                  <div>
+                    <p class="text-caption text-gray-300">2025.07.15</p>
+                    <p class="text-body font-semibold text-white">주거/공과금</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-body font-semibold text-white">출금 1,300원</p>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between py-3 border-b border-gray-700">
+                  <div>
+                    <p class="text-caption text-gray-300">2025.07.15</p>
+                    <p class="text-body font-semibold text-white">의료/건강</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-body font-semibold text-white">출금 1,300원</p>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between py-3 border-b border-gray-700">
+                  <div>
+                    <p class="text-caption text-gray-300">2025.07.15</p>
+                    <p class="text-body font-semibold text-white">의료/��강</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-body font-semibold text-white">출금 1,300원</p>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between py-3">
+                  <div>
+                    <p class="text-caption text-gray-300">2025.07.15</p>
+                    <p class="text-body font-semibold text-white">의료/건강</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-body font-semibold text-white">출금 1,300원</p>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 데이터가 없을 때 -->
+      <div v-else class="space-y-4">
+        <!-- Total Assets Section with no data -->
+        <div class="rounded-xl bg-gray-800 p-4 shadow-lg">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center space-x-3">
+              <img
+                src="@/assets/images/mascot/keumyook.png"
+                alt="keumyook"
+                class="h-10 w-10"
+              />
+              <div>
+                <p class="text-caption text-gray-300">총 자산</p>
+                <p class="text-title font-bold text-white">0 원</p>
+              </div>
+            </div>
+
+            <button
+              v-if="!isLoading"
+              @click="handleAssetButton"
+              class="rounded-full bg-gray-600 px-4 py-2 text-caption font-normal text-white"
+            >
+              자산 갱신하기
+            </button>
+          </div>
+
+          <div class="mt-4 flex items-center space-x-3">
+            <img
+              src="@/assets/images/mascot/keumyook.png"
+              alt="keumyook"
+              class="h-10 w-10"
+            />
+            <div>
+              <p class="text-caption text-gray-300">8월에 쓴 돈</p>
+              <p class="text-title font-bold text-white">0 원</p>
+            </div>
+          </div>
         </div>
 
-        <!-- AI 채팅 버튼 -->
-        <div
-          class="fixed bottom-[120px] z-50"
-          style="right: max(1rem, calc(50vw - 180px))"
-        >
-          <button
-            @click="goToAiChat"
-            class="flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg transition-transform hover:scale-105 active:scale-95"
-          >
-            <div class="relative">
-              <svg
-                width="30"
-                height="24"
-                viewBox="0 0 32 26"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                class="stroke-black stroke-2"
-              >
-                <path
-                  d="M31 13C31 19.6274 24.2843 25 16 25C13.0482 25 10.2956 24.3179 7.97495 23.14L1 25L3.32498 19.42C1.85261 17.5635 1 15.3614 1 13C1 6.37258 7.71573 1 16 1C24.2843 1 31 6.37258 31 13Z"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-              <span
-                class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform text-body font-semibold text-black"
-                >AI</span
-              >
+        <!-- No Data Section -->
+        <div class="rounded-xl bg-gray-800 p-6 shadow-lg">
+          <div class="flex flex-col items-center justify-center py-8 text-center">
+            <p class="mb-2 text-body font-semibold text-white">
+              자산 데이터가 없습니다.
+            </p>
+            <p class="mb-8 text-body text-white">
+              자산 데이터를 연동해주세요.
+            </p>
+
+            <div class="mb-6">
+              <img
+                src="@/assets/images/mascot/nodata.png"
+                alt="No data character"
+                class="h-76 w-52 object-contain"
+              />
             </div>
-          </button>
+          </div>
         </div>
+      </div>
+
+      <!-- AI 채팅 버튼 -->
+      <div
+        class="fixed bottom-[120px] z-50"
+        style="right: max(1rem, calc(50vw - 180px))"
+      >
+        <button
+          @click="goToAiChat"
+          class="flex h-15 w-15 items-center justify-center rounded-full bg-primary shadow-lg transition-transform hover:scale-105 active:scale-95"
+        >
+          <span class="text-body font-semibold text-black">AI</span>
+        </button>
       </div>
     </div>
   </div>
