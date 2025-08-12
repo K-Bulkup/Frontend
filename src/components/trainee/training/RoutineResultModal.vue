@@ -1,113 +1,123 @@
 <script setup>
 const props = defineProps({
   isVisible: { type: Boolean, required: true },
-  status: { type: String, default: "success" }, // 'success' 또는 'failure'
+  status: { type: String, default: "success" }, // 'success' | 'failure'
   reward: { type: Number, default: 1 },
 });
 
 const emit = defineEmits(["close", "retry"]);
 
-const handleConfirm = () => {
-  if (props.status === "success") {
-    emit("close");
-  } else {
-    emit("retry");
-  }
+const handlePrimary = () => {
+  if (props.status === "success") emit("close");
+  else emit("retry");
 };
 </script>
 
 <template>
   <div
     v-if="isVisible"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm"
+    class="fixed inset-0 z-[999] flex items-center justify-center bg-black/80"
+    role="dialog"
+    aria-modal="true"
   >
+    <!-- 공통 카드 -->
     <div
-      v-if="status === 'success'"
-      class="w-11/12 max-w-xs rounded-2xl bg-white p-6 text-center text-black shadow-lg"
+      class="w-[90%] max-w-[340px] rounded-2xl bg-[#1A1A1A] p-5 text-center text-white shadow-[0_18px_40px_rgba(0,0,0,0.6)]"
     >
-      <div class="flex justify-end">
-        <button @click="$emit('close')"><img src="@/assets/images/trainee/training/close_black.svg" alt="닫기"></img></button>
-      </div>
-      <div
-        class="mx-auto -mt-2 mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary"
+      <!-- 닫기 -->
+      <button
+        class="mb-1 ml-auto block rounded-full p-1 text-gray-400 hover:text-white"
+        aria-label="닫기"
+        @click="$emit('close')"
       >
-        <img src="@/assets/images/trainee/training/star_black.svg" alt="별" />
-      </div>
-      <h2 class="text-xl font-bold text-black">리워드 획득!</h2>
+        <!-- X 아이콘 -->
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M6 6l12 12M18 6L6 18"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        </svg>
+      </button>
 
-      <div class="mt-4 rounded-xl border border-yellow-200 bg-yellow-50 p-4">
-        <div
-          class="flex items-center justify-center gap-2 font-bold text-black"
+      <!-- 상단 원형 아이콘 -->
+      <div
+        class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full"
+        :class="status === 'success' ? 'bg-primary' : 'bg-[#3A3A3A]'"
+      >
+        <svg
+          v-if="status === 'success'"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
         >
-          <div
-            class="flex h-6 w-6 items-center justify-center rounded-full bg-primary"
-          >
-            <img
-              src="@/assets/images/trainee/training/star_black.svg"
-              alt="별"
-              class="h-2 w-2"
-            />
+          <path
+            d="M20 6L9 17l-5-5"
+            stroke="#0B0B0B"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M6 6l12 12M18 6L6 18"
+            stroke="#0B0B0B"
+            stroke-width="3"
+            stroke-linecap="round"
+          />
+        </svg>
+      </div>
+
+      <!-- 타이틀/서브텍스트 -->
+      <template v-if="status === 'success'">
+        <h2 class="text-[18px] font-extrabold text-primary">리워드 획득!</h2>
+        <p class="mt-1 text-body2 text-gray-300">
+          루틴을 성공적으로 완료했습니다
+        </p>
+
+        <!-- 포인트 박스 -->
+        <div class="mt-5 rounded-xl border border-[#2A2A2A] bg-[#141414] p-4">
+          <div class="text-body3 text-gray-400">획득 포인트</div>
+          <div class="mt-1 text-[22px] font-extrabold text-white">
+            {{ reward }}P
           </div>
-          <span>{{ reward }} 포인트</span>
         </div>
 
-        <p class="mt-2 text-sm text-gray-600">
-          루틴을 성공적으로 완료하여<br />리워드 포인트를 획득했습니다!
-        </p>
-      </div>
-      <div class="mt-6">
         <button
-          @click="handleConfirm"
-          class="w-full rounded-lg bg-primary py-3 font-bold text-black transition-opacity duration-200 hover:opacity-80"
+          class="mt-6 w-full rounded-lg bg-primary py-3 font-bold text-black hover:opacity-90"
+          @click="handlePrimary"
         >
           확인
         </button>
-      </div>
-    </div>
+      </template>
 
-    <div
-      v-else
-      class="w-11/12 max-w-xs rounded-2xl bg-white p-6 text-center text-black shadow-lg"
-    >
-      <div class="flex justify-end">
-        <button @click="$emit('close')"><img src="@/assets/images/trainee/training/close_black.svg" alt="닫기" /></button>
-      </div>
-      <div
-        class="mx-auto -mt-2 mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-300"
-      >
-        <img src="@/assets/images/trainee/training/close_red.svg" alt="오답" class="h-6 w-6" />
-      </div>
-      <h2 class="text-xl font-bold">오답입니다!</h2>
-      
-      
-      <div class="mt-4 rounded-xl border border-red-200 bg-red-50 p-4">
+      <template v-else>
+        <h2 class="text-[18px] font-extrabold text-gray-100">
+          리워드 획득 실패
+        </h2>
+        <p class="mt-1 text-body2 text-gray-300">루틴을 완료하지 못했습니다</p>
+
+        <!-- 안내 박스 -->
         <div
-          class="flex items-center justify-center gap-2 font-bold text-black"
+          class="mt-5 space-y-2 rounded-xl border border-[#2A2A2A] bg-[#141414] p-4 text-left"
         >
-          <div
-            class="flex h-6 w-6 items-center justify-center rounded-full bg-red-300"
-          >
-            <img
-              src="@/assets/images/trainee/training/close_red.svg" alt="오답"
-              class="h-2 w-2"
-            />
-          </div>
-          <span class="text-red-500">다시 시도</span>
+          <p class="text-body3 text-gray-300">실패 사유</p>
+          <ul class="list-disc space-y-1 pl-5 text-body3 text-gray-400">
+            <li>정답이 일치하지 않았습니다</li>
+            <li>사진이 명확하지 않거나 판독이 어려웠습니다</li>
+          </ul>
         </div>
 
-        <p class="mt-2 text-sm text-gray-600">
-          정답이 아닙니다.<br />다시 한번 시도해보세요!
-        </p>
-      </div>
-
-      <div class="mt-6">
         <button
-          @click="handleConfirm"
-          class="w-full rounded-xl bg-red-300 py-3 font-bold text-red-500 transition-opacity duration-200 hover:opacity-80"
+          class="mt-6 w-full rounded-lg bg-primary py-3 font-bold text-black hover:opacity-90"
+          @click="handlePrimary"
         >
-          다시 시도
+          다시 시도하기
         </button>
-      </div>
+      </template>
     </div>
   </div>
 </template>

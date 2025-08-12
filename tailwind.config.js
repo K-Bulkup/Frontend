@@ -10,6 +10,7 @@ export default {
       fontSize: {
         title: "28px",
         subTitle: "20px",
+        subTitle2: "18px",
         body: "15px",
         body2: "12px",
         body3: "10px",
