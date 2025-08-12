@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { Doughnut } from "vue-chartjs";
 import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
+
 ChartJS.register(Title, Tooltip, Legend, ArcElement, ChartDataLabels);
 
 // Props로 composition 객체 받기
@@ -18,7 +19,7 @@ const chartData = computed(() => {
     datasets: [
       {
         data: [100],
-        backgroundColor: ["#595959"], // Tailwind gray-200
+        backgroundColor: ["#595959"],
         borderWidth: 1,
       },
     ],
@@ -60,6 +61,9 @@ const chartOptions = {
   plugins: {
     legend: {
       position: "bottom",
+      labels: {
+        color: "#FFFFFF", // ✅ 범례(카테고리) 글자색 흰색
+      },
     },
     tooltip: {
       callbacks: {
@@ -79,7 +83,6 @@ const chartOptions = {
         },
       },
     },
-
     title: {
       display: false,
     },
@@ -103,6 +106,7 @@ const chartOptions = {
   },
 };
 </script>
+
 <template>
   <div>
     <Doughnut :data="chartData" :options="chartOptions" />
