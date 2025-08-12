@@ -26,21 +26,13 @@ onMounted(async () => {
   }
 });
 </script>
-
 <template>
   <div
-    :class="{
-      'flex min-h-screen items-center justify-center bg-realBlack text-white':
-        !isAdminRoute,
-      'min-h-screen bg-gray-100': isAdminRoute,
-    }"
+    class="flex min-h-screen items-center justify-center bg-background text-white"
   >
     <div
-      :class="{
-        'relative flex h-[852px] w-[393px] flex-col overflow-hidden bg-realBlack shadow-2xl':
-          !isAdminRoute,
-        'flex-1': isAdminRoute,
-      }"
+      class="relative flex h-screen w-[393px] flex-col overflow-hidden shadow-2xl"
+      :style="Background"
     >
       <main class="flex-1 overflow-y-auto scrollbar-hide">
         <RouterView />
