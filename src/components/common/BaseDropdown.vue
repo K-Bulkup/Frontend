@@ -33,6 +33,7 @@ const emit = defineEmits(["update:modelValue"]);
 const isDropdownOpen = ref(false);
 const selectedValue = ref(props.modelValue);
 const hoveredOption = ref(null);
+const clickedOption = ref(null); // 클릭된 옵션 상태 추가
 
 // modelValue 변경 감지
 watch(
@@ -49,13 +50,27 @@ watch(selectedValue, (newValue) => {
 
 const toggleDropdown = () => {
   isDropdownOpen.value = !isDropdownOpen.value;
+
+  // 드롭다운이 열릴 때 클릭된 상태 초기화
+  if (isDropdownOpen.value) {
+    clickedOption.value = null;
+  }
 };
 
 const handleOptionSelect = (option) => {
+  // 클릭하자마자 바로 색상 변경
+  const optionValue = getOptionValue(option);
+  clickedOption.value = optionValue;
+
   // 객체 배열인 경우 valueKey에 해당하는 값을, 아니면 옵션 자체를 사용
   const value = props.valueKey ? option[props.valueKey] : option;
-  selectedValue.value = value;
-  isDropdownOpen.value = false;
+
+  // 약간의 지연 후 값 업데이트 및 드롭다운 닫기
+  setTimeout(() => {
+    selectedValue.value = value;
+    isDropdownOpen.value = false;
+    clickedOption.value = null;
+  }, 150);
 };
 
 // 옵션의 표시 텍스트를 반환하는 함수
@@ -149,8 +164,8 @@ const isPlaceholder = computed(() => {
             class="flex items-center justify-center rounded-2xl px-4 py-3 text-center text-body transition-colors"
             style="width: 332px; height: 80px"
             :class="[
-              // 선택된 상태
-              getOptionValue(option) === selectedValue
+              // 클릭된 상태 (최우선)
+              clickedOption === getOptionValue(option)
                 ? 'bg-primary text-black'
                 : // hover 상태
                   hoveredOption === getOptionValue(option)
