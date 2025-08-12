@@ -24,9 +24,9 @@ const goToQnA = () => {
 </script>
 <template>
   <!-- 하단 메뉴 섹션 -->
-  <div class="mx-5 mt-6 grid grid-cols-3 gap-4" @click="goToReport">
+  <div class="mx-5 mt-6 grid grid-cols-3 gap-4">
     <!-- 트레이너 수입 관리 -->
-    <div class="flex flex-col items-center">
+    <div class="flex flex-col items-center" @click="goToReport">
       <div
         class="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 text-black"
       >
