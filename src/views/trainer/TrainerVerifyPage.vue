@@ -19,6 +19,5 @@ const handleBack = () => {
     title="자격 정보를 입력해주세요"
     subtitle="합격증 번호와 발급 번호를 입력해주세요."
   />
-
   <CertificatesInfo />
 </template>

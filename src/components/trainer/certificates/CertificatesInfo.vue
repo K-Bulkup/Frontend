@@ -3,9 +3,8 @@ import BaseInput from "@/components/common/BaseInput.vue";
 import BaseButton from "@/components/common/BaseButton.vue";
 import BaseDropbox from "@/components/common/BaseDropdown.vue";
 
-import ConnectFailureModal from "@/components/common/ConnectFailureModal.vue";
-import ConnectSuccessModal from "@/components/common/ConnectSuccessModal.vue";
-import LoadingOverlay from "@/components/common/LoadingOverlay.vue";
+import ActionStateModal from "@/components/common/ActionStateModal.vue";
+import failImage from "@/assets/images/fail.svg";
 
 import { useRouter } from "vue-router";
 import { ref, computed } from "vue";
@@ -20,7 +19,9 @@ const currentComponent = ref(null);
 const modalProps = ref({
   title: "",
   subtitle: "",
-  retryButtonText: "다시 시도",
+  imgSrc: "",
+  imgAlt: "",
+  confirmButtonText: "다시 시도",
 });
 
 const inputFields = ref([
@@ -113,19 +114,16 @@ const isButtonDisabled = computed(() => {
 const validateAllFields = () => {
   // 자격증 선택 확인
   if (!selectedCertificate.value) {
-    alert("자격증을 선택해주세요.");
     return false;
   }
 
   // 모든 입력 필드 확인
   for (const field of inputFields.value) {
     if (!field.value.trim()) {
-      alert(`${field.label}을(를) 입력해주세요.`);
       return false;
     }
 
     if (isInvalid(field.value, field)) {
-      alert(`${field.label}을(를) 올바르게 입력해주세요.`);
       return false;
     }
   }
@@ -165,15 +163,16 @@ const handleSubmit = async () => {
     modalProps.value = {
       title: "등록이 완료되었습니다.",
       subtitle: "인증뱃지를 획득했습니다.",
-      retryButtonText: "확인",
     };
     currentComponent.value = "ConnectSuccessModal";
   } catch (error) {
     console.error("자격증 인증 실패:", error);
     modalProps.value = {
-      title: "유효하지 않은 자격입니다.",
-      subtitle: "입력하신 정보를 다시 확인해주세요",
-      retryButtonText: "다시 시도",
+      title: "자격증이 유효하지 않습니다.",
+      subtitle: "입력하신 정보를 다시 확인해주세요.",
+      imgSrc: failImage,
+      imgAlt: "fail",
+      confirmButtonText: "다시 시도",
     };
     currentComponent.value = "ConnectFailureModal";
   } finally {
@@ -191,7 +190,7 @@ const closeModal = () => {
   modalProps.value = {
     title: "",
     subtitle: "",
-    retryButtonText: "다시 시도",
+    confirmButtonText: "다시 시도",
   };
 };
 </script>
@@ -241,21 +240,20 @@ const closeModal = () => {
     </div>
 
     <!-- 모달 컴포넌트들 -->
-    <ConnectSuccessModal
+    <ActionStateModal
       v-if="currentComponent === 'ConnectSuccessModal'"
       :title="modalProps.title"
       :subtitle="modalProps.subtitle"
       @close="goMyPage"
     />
-    <ConnectFailureModal
+    <ActionStateModal
       v-if="currentComponent === 'ConnectFailureModal'"
       :title="modalProps.title"
       :subtitle="modalProps.subtitle"
-      :retryButtonText="modalProps.retryButtonText"
-      @retry="closeModal"
+      :imageSrc="modalProps.imgSrc"
+      :imageAlt="modalProps.imgAlt"
+      :confirmButtonText="modalProps.confirmButtonText"
+      @close="closeModal"
     />
-
-    <!-- 중앙 로딩 오버레이 -->
-    <LoadingOverlay :show="isLoading" title="금육이가 검증 중입니다" />
   </div>
 </template>
