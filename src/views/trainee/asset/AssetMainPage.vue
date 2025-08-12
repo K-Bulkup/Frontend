@@ -398,9 +398,9 @@ onMounted(async () => {
           <img
             src="@/assets/images/mascot/nodata.png"
             alt="No data character"
-            class="mb-6 h-48 w-auto object-contain opacity-90"
+            class="mb-6 h-[180px] w-auto object-contain opacity-90"
           />
-          <p class="mb-2 text-title font-bold text-white">
+          <p class="mb-2 text-body font-bold text-white">
             자산 데이터가 없습니다.
           </p>
           <p class="text-body text-gray-300">자산 데이터를 연동해주세요.</p>
