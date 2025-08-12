@@ -10,7 +10,7 @@ import BaseButton from "@/components/common/BaseButton.vue";
 import BaseInput from "@/components/common/BaseInput.vue";
 import BaseSelectRole from "@/components/common/BaseSelectRole.vue";
 import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
-import ConnectSuccessModal from "@/components/common/ConnectSuccessModal.vue";
+import ConnectSuccessModal from "@/components/common/ActionStateModal.vue";
 import ConnectFailureModal from "@/components/common/ConnectFailureModal.vue";
 import BaseBottomIllustration from "@/components/common/BaseBottomIllustration.vue";
 
@@ -183,7 +183,6 @@ const handleKakaoLogin = () => {
         다시 시도
       </BaseButton>
     </div>
-
   </div>
 
   <!-- 로그인 입력 / 역할 선택 공용 래퍼 -->

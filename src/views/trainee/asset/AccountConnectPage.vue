@@ -3,7 +3,7 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAccountConnect } from "@/composables/asset/useCreateAsset";
 import { awaitUserReady } from "@/composables/user/awaitUserReady";
-import ConnectSuccessModal from "@/components/common/ConnectSuccessModal.vue";
+import ConnectSuccessModal from "@/components/common/ActionStateModal.vue";
 import ConnectFailureModal from "@/components/common/ConnectFailureModal.vue";
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import LoadingOverlay from "@/components/common/LoadingOverlay.vue";
@@ -120,7 +120,7 @@ const handleSuccessClose = () => {
       <div class="rounded-2xl bg-gray-800 p-8 shadow-lg">
         <!-- Title Section -->
         <div class="mb-12 text-center">
-          <h2 class="mb-4 text-heading font-semibold text-white">
+          <h2 class="text-heading mb-4 font-semibold text-white">
             안전한 계좌 연결
           </h2>
           <p class="text-subtext text-gray-50">
@@ -170,7 +170,7 @@ const handleSuccessClose = () => {
             </div>
             <h3 class="text-subtext font-semibold text-black">보안 안내</h3>
           </div>
-          <div class="space-y-3 text-extra text-gray-700">
+          <div class="text-extra space-y-3 text-gray-700">
             <p>• 계좌 정보는 256비트 SSL 암호화로 안전하게 보호됩니다.</p>
             <p>
               • 자산 조회 목적으로만 사용되며, 출금이나 이체는 불가능합니다.
