@@ -24,49 +24,37 @@ const handleConfirm = () => {
 </script>
 
 <template>
-  <!-- Modal Overlay -->
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-realBlack">
-    <!-- Modal Content -->
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-background"
+  >
     <div
-      class="mx-8 flex w-full max-w-sm flex-col items-center bg-realBlack px-8 py-12"
+      class="mx-8 flex w-full max-w-sm flex-col items-center bg-background px-8 py-12"
     >
-      <!-- Check Mark Icon -->
       <div class="w-15 h-15 mb-6 flex items-center justify-center">
-        <svg
-          width="60"
-          height="60"
-          viewBox="0 0 60 60"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <circle cx="30" cy="30" r="30" fill="white" />
-          <path
-            d="M20 31L27 38L42 23"
-            stroke="black"
-            stroke-width="4"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
+        <img
+          src="@/assets/images/success.svg"
+          alt="success"
+          class="h-32 w-32 opacity-80"
+        />
       </div>
 
       <!-- Title -->
-      <h2 class="mb-4 text-center text-title font-bold text-gray-50">
+      <h2 class="mb-4 text-center text-[24px] font-bold text-gray-300">
         {{ title }}
       </h2>
 
       <!-- Subtitle (optional) -->
-      <p v-if="subtitle" class="mb-16 text-center text-body text-gray-400">
+      <p v-if="subtitle" class="mb-16 text-center text-body text-gray-300">
         {{ subtitle }}
       </p>
 
-      <!-- Spacing when no subtitle -->
+      <!-- subtitle이 없을 때 -->
       <div v-else class="mb-12"></div>
 
       <!-- Confirm Button -->
       <button
         @click="handleConfirm"
-        class="h-12 w-full rounded-xl border border-gray-100 bg-black text-heading font-semibold text-white transition-opacity hover:opacity-80"
+        class="text-heading h-12 w-full rounded-xl bg-primary font-semibold text-gray-900 transition-opacity hover:opacity-80"
       >
         {{ confirmButtonText }}
       </button>
