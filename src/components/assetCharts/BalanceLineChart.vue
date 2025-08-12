@@ -1,5 +1,5 @@
 <script setup>
-import { computed, watch } from "vue";
+import { computed } from "vue";
 import { Line } from "vue-chartjs";
 import {
   Chart as ChartJS,
@@ -10,6 +10,7 @@ import {
   CategoryScale,
   LinearScale,
   PointElement,
+  Filler,
 } from "chart.js";
 
 ChartJS.register(
@@ -20,22 +21,23 @@ ChartJS.register(
   CategoryScale,
   LinearScale,
   PointElement,
+  Filler,
 );
 
-// Props로 assetData를 받아옵니다.
 const props = defineProps({
-  assetData: Object,
+  assetData: { type: Object, required: true },
 });
 
-// 날짜와 balance 데이터를 추출해서 chart.js 형식으로 변환
+// 날짜 [y,m,d] → YYYY.MM 라벨
+const monthLabel = (arr) => {
+  const [y, m] = arr;
+  return `${y}.${String(m).padStart(2, "0")}`;
+};
+
 const chartData = computed(() => {
-  if (!props.assetData || !props.assetData.snapshots) return null;
-
-  const labels = props.assetData.snapshots
-    .map((s) => new Date(s.snapshotDate).toLocaleDateString())
-    .reverse(); // 최신순 정렬
-
-  const balances = props.assetData.snapshots.map((s) => s.balance).reverse(); // 최신순 정렬
+  const snaps = props.assetData?.snapshots ?? [];
+  const labels = [...snaps].map((s) => monthLabel(s.snapshotDate)).reverse(); // YYYY.MM
+  const balances = [...snaps].map((s) => s.balance).reverse();
 
   return {
     labels,
@@ -43,9 +45,15 @@ const chartData = computed(() => {
       {
         label: "잔액 추이",
         data: balances,
-        fill: false,
-        borderColor: "#FBE081",
-        tension: 0.1,
+        borderColor: "#22E481", // 메인 컬러
+        backgroundColor: "rgba(34,228,129,0.12)", // 연한 채움
+        fill: true,
+        borderWidth: 3,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        pointBackgroundColor: "#22E481",
+        pointBorderColor: "#111827",
+        tension: 0.2,
       },
     ],
   };
@@ -53,34 +61,57 @@ const chartData = computed(() => {
 
 const chartOptions = {
   responsive: true,
+  maintainAspectRatio: false,
+  interaction: { mode: "index", intersect: false },
   plugins: {
-    datalabels: {
-      display: false,
+    legend: { display: false },
+    title: { display: false },
+    // ⚠️ datalabels 플러그인 미사용(값 표기 없음)
+    tooltip: {
+      backgroundColor: "#111827",
+      titleColor: "#fff",
+      bodyColor: "#fff",
+      borderColor: "rgba(255,255,255,0.2)",
+      borderWidth: 1,
+      callbacks: {
+        // 필요하면 툴팁 라벨 유지
+        label: (ctx) =>
+          ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}원`,
+      },
     },
-    legend: {
-      display: false,
-      position: "top",
-    },
-    title: {
-      display: false,
-      text: "일자별 잔액 추이",
-    },
+    datalabels: { display: false },
   },
   scales: {
+    x: {
+      ticks: {
+        color: "#E5E7EB",
+        autoSkip: true,
+        maxTicksLimit: 6, // 월 라벨이므로 간격 줄임
+        maxRotation: 0,
+      },
+      grid: {
+        color: "rgba(255,255,255,0.08)",
+        borderColor: "rgba(255,255,255,0.2)",
+      },
+    },
     y: {
       ticks: {
-        stepSize: 1_000_000,
-        callback: function (value) {
-          return value.toLocaleString(); // 세 자리 콤마로 포맷
-        },
+        color: "#E5E7EB",
+        stepSize: 2_000_000,
+        callback: (v) => Number(v).toLocaleString(),
+      },
+      grid: {
+        color: "rgba(255,255,255,0.08)",
+        borderColor: "rgba(255,255,255,0.2)",
       },
       beginAtZero: false,
     },
   },
 };
 </script>
+
 <template>
-  <div>
+  <div class="h-64">
     <Line :data="chartData" :options="chartOptions" />
   </div>
 </template>
