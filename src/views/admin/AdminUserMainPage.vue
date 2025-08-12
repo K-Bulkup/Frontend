@@ -1,5 +1,5 @@
 <template>
-  <div class="admin-user-main-page min-h-screen bg-white p-6 text-black">
+  <div class="admin-user-main-page min-h-screen bg-realblack p-6 text-white">
     <h1 class="mb-6 text-3xl font-bold">사용자 관리</h1>
 
     <div class="mx-auto max-w-6xl rounded-xl p-4 shadow">
@@ -14,7 +14,7 @@
       </div>
 
       <!-- User List -->
-      <div class="rounded-lg bg-white p-4 shadow-sm">
+      <div class="rounded-lg bg-realblack p-4 shadow-sm">
         <div v-if="loading" class="text-center text-gray-500">
           사용자 정보를 불러오는 중...
         </div>
@@ -47,13 +47,13 @@
                 @click="
                   $router.push(`/admin/user-management/edit/${user.userId}`)
                 "
-                class="rounded-md bg-black px-3 py-1 text-sm font-bold text-white transition hover:bg-gray-800"
+                class="rounded-md bg-realblack px-3 py-1 text-sm font-bold text-white transition hover:bg-gray-800"
               >
                 수정
               </BaseButton>
               <BaseButton
                 @click="deleteUser(user.userId)"
-                class="rounded-md bg-black px-3 py-1 text-sm font-bold text-white transition hover:bg-gray-800"
+                class="rounded-md bg-realblack px-3 py-1 text-sm font-bold text-white transition hover:bg-gray-800"
               >
                 삭제
               </BaseButton>

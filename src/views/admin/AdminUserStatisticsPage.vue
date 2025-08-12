@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white p-6 text-black">
+  <div class="min-h-screen bg-realblack p-6 text-white">
     <h1 class="mb-6 text-3xl font-bold">회원 통계</h1>
 
     <div class="mx-auto max-w-6xl space-y-6">
@@ -47,24 +47,24 @@
       </div>
 
       <!-- 요약 통계 -->
-      <div class="rounded-xl bg-white p-4 shadow">
+      <div class="rounded-xl bg-realblack p-4 shadow">
         <h2 class="mb-2 text-xl font-semibold">요약 통계</h2>
         <div class="text-gray-600">
           <p>
             오늘 증가한 회원 수:
-            <span class="font-bold text-black">{{ todayNewUsers }}</span
+            <span class="font-bold text-white">{{ todayNewUsers }}</span
             >명
           </p>
           <p>
             총 회원 수:
-            <span class="font-bold text-black">{{ totalUsers }}</span
+            <span class="font-bold text-white">{{ totalUsers }}</span
             >명
           </p>
         </div>
       </div>
 
       <!-- 가입 통계 차트 -->
-      <div class="rounded-xl bg-white p-4 shadow">
+      <div class="rounded-xl bg-realblack p-4 shadow">
         <h2 class="mb-2 text-xl font-semibold">
           기간별 가입 통계 ({{ periodLabel }})
         </h2>

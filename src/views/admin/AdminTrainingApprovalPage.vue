@@ -50,10 +50,10 @@ const rejectTraining = async (trainingId) => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-white p-6 text-black">
+  <div class="min-h-screen bg-realblack p-6 text-white">
     <h1 class="mb-6 text-3xl font-bold">강좌 승인 관리</h1>
 
-    <div class="mx-auto max-w-6xl rounded-xl p-4 shadow">
+    <div class="mx-auto max-w-6xl rounded-xl p-4 shadow bg-realblack">
       <div class="overflow-x-auto rounded-lg">
         <table class="min-w-full text-sm">
           <thead class="bg-gray-100 text-gray-800">

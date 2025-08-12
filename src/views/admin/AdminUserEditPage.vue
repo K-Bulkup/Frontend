@@ -1,23 +1,23 @@
 <template>
-  <div class="admin-user-edit-page p-4">
+  <div class="admin-user-edit-page p-4 bg-realblack text-white">
     <h1 class="mb-4 text-2xl font-bold">회원 정보 수정</h1>
 
     <div v-if="loading" class="text-center text-gray-500">
       회원 정보를 불러오는 중...
     </div>
     <div v-else-if="error" class="text-center text-red-500">{{ error }}</div>
-    <div v-else class="mb-6 rounded-lg border bg-white p-4 shadow-sm">
+    <div v-else class="mb-6 rounded-lg border bg-realblack p-4 shadow-sm">
       <form @submit.prevent="handleUpdateUser">
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <BaseFormField label="사용자 ID">
             <BaseInput type="text" v-model="editingUser.userId" disabled />
           </BaseFormField>
 
-          <BaseFormField label="사용자 이름" class="text-black">
+          <BaseFormField label="사용자 이름">
             <BaseInput type="text" v-model="editingUser.username" />
           </BaseFormField>
 
-          <BaseFormField label="이메일" class="text-black">
+          <BaseFormField label="이메일">
             <BaseInput type="email" v-model="editingUser.email" />
           </BaseFormField>
 
@@ -63,7 +63,7 @@
         <div class="mt-4 flex space-x-2">
           <BaseButton
             type="submit"
-            class="rounded-md bg-black py-2 text-sm font-bold text-white hover:bg-gray-800"
+            class="rounded-md bg-realblack py-2 text-sm font-bold text-white hover:bg-gray-800"
           >
             저장
           </BaseButton>

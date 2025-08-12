@@ -109,7 +109,7 @@ const handleLogin = async () => {
         />
         <BaseButton
           type="submit"
-          class="w-full border-white bg-[#2D2D40] py-3 text-white"
+          class="border-white bg-[#2D2D40] py-3 text-white"
         >
           로그인
         </BaseButton>
