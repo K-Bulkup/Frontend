@@ -24,13 +24,19 @@ const navItems = {
     { id: "asset", icon: "layer-group", label: "자산", path: "/trainee/asset" },
   ],
   trainer: [
+    // 수정 필요함 !
+    {
+      id: "",
+      icon: "",
+      label: "자산",
+      path: "",
+    },
     {
       id: "training",
-      icon: "book",
-      label: "트레이닝",
+      icon: "home",
+      label: "홈",
       path: "/trainer/mypage/training",
     },
-    { id: "home", icon: "home", label: "홈", path: "/trainer/mypage" },
     {
       id: "pt-history",
       icon: "comments",
@@ -47,7 +53,7 @@ const navigate = (path) => {
 
 <template>
   <nav
-    class="absolute bottom-0 left-0 right-0 flex h-16 items-center justify-around border-t border-gray-700 bg-realBlack"
+    class="bg-background/50 absolute bottom-0 left-0 right-0 flex h-16 items-center justify-around backdrop-blur-md"
   >
     <div
       v-for="item in navItems[userType]"
@@ -61,7 +67,7 @@ const navigate = (path) => {
         :class="activeTab === item.id ? 'text-primary' : 'text-white'"
       />
       <span
-        class="text-caption"
+        class="text-body2"
         :class="activeTab === item.id ? 'text-primary' : 'text-white'"
       >
         {{ item.label }}

@@ -1,7 +1,7 @@
 <script setup>
-import { ref, nextTick, watch } from "vue"; // watch 추가
+import { ref, nextTick, watch } from "vue";
 import { trainerMyPageApi } from "@/composables/api/useTrainerMypageApi";
-import careerMIcon from "@/assets/images/trainer/mypage/trainerCareerModify.svg";
+import editIcon from "@/assets/images/trainer/mypage/edit.png";
 
 const props = defineProps({
   career: {
@@ -22,12 +22,30 @@ watch(
   { immediate: true },
 );
 
+// 높이 자동 조절 함수
+const adjustTextareaHeight = () => {
+  nextTick(() => {
+    const textarea = introTextarea.value;
+    if (textarea) {
+      textarea.style.height = "auto";
+      const newHeight = Math.min(Math.max(textarea.scrollHeight, 40), 300);
+      textarea.style.height = newHeight + "px";
+    }
+  });
+};
+
+// 텍스트 입력시 높이 조절
+const handleInput = () => {
+  adjustTextareaHeight();
+};
+
 // 함수들
 const toggleEdit = () => {
   isEditing.value = !isEditing.value;
   if (isEditing.value) {
     nextTick(() => {
       introTextarea.value?.focus();
+      adjustTextareaHeight(); // 편집 시작시 높이 조절
     });
   }
 };
@@ -43,36 +61,41 @@ const saveIntro = async () => {
 </script>
 
 <template>
-  <div class="mx-5 rounded-2xl bg-gray-100 p-5">
-    <div class="mb-4 flex items-center justify-between">
-      <span class="font-medium text-black">트레이너 소개</span>
-      <div class="flex items-center gap-2">
-        <button
-          @click="toggleEdit"
-          class="flex h-8 w-8 items-center justify-center rounded-md hover:bg-gray-100"
-        >
-          <img :src="careerMIcon" class="pointer-events-none h-4 w-4" />
-        </button>
-      </div>
-    </div>
+  <div class="relative mx-2 rounded-2xl bg-gray-900 p-5">
+    <!-- 수정 버튼 -->
+    <button
+      @click="toggleEdit"
+      class="absolute -right-2 -top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-[#303030] transition-opacity hover:opacity-70"
+    >
+      <img :src="editIcon" class="pointer-events-none h-6 w-6" />
+    </button>
 
-    <div class="leading-relaxed">
+    <div class="leading-relaxed" style="word-break: keep-all">
       <textarea
         v-if="isEditing"
         v-model="introText"
+        @input="handleInput"
         @blur="saveIntro"
-        class="max-h-60 min-h-[60px] w-full resize-y overflow-y-auto border-none bg-transparent text-sm leading-relaxed text-black placeholder-gray-500 outline-none"
-        style="-ms-overflow-style: none; scrollbar-width: none"
-        placeholder="트레이너 소개를 입력하세요..."
+        class="w-full resize-none overflow-y-auto border-none bg-transparent text-sm leading-relaxed text-white placeholder-gray-500 outline-none"
+        style="
+          min-height: 10px;
+          max-height: 300px;
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        "
+        placeholder="소개글을 작성해주세요 !"
         ref="introTextarea"
       />
       <div
         v-else
-        class="max-h-60 overflow-y-auto"
+        class="max-h-[300px] overflow-y-auto"
         style="-ms-overflow-style: none; scrollbar-width: none"
       >
-        <p class="m-0 min-h-[20px] text-sm text-black">
-          {{ introText || "트레이너 소개를 입력하세요..." }}
+        <p
+          class="m-0 min-h-[20px] whitespace-pre-wrap text-sm text-white"
+          :class="{ 'text-center': !introText }"
+        >
+          {{ introText || "소개글을 작성해주세요 !" }}
         </p>
       </div>
     </div>

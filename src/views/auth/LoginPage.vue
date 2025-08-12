@@ -128,7 +128,7 @@ const handleLogin = async () => {
 
   if (success) {
     if (authStore.role === "TRAINER") {
-      router.push("/trainer/mypage");
+      router.push("/trainer/mypage/training");
     } else {
       router.push("/trainee/mypage");
     }
