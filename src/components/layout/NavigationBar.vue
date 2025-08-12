@@ -17,6 +17,14 @@ const activeTab = computed(() => {
   return "home";
 });
 
+const navBackgroundClass = computed(() => {
+  if (route.path === "/trainee/mypage") {
+    // 해당 페이지일 경우 더 투명한 클래스 반환 (예: opacity 20%)
+    return "bg-background/20";
+  }
+  return "bg-background/50";
+});
+
 const navItems = {
   trainee: [
     { id: "training", icon: "book", label: "트레이닝", path: "/training" },
@@ -53,7 +61,8 @@ const navigate = (path) => {
 
 <template>
   <nav
-    class="bg-background/50 absolute bottom-0 left-0 right-0 flex h-16 items-center justify-around backdrop-blur-md"
+    class="absolute bottom-0 left-0 right-0 flex h-16 items-center justify-around bg-background/50 backdrop-blur-md"
+    :class="navBackgroundClass"
   >
     <div
       v-for="item in navItems[userType]"
