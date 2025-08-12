@@ -8,23 +8,13 @@ export default {
       },
 
       fontSize: {
-        // // 기존 폰트 사이즈
-        // display: "36px", // 가장 큰 타이틀
-        // title: "24px", // 섹션 제목
-        // heading: "18px", // 일반 제목
-        // body: "16px", // 본문 텍스트
-        // subtext: "14px", // 설명 텍스트
-        // caption: "12px", // 작은 설명 (뱃지 등)
-        // extra: "10px", // 툴팁 등 매우 작은 텍스트
-
-        // 바뀐 사이즈 폰트 사이즈는 아직 조정안됨(직접 기존이랑 찾아서 매칭 필요)
-        title: "28px", //가장 큰 타이틀
-        subTitle: "20px", // 서브 타이틀
-        input: "14px", //입력
-        body: "15px", // 본문 텍스트 1
-        body2: "12px", // 본문 텍스트 2
-        body3: "10px", // 본문 텍스트 3
-        button: "11px", // 버튼
+        title: "28px",
+        subTitle: "20px",
+        body: "15px",
+        body2: "12px",
+        body3: "10px",
+        input: "14px",
+        button: "11px",
       },
       colors: {
         primary: "#22E481",
@@ -47,10 +37,10 @@ export default {
       },
       borderRadius: {
         md: "8px",
-        full: "9999px",    
+        full: "9999px",
       },
-      width:  { btn: '332px', input: '332px' },   // 입력칸 폭
-      height: { btn: '50px',  input: '64px'  },   // 입력칸 높이
+      width: { btn: "332px", input: "332px" }, // 입력칸 폭
+      height: { btn: "50px", input: "64px" }, // 입력칸 높이
     },
   },
   plugins: [require("tailwind-scrollbar-hide")],
