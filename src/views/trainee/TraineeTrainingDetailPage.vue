@@ -10,11 +10,11 @@ import { useRoutineLockStore } from "@/stores/routineLock";
 import profileDefault from "@/assets/images/mascot/profile.png";
 
 import BaseHeader from "@/components/common/BaseHeader.vue";
-import BaseBadge from "@/components/common/BaseBadge.vue";
 import TraineeRoutineSection from "@/components/trainee/training/TraineeRoutineSection.vue";
 import ActionButton from "@/components/trainee/training/ActionButton.vue";
-import DoughnutChart from "@/components/trainee/training/DoughnutChart.vue";
+import ProgressBar from "@/components/common/ProgressBar.vue";
 import { useAuthStore } from "@/stores/auth";
+import StarIcon from "@/assets/images/star.svg";
 
 const router = useRouter();
 const route = useRoute();
@@ -236,7 +236,6 @@ const goBack = () => router.back();
 
 // 섹션 토글 (잠금 상태면 차단)
 const toggleSection = (key) => {
-  if (isSectionLocked(key)) return;
   expandedSections.value[key] = !expandedSections.value[key];
 };
 
@@ -291,164 +290,124 @@ const goToQnaPage = () => {
     <BaseHeader title="트레이닝 상세" @back="goBack" />
 
     <main v-if="trainingData" class="flex-1">
-      <!-- 배지 -->
-      <div class="mt-4 flex items-center gap-2">
-        <BaseBadge>{{ trainingData.level || "초급" }}</BaseBadge>
-        <BaseBadge>{{ trainingData.category || "투자입문" }}</BaseBadge>
-        <BaseBadge variant="primary" class="ml-auto">
-          총 리워드 {{ trainingData.totalReward }}P
-        </BaseBadge>
-      </div>
-
-      <!-- 진행률 차트 -->
-      <div
-        class="my-6 flex flex-col items-center justify-center rounded-xl border border-white p-6"
-      >
-        <div class="relative h-24 w-24">
-          <DoughnutChart :progress="trainingData.progress" />
-          <div class="absolute inset-0 flex items-center justify-center">
-            <span class="text-title font-bold text-white"
-              >{{ trainingData.progress }}%</span
-            >
-          </div>
-        </div>
-        <p class="mt-4 text-subtext font-bold text-gray-200">
-          트레이닝 기한: {{ trainingDeadline }}까지
-        </p>
-      </div>
-
-      <!-- 트레이너 정보 -->
-      <div class="mb-6 mt-6 flex items-center justify-between">
-        <div
-          @click="goToTrainerPage"
-          class="flex cursor-pointer items-center gap-3 rounded-lg p-2 transition-colors hover:bg-gray-800"
+      <!-- 제목 + 기한 (SAFE: trainingData 안에서 사용) -->
+      <div class="mb-8 mt-7 flex items-end justify-between">
+        <h1 class="text-subTitle font-bold leading-tight text-white">
+          {{ trainingData.title }}
+        </h1>
+        <span class="text-body3 text-gray-400"
+          >수강 종료: {{ trainingDeadline }}</span
         >
-          <div
-            class="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-700"
-          >
-            <img
-              v-if="trainingData.trainerProfileUrl"
-              :src="trainingData.trainerProfileUrl"
-              alt="프로필"
-              class="h-full w-full object-cover"
-            />
-            <img
-              v-else
-              :src="profileDefault"
-              alt="기본 프로필"
-              class="h-full w-full"
-            />
-          </div>
-          <p class="font-bold text-white">{{ trainingData.trainerName }}</p>
-        </div>
+      </div>
+      <!-- 진행률 카드 (AFTER) -->
+      <div class="mb-4">
+        <ProgressBar :value="trainingData.progress" />
+      </div>
 
-        <div class="flex items-center gap-2 text-caption text-gray-200">
-          <div class="flex items-center gap-1">
-            <img src="@/assets/images/star.svg" alt="별점" class="h-3 w-3" />
-            <span>{{ trainingData.trainerRating }}</span>
-          </div>
-          <span>|</span>
-          <span>{{ trainingData.studentCount }}명 수강</span>
-          <span>|</span>
+      <!-- 트레이너 카드 (AFTER) -->
+      <div class="mb-12 rounded-xl bg-gray-900 p-4">
+        <div class="flex items-center gap-3">
+          <button @click="goToTrainerPage" class="flex items-center gap-3">
+            <div class="h-10 w-10 overflow-hidden rounded-full bg-gray-700">
+              <img
+                v-if="trainingData.trainerProfileUrl"
+                :src="trainingData.trainerProfileUrl"
+                class="h-full w-full object-cover"
+              />
+              <img
+                v-else
+                :src="profileDefault"
+                class="h-full w-full object-cover"
+              />
+            </div>
+            <div class="text-left">
+              <p class="text-input font-bold text-white">
+                {{ trainingData.trainerName }}
+              </p>
+              <p class="text-body2 flex items-center gap-1 text-gray-300">
+                수강생 {{ trainingData.studentCount.toLocaleString() }}
+                <img :src="StarIcon" alt="star" class="inline-block h-3 w-3" />
+                {{ trainingData.trainerRating || "-" }}
+              </p>
+            </div>
+          </button>
+
           <!-- Q&A 버튼 -->
           <button
             @click="goToQnaPage"
-            class="rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-black shadow"
+            class="text-input ml-auto rounded-full bg-primary px-3 py-1.5 font-bold text-black shadow"
           >
             Q&A
           </button>
         </div>
       </div>
 
-      <h2 class="font mb-4 text-body text-white">{{ trainingData.title }}</h2>
+      <!-- 스트레칭 -->
+      <TraineeRoutineSection
+        title="스트레칭"
+        subtitle="금융 익히기"
+        :quests="trainingData.routines['스트레칭']"
+        :is-locked="isSectionLocked('stretching')"
+        :is-expanded="expandedSections.stretching"
+        :lock-message="'이전 섹션 완료 후 잠금 해제'"
+        @toggle="toggleSection('stretching')"
+        @routine-click="
+          (q) => {
+            if (!isSectionLocked('stretching')) goToRoutineDetail(q);
+          }
+        "
+      />
 
-      <!-- 루틴 섹션 -->
-      <div class="space-y-4">
-        <!-- 스트레칭 섹션 -->
-        <div class="space-y-1">
-          <p class="pb-1 pl-1 text-sm text-gray-500">금융 익히기</p>
-          <TraineeRoutineSection
-            title="스트레칭"
-            :quests="trainingData.routines['스트레칭']"
-            :is-locked="isSectionLocked('stretching')"
-            :is-expanded="expandedSections.stretching"
-            @toggle="toggleSection('stretching')"
-            @routine-click="
-              (quest) => {
-                if (!isSectionLocked('stretching')) goToRoutineDetail(quest);
-              }
-            "
-          />
-        </div>
+      <!-- 근력 (스트레칭 완료 후 잠금 해제) -->
+      <TraineeRoutineSection
+        title="근력"
+        subtitle="금융 근력 키우기"
+        :quests="trainingData.routines['근력']"
+        :is-locked="isSectionLocked('strength')"
+        :is-expanded="expandedSections.strength"
+        :lock-message="'스트레칭 완료 후 잠금 해제'"
+        @toggle="toggleSection('strength')"
+        @routine-click="
+          (q) => {
+            if (!isSectionLocked('strength')) goToRoutineDetail(q);
+          }
+        "
+      />
 
-        <!-- 근력 섹션 -->
-        <div class="space-y-1">
-          <p class="pb-1 pl-1 text-sm text-gray-500">금융 근력 키우기</p>
-          <TraineeRoutineSection
-            title="근력"
-            :quests="trainingData.routines['근력']"
-            :is-locked="isSectionLocked('strength')"
-            :is-expanded="expandedSections.strength"
-            @toggle="toggleSection('strength')"
-            @routine-click="
-              (quest) => {
-                if (!isSectionLocked('strength')) goToRoutineDetail(quest);
-              }
-            "
-          />
-        </div>
-
-        <!-- 유산소 섹션 -->
-        <div class="space-y-1">
-          <p class="pb-1 pl-1 text-sm text-gray-500">금융 체력 기르기</p>
-          <TraineeRoutineSection
-            title="유산소"
-            :quests="trainingData.routines['유산소']"
-            :is-locked="isSectionLocked('cardio')"
-            :is-expanded="expandedSections.cardio"
-            @toggle="toggleSection('cardio')"
-            @routine-click="
-              (quest) => {
-                if (!isSectionLocked('cardio')) goToRoutineDetail(quest);
-              }
-            "
-          />
-        </div>
-      </div>
+      <!-- 유산소 (근력 완료 후 잠금 해제) -->
+      <TraineeRoutineSection
+        title="유산소"
+        subtitle="금융 체력 기르기"
+        :quests="trainingData.routines['유산소']"
+        :is-locked="isSectionLocked('cardio')"
+        :is-expanded="expandedSections.cardio"
+        :lock-message="'근력 완료 후 잠금 해제'"
+        @toggle="toggleSection('cardio')"
+        @routine-click="
+          (q) => {
+            if (!isSectionLocked('cardio')) goToRoutineDetail(q);
+          }
+        "
+      />
 
       <!-- 액션 버튼 -->
-      <div class="mt-10 flex flex-col gap-3">
+      <div class="mt-10 space-y-3">
         <ActionButton
           v-if="showReviewButton"
           :text="hasWrittenReview ? '리뷰 작성 완료' : '리뷰 작성하기'"
           :variant="hasWrittenReview ? 'disabled' : 'secondary'"
           :disabled="hasWrittenReview"
+          class="w-full"
           @click="!hasWrittenReview && goToReviewPage()"
-        >
-          <template #icon>
-            <img
-              src="@/assets/images/trainee/training/Chat_Circle_Dots.svg"
-              alt="리뷰"
-              class="h-5 w-5"
-            />
-          </template>
-        </ActionButton>
-
+        />
         <ActionButton
           v-if="showChatButton"
-          text="트레이너와 1:1 채팅하기"
+          text="트레이너와 1:1 PT"
           variant="primary"
           :disabled="chatRoomCreated"
+          class="w-full"
           @click="startChat"
-        >
-          <template #icon>
-            <img
-              src="@/assets/images/trainee/training/Chat_Circle.svg"
-              alt="채팅"
-              class="h-5 w-5"
-            />
-          </template>
-        </ActionButton>
+        />
       </div>
     </main>
   </div>

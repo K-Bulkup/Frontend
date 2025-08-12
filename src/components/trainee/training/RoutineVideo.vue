@@ -4,6 +4,8 @@ import { ref, computed } from "vue";
 const props = defineProps({
   videoUrl: String,
   thumbnail: String,
+  // 참고 영상 라벨 노출 여부 (기본: 숨김)
+  showLabel: { type: Boolean, default: false },
 });
 
 const embedUrl = computed(() => {
@@ -18,7 +20,7 @@ const embedUrl = computed(() => {
       videoId = url.pathname.substring(1);
     }
   } catch (e) {
-    // URL 형식이 아닌 경우(예: 단순 videoId 문자열)를 대비한 처리
+    // URL 형식이 아닌 경우(예: 단순 videoId 문자열)
     if (typeof props.videoUrl === "string" && !props.videoUrl.includes("/")) {
       videoId = props.videoUrl;
     } else {
@@ -26,17 +28,17 @@ const embedUrl = computed(() => {
       return "";
     }
   }
-  if (videoId) {
-    // YouTube 임베드 URL에 인라인 재생 옵션 추가
-    return `https://www.youtube.com/embed/${videoId}?playsinline=1`;
-  }
-  return "";
+  return videoId
+    ? `https://www.youtube.com/embed/${videoId}?playsinline=1`
+    : "";
 });
 </script>
 
 <template>
   <div v-if="embedUrl" class="my-6">
-    <h3 class="mb-4 text-heading text-white">참고 영상</h3>
+    <!-- 참고 영상 라벨: 필요할 때만 노출 -->
+    <p v-if="showLabel" class="mb-2 text-subtext text-gray-400">참고 영상</p>
+
     <div
       class="relative aspect-video overflow-hidden rounded-xl border border-gray-700 bg-realBlack"
     >
@@ -46,7 +48,7 @@ const embedUrl = computed(() => {
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowfullscreen
         class="h-full w-full"
-      ></iframe>
+      />
     </div>
   </div>
 </template>
