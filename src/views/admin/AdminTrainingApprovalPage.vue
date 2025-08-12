@@ -50,13 +50,13 @@ const rejectTraining = async (trainingId) => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-realblack p-6 text-white">
+  <div class="bg-realblack min-h-screen p-6 text-white">
     <h1 class="mb-6 text-3xl font-bold">강좌 승인 관리</h1>
 
-    <div class="mx-auto max-w-6xl rounded-xl p-4 shadow bg-realblack">
+    <div class="mx-auto max-w-6xl rounded-xl bg-gray-800 p-4 shadow">
       <div class="overflow-x-auto rounded-lg">
         <table class="min-w-full text-sm">
-          <thead class="bg-gray-100 text-gray-800">
+          <thead class="bg-gray-900 text-white">
             <tr>
               <th class="px-4 py-3 text-left font-semibold">강좌명</th>
               <th class="px-4 py-3 text-left font-semibold">트레이너</th>
@@ -67,14 +67,14 @@ const rejectTraining = async (trainingId) => {
           </thead>
           <tbody class="divide-y divide-gray-200">
             <tr v-if="pendingTrainings.length === 0">
-              <td colspan="5" class="px-4 py-6 text-center text-gray-400">
+              <td colspan="5" class="px-4 py-6 text-center text-gray-800">
                 승인 대기 중인 강좌가 없습니다.
               </td>
             </tr>
             <tr
               v-for="training in pendingTrainings"
               :key="training.trainingId"
-              class="transition hover:bg-gray-50"
+              class="transition"
             >
               <td class="whitespace-nowrap px-4 py-3">
                 {{ training.trainingName }}

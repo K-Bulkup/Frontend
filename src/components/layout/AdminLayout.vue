@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen bg-gray-100">
+  <div class="flex min-h-screen bg-[#000000] text-white">
     <AdminSidebar />
     <div class="flex-1 p-6">
       <router-view />

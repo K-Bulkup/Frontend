@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen p-4 text-white">
+  <div class="min-h-screen p-4">
     <BaseHeader title="수익 관리" @back="router.back()" />
 
     <!-- 매출액 요약 -->
@@ -30,7 +30,7 @@
 
     <!-- 총 누적 매출액 차트 -->
     <div
-      class="mt-6 h-64 rounded-lg border border-gray-300 bg-white p-4 shadow-md"
+      class="mx-auto mt-6 h-64 w-[326px] rounded-lg border border-gray-300 bg-gray-900 p-4 shadow-md"
     >
       <LineChart
         :chart-data="cumulativeChartData"
@@ -40,7 +40,7 @@
 
     <!-- 최근 30일 매출액 차트 -->
     <div
-      class="mt-4 h-64 rounded-lg border border-gray-300 bg-white p-4 shadow-md"
+      class="mx-auto mt-4 h-64 w-[326px] rounded-lg border border-gray-300 bg-gray-900 p-4 shadow-md"
     >
       <LineChart :chart-data="last30ChartData" :chart-options="chartOptions" />
     </div>
@@ -82,10 +82,49 @@ const dropdownOptions = computed(() => {
 
 const chartOptions = {
   responsive: true,
-  plugins: { legend: { display: false } },
+  maintainAspectRatio: false,
+  interaction: { mode: "index", intersect: false },
+  plugins: {
+    legend: { display: false },
+    title: { display: false },
+    tooltip: {
+      backgroundColor: "#111827",
+      titleColor: "#fff",
+      bodyColor: "#fff",
+      borderColor: "rgba(255,255,255,0.2)",
+      borderWidth: 1,
+      callbacks: {
+        label: (ctx) =>
+          ` ${ctx.dataset.label}: ${Number(ctx.parsed.y).toLocaleString()}원`,
+      },
+    },
+    datalabels: { display: false },
+  },
   scales: {
-    x: { ticks: { color: "#000" } },
-    y: { ticks: { color: "#000" } },
+    x: {
+      ticks: {
+        color: "#E5E7EB",
+        autoSkip: true,
+        maxTicksLimit: 6,
+        maxRotation: 0,
+      },
+      grid: {
+        color: "rgba(255,255,255,0.08)",
+        borderColor: "rgba(255,255,255,0.2)",
+      },
+    },
+    y: {
+      ticks: {
+        color: "#E5E7EB",
+        stepSize: 2_000_000, // Adjusted for revenue scale, can be refined
+        callback: (v) => Number(v).toLocaleString(),
+      },
+      grid: {
+        color: "rgba(255,255,255,0.08)",
+        borderColor: "rgba(255,255,255,0.2)",
+      },
+      beginAtZero: false,
+    },
   },
 };
 
@@ -107,10 +146,14 @@ const cumulativeChartData = computed(() => {
       {
         label: "총 누적 매출액",
         data,
-        borderColor: "#FFD700",
-        backgroundColor: "rgba(255, 215, 0, 0.3)",
-        fill: true,
-        tension: 0.3,
+        borderColor: "#22E481",
+        backgroundColor: "rgba(34,228,129,0.12)",
+        fill: true, // Changed to true for area fill
+        tension: 0.2, // Changed tension
+        pointRadius: 3, // Changed point radius
+        pointHoverRadius: 5, // Added hover radius
+        pointBackgroundColor: "#22E481",
+        pointBorderColor: "#111827", // Changed point border color
       },
     ],
   };
@@ -126,11 +169,14 @@ const last30ChartData = computed(() => {
       {
         label: "최근 30일 매출액",
         data,
-        borderColor: "#FFD700",
-        backgroundColor: "rgba(255, 215, 0, 0.3)",
-        fill: true,
-        tension: 0.3,
-        pointRadius: 4,
+        borderColor: "#22E481",
+        backgroundColor: "rgba(34,228,129,0.12)",
+        fill: true, // Changed to true for area fill
+        tension: 0.2, // Changed tension
+        pointRadius: 3, // Changed point radius
+        pointHoverRadius: 5, // Added hover radius
+        pointBackgroundColor: "#22E481",
+        pointBorderColor: "#111827", // Changed point border color
       },
     ],
   };

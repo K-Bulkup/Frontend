@@ -86,8 +86,12 @@ const handleLogin = async () => {
 
   <div v-else class="flex min-h-screen flex-col justify-center px-4 py-12">
     <div class="mx-auto w-full max-w-md">
-      <h2 class="text-center text-4xl font-extrabold text-white">K-Bulkup</h2>
-      <h2 class="text-center text-2xl font-extrabold text-white">ADMIN</h2>
+      <img
+        src="@/assets/images/kbulkup-logo.png"
+        alt="K-Bulkup Logo"
+        class="mx-auto"
+      />
+      <h2 class="text-center text-xl font-extrabold text-[#22e481]">ADMIN</h2>
       <form
         @submit.prevent="handleLogin"
         class="mt-8 space-y-6"

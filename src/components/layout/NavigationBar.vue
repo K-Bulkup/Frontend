@@ -34,10 +34,10 @@ const navItems = {
   trainer: [
     // 수정 필요함 !
     {
-      id: "",
-      icon: "",
+      id: "report",
+      icon: "coins",
       label: "자산",
-      path: "",
+      path: "/trainer/mypage/report",
     },
     {
       id: "training",
