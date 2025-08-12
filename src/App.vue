@@ -29,11 +29,10 @@ onMounted(async () => {
 <template>
   <div
     v-if="!isAdminRoute"
-    class="flex min-h-screen items-center justify-center bg-background text-white"
+    class="bg-background flex min-h-screen items-center justify-center text-white"
   >
     <div
       class="relative flex h-screen w-[393px] flex-col overflow-hidden shadow-2xl"
-      :style="Background"
     >
       <main class="flex-1 overflow-y-auto scrollbar-hide">
         <RouterView />

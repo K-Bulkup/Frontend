@@ -42,7 +42,7 @@ const fetchMyTrainings = async (keyword = "") => {
       rating: t.averageRating,
       tags: [t.category, t.level],
       thumbnailUrl: t.thumbnailUrl,
-      status: t.approvalStatus,
+      status: t.status,
       category: t.category,
     }));
   } catch (error) {
