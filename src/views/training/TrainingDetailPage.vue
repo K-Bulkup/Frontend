@@ -21,6 +21,9 @@ const authStore = useAuthStore();
 
 const trainingData = ref(null);
 const reviewList = ref([]);
+const averageRating = ref(0);
+const totalReviews = ref(0);
+
 const modalVisible = ref(false);
 const isLoading = ref(false);
 const num = (v) => (v == null ? 0 : Number(v));
@@ -65,9 +68,14 @@ const loadTrainingDetail = async () => {
 
   try {
     const response = await getReviews(trainingId);
-    if (response.success) {
-      reviewList.value = response.data.map((review, index) => ({
-        id: index,
+    if (response.success && response.data) {
+      // response.data는 이제 { averageRating, totalReviewCount, reviews } 객체입니다.
+      averageRating.value = response.data.averageRating || 0;
+      totalReviews.value = response.data.totalReviewCount || 0;
+
+      // 실제 리뷰 목록은 response.data.reviews 안에 들어있습니다.
+      reviewList.value = (response.data.reviews || []).map((review, index) => ({
+        id: review.id || index,
         author: review.username,
         rating: review.rating,
         content: review.content,
@@ -78,6 +86,8 @@ const loadTrainingDetail = async () => {
   } catch (error) {
     console.error("리뷰 API 호출 중 에러 발생:", error);
     reviewList.value = [];
+    averageRating.value = 0;
+    totalReviews.value = 0;
   }
 };
 
@@ -280,7 +290,11 @@ const handlePayment = async (pg) => {
       <p class="mt-2 text-body text-gray-300">{{ trainingData.description }}</p>
 
       <div class="mb-4 mt-8 h-px bg-gray-800"></div>
-      <ReviewList :reviews="reviewList" />
+      <ReviewList
+        :average-rating="averageRating"
+        :total-reviews="totalReviews"
+        :reviews="reviewList"
+      />
       <div class="my-6 h-px bg-gray-800"></div>
 
       <div class="text-title font-bold text-white">{{ formattedPrice }}원</div>
