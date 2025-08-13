@@ -11,7 +11,7 @@ import QnAList from "@/components/training/QnAList.vue";
 const router = useRouter();
 const route = useRoute();
 const num = (v) => (v == null ? 0 : Number(v));
-// const trainingId = ref(route.params.trainingId);
+const trainingId = ref(route.params.trainingId);
 const trainingData = ref(null); // ✅ TrainingInfo용 데이터
 const courseTitle = ref("");
 
@@ -27,11 +27,9 @@ const handleCreateQuestion = () => {
 };
 
 onMounted(async () => {
-  const trainingId = route.params.trainingId;
-
   try {
     // ✅ 트레이닝 상세
-    const { data: res } = await getTrainerTrainingDetail(trainingId);
+    const { data: res } = await getTrainerTrainingDetail(trainingId.value);
     const detail = res.data;
 
     console.log("트레이닝 detail", detail);
@@ -54,7 +52,7 @@ onMounted(async () => {
   }
 
   try {
-    const qnaResp = await getTrainingQnAListDetail(trainingId);
+    const qnaResp = await getTrainingQnAListDetail(trainingId.value);
 
     const body = qnaResp?.data?.data ?? {};
     const rawList = body.trainingQnADetails ?? [];
