@@ -24,10 +24,23 @@ const props = defineProps({
   },
 });
 
-// role에 따른 추가 처리가 필요하다면 computed 사용
-const displayData = computed(() => {
-  const baseData = { ...props.trainingData };
-  return baseData;
+// 레벨 배지 (오른쪽 상단)
+const levelBadge = computed(() => {
+  const level = props.trainingData.level || "초급";
+  let backgroundColor;
+  switch (level) {
+    case "고급":
+      backgroundColor = "#FF4141";
+      break;
+    case "중급":
+      backgroundColor = "#5141FF";
+      break;
+    case "초급":
+    default:
+      backgroundColor = "#008407";
+  }
+
+  return { text: level, backgroundColor };
 });
 </script>
 
@@ -76,8 +89,12 @@ const displayData = computed(() => {
           <div class="flex gap-1">
             <!-- 초급 태그 (초록색) -->
             <BaseTag
-              :text="trainingData.level || '초급'"
-              class="rounded-full bg-green-500 px-3 py-1.5 text-sm font-medium text-white"
+              v-if="levelBadge"
+              :text="levelBadge.text"
+              class="inline-block break-words rounded-xl bg-gray-900 px-2 py-1 text-center text-[7px] leading-tight text-white"
+              :style="{
+                backgroundColor: levelBadge.backgroundColor,
+              }"
             />
 
             <!-- 기타 태그들 (회색) -->
