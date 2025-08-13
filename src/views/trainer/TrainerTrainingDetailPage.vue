@@ -78,7 +78,7 @@ onMounted(async () => {
       trainerProfileUrl: detail.trainerProfileImage,
       trainerName: detail.trainerName,
       trainingRating: detail.trainingRating,
-      studentCount: num(detail.enrolledTraineeCount ?? detail.traineeCount),
+      studentCount: num(detail.enrolledTraineeCount),
       totalWeeks: 4,
     };
 
