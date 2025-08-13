@@ -51,7 +51,7 @@ const characterImage = computed(() => {
       <img
         :src="characterImage"
         alt="금육이 캐릭터"
-        class="max-h-[500px] drop-shadow-[0_6px_12px_rgba(0,0,0,0.5)]"
+        class="max-h-[300px] drop-shadow-[0_6px_12px_rgba(0,0,0,0.5)]"
       />
     </div>
 

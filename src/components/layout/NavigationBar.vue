@@ -61,7 +61,7 @@ const navigate = (path) => {
 
 <template>
   <nav
-    class="absolute bottom-0 left-0 right-0 flex h-16 items-center justify-around bg-background/50 backdrop-blur-md"
+    class="absolute bottom-0 left-0 right-0 flex h-16 items-center justify-around backdrop-blur-md"
     :class="navBackgroundClass"
   >
     <div
