@@ -69,6 +69,7 @@ onMounted(async () => {
 
     qnaData.value = rawList.map((qna) => ({
       id: qna.qnaId,
+      userName: qna.userName,
       title: qna.questionTitle || "제목 없음",
       content: qna.question,
       answer: qna.answer,

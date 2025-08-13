@@ -151,9 +151,7 @@ const filtered = computed(() =>
                 </p>
                 <div class="border-t border-gray-600 pt-3">
                   <div class="flex items-center justify-between">
-                    <span class="text-body2 font-bold">{{
-                      it.author ?? "작성자"
-                    }}</span>
+                    <span class="text-body2 font-bold">{{ it.userName }}</span>
                     <span class="text-body2">{{ it.questionDate }}</span>
                   </div>
                 </div>
