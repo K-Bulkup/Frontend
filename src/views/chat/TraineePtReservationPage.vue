@@ -3,17 +3,15 @@ import { ref, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import dayjs from "dayjs";
 
-import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseButton from "@/components/common/BaseButton.vue";
 import DateTimeSlotsPicker from "@/components/chat/DateTimeSlotsPicker.vue";
 
 import {
-  getTrainerReservationByTrainerId,
+  getTrainerSchedulesByTrainerId,
   createTraineeReservation, // ✅ 추가 API 사용
 } from "@/composables/api/usePtApi";
 
 const route = useRoute();
-// URL에 없으면 임시 기본값(필요 시 라우터에서 넘겨주세요)
 const TRAINER_ID = Number(route.params.trainerId ?? 22);
 const TRAINING_ID = Number(route.params.trainingId ?? 1);
 
@@ -23,7 +21,7 @@ const existingSchedules = ref([]);
 
 const fetchExistingSchedules = async () => {
   try {
-    const { data } = await getTrainerReservationByTrainerId(TRAINER_ID);
+    const { data } = await getTrainerSchedulesByTrainerId(TRAINER_ID);
     if (data?.success) existingSchedules.value = data.data || [];
   } catch (e) {
     console.error("스케줄 조회 실패:", e);
@@ -81,13 +79,13 @@ const submitReservation = async () => {
 
 <template>
   <div class="flex min-h-screen flex-col px-2 pb-24 pt-4">
-    <BaseHeader title="1:1 PT(트레이니) - 예약하기" />
     <div class="flex-1 overflow-y-auto">
       <DateTimeSlotsPicker
         v-model:modelValueDate="selectedDate"
         v-model:modelValueTimes="selectedTimes"
         :existing-schedules="existingSchedules"
         :holidays="['2025-08-15']"
+        mode="reservation"
       />
 
       <div class="mt-6">

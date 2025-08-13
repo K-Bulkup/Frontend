@@ -7,7 +7,6 @@ import dayjs from "dayjs";
 import { getCounselingList } from "@/composables/api/useCounselingApi";
 import { useChatSocket } from "@/composables/chat/useChatSocket";
 
-import BaseHeader from "@/components/common/BaseHeader.vue";
 import ChatListItem from "@/components/chat/ChatListItem.vue";
 import { awaitUserReady } from "@/composables/user/awaitUserReady";
 
@@ -112,8 +111,6 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="flex min-h-screen flex-col px-2 pb-24 pt-4">
-    <BaseHeader title="1:1 PT" @back="goBack" />
-
     <div class="flex-1 overflow-y-auto">
       <ChatListItem
         v-for="chat in chatList"

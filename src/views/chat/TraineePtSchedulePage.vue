@@ -2,7 +2,6 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import dayjs from "dayjs";
-import BaseHeader from "@/components/common/BaseHeader.vue";
 import { getTraineeReservation } from "@/composables/api/usePtApi";
 import ScheduleListItem from "@/components/chat/ScheduleListItem.vue";
 
@@ -48,8 +47,6 @@ onMounted(fetchReservations);
 
 <template>
   <div class="flex min-h-screen flex-col px-2 pb-24 pt-4">
-    <BaseHeader title="1:1 PT" />
-
     <div class="flex-1 overflow-y-auto">
       <ScheduleListItem
         v-for="item in schedules"

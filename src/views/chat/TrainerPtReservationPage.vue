@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import dayjs from "dayjs";
-import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseButton from "@/components/common/BaseButton.vue";
 import DateTimeSlotsPicker from "@/components/chat/DateTimeSlotsPicker.vue";
 import {
@@ -62,13 +61,14 @@ const submitReservation = async () => {
 
 <template>
   <div class="flex min-h-screen flex-col px-2 pb-24 pt-4">
-    <BaseHeader title="1:1 PT(트레이너) - 일정 등록" />
     <div class="flex-1 overflow-y-auto">
+      <!-- mode="schedule" 추가 -->
       <DateTimeSlotsPicker
         v-model:modelValueDate="selectedDate"
         v-model:modelValueTimes="selectedTimes"
         :existing-schedules="existingSchedules"
         :holidays="['2025-08-15']"
+        mode="schedule"
       />
 
       <div class="mt-6">

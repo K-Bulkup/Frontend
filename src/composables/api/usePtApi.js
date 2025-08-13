@@ -9,10 +9,6 @@ export const getTrainerSchedulesByTrainerId = async (trainerId) => {
   return await apiClient.get(`/api/schedules/trainee/${trainerId}`);
 };
 
-export const getTrainerReservationByTrainerId = async (trainerId) => {
-  return await apiClient.get(`/api/reservations/trainee/${trainerId}`);
-};
-
 // 트레이너 컨설팅 가능 시간 등록
 export const createTrainerSchedules = async (timeSlots) => {
   return await apiClient.post("/api/schedules/trainer", { timeSlots });

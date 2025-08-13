@@ -36,7 +36,8 @@ import TrainingInputPage from "@/views/trainer/TrainerTrainingInputPage.vue";
 
 //chat
 import PtChatPage from "@/views/chat/PtChatPage.vue";
-import PtHistoryPage from "@/views/chat/PtHistoryPage.vue";
+import TrainerPtPage from "@/views/chat/PtPage.vue";
+import PtPage from "@/views/chat/PtPage.vue";
 import TrainerPtReservationPage from "@/views/chat/TrainerPtReservationPage.vue";
 import TrainerPtSchedulePage from "@/views/chat/TrainerPtSchedulePage.vue";
 import TraineePtReservationPage from "@/views/chat/TraineePtReservationPage.vue";
@@ -188,17 +189,17 @@ const routes = [
   //chat
   {
     path: "/common/pt/history",
-    component: PtHistoryPage,
+    component: PtPage,
     meta: { requiresAuth: true },
   },
   {
     path: "/trainer/pt/reservation",
-    component: TrainerPtReservationPage,
+    component: PtPage,
     meta: { requiresAuth: true },
   },
   {
     path: "/trainer/pt/schedule",
-    component: TrainerPtSchedulePage,
+    component: PtPage,
     meta: { requiresAuth: true },
   },
   {
@@ -208,7 +209,7 @@ const routes = [
   },
   {
     path: "/trainee/pt/schedule",
-    component: TraineePtSchedulePage,
+    component: PtPage,
     meta: { requiresAuth: true },
   },
   {

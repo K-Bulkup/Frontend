@@ -8,6 +8,12 @@ const props = defineProps({
   modelValueTimes: { type: Array, default: () => [] },
   existingSchedules: { type: Array, default: () => [] },
   holidays: { type: Array, default: () => [] },
+  // reservation: 트레이니 예약 모드, schedule: 트레이너 스케줄 등록 모드
+  mode: {
+    type: String,
+    default: "reservation",
+    validator: (v) => ["reservation", "schedule"].includes(v),
+  },
   morningTimes: {
     type: Array,
     default: () => ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30"],
@@ -33,6 +39,13 @@ const innerDate = ref(
 );
 const innerTimes = ref([...props.modelValueTimes]);
 
+// 오늘 날짜 (시간은 00:00:00으로 설정)
+const today = computed(() => {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  return now;
+});
+
 watch(
   () => props.modelValueDate,
   (v) => (innerDate.value = v ? new Date(v) : null),
@@ -44,13 +57,16 @@ watch(
 
 const updateDate = (val) => {
   innerDate.value = val;
-  innerTimes.value = innerTimes.value.filter((t) => !isTimeSlotTaken(val, t));
+  // 날짜 변경시 선택된 시간들 중 사용불가한 것들 제거
+  innerTimes.value = innerTimes.value.filter(
+    (t) => !isTimeSlotDisabled(val, t),
+  );
   emit("update:modelValueDate", val);
   emit("update:modelValueTimes", innerTimes.value);
 };
 
 const toggleTime = (time) => {
-  if (!innerDate.value || isTimeSlotTaken(innerDate.value, time)) return;
+  if (!innerDate.value || isTimeSlotDisabled(innerDate.value, time)) return;
   const i = innerTimes.value.indexOf(time);
   if (i > -1) innerTimes.value.splice(i, 1);
   else innerTimes.value.push(time);
@@ -69,13 +85,25 @@ const dayClass = (date) => {
   return "";
 };
 
-function isTimeSlotTaken(date, time) {
+// 특정 시간대가 현재 시간보다 이전인지 확인
+function isTimePast(date, time) {
   if (!date || !time) return false;
   const [hh, mm] = time.split(":").map(Number);
   const target = new Date(date);
   target.setHours(hh, mm, 0, 0);
 
-  return props.existingSchedules.some((sch) => {
+  const now = new Date();
+  return target.getTime() < now.getTime();
+}
+
+// 특정 시간대의 스케줄 정보 찾기
+function findScheduleForTime(date, time) {
+  if (!date || !time) return null;
+  const [hh, mm] = time.split(":").map(Number);
+  const target = new Date(date);
+  target.setHours(hh, mm, 0, 0);
+
+  return props.existingSchedules.find((sch) => {
     let start;
     if (Array.isArray(sch.startTime)) {
       const [y, m, d, H, M] = sch.startTime;
@@ -89,16 +117,81 @@ function isTimeSlotTaken(date, time) {
   });
 }
 
+function isTimeSlotDisabled(date, time) {
+  if (isTimePast(date, time)) return true;
+
+  const schedule = findScheduleForTime(date, time);
+
+  if (props.mode === "reservation") {
+    if (!schedule) return true;
+    if (!schedule.isAvailable) return true;
+    return false;
+  } else if (props.mode === "schedule") {
+    // 트레이너는 예약된 시간만 선택 불가
+    if (schedule && !schedule.isAvailable) return true;
+    return false;
+  }
+
+  return false;
+}
+
+// 버튼 스타일 결정
 const TIME_BTN_WEIGHT = "font-medium";
 const btnClass = (time) => {
-  const taken = isTimeSlotTaken(innerDate.value, time);
+  const schedule = findScheduleForTime(innerDate.value, time);
   const selected = innerTimes.value.includes(time);
+  const isPast = isTimePast(innerDate.value, time);
   const base = `w-full h-[33px] rounded-[15px] border text-[12px] ${TIME_BTN_WEIGHT} transition-all`;
-  if (taken)
-    return `${base} border-gray-600 bg-gray-600 text-gray-400 cursor-not-allowed`;
-  return selected
-    ? `${base} border-primary bg-primary bg-opacity-20 text-white`
-    : `${base} border-white bg-gray-custom text-white hover:border-primary hover:bg-primary hover:bg-opacity-10`;
+
+  // 현재 시간 이전인 경우 (공통)
+  if (isPast) {
+    return `${base} border-gray-700 bg-gray-700 text-gray-500 cursor-not-allowed opacity-30`;
+  }
+
+  if (props.mode === "reservation") {
+    // 트레이니 예약 모드
+    if (!schedule) {
+      return `${base} border-gray-700 bg-gray-700 text-gray-500 cursor-not-allowed opacity-50`;
+    }
+    if (!schedule.isAvailable) {
+      return `${base} border-red-600 bg-red-600 text-red-300 cursor-not-allowed`;
+    }
+    return selected
+      ? `${base} border-primary bg-primary bg-opacity-20 text-white`
+      : `${base} border-white bg-gray-custom text-white hover:border-primary hover:bg-primary hover:bg-opacity-10`;
+  } else if (props.mode === "schedule") {
+    // 트레이너 스케줄 등록 모드
+    if (schedule && !schedule.isAvailable) {
+      // 예약된 시간 (선택 불가)
+      return `${base} border-red-600 bg-red-600 text-red-300 cursor-not-allowed`;
+    }
+    if (schedule && schedule.isAvailable) {
+      // 등록됐지만 아직 예약 안된 시간 (주황색)
+      return selected
+        ? `${base} border-primary bg-primary bg-opacity-20 text-white`
+        : `${base} border-orange-500 bg-orange-600 text-orange-100 hover:border-primary hover:bg-primary hover:bg-opacity-10`;
+    }
+    // 아예 등록되지 않은 시간 (기본 스타일)
+    return selected
+      ? `${base} border-primary bg-primary bg-opacity-20 text-white`
+      : `${base} border-white bg-gray-custom text-white hover:border-primary hover:bg-primary hover:bg-opacity-10`;
+  }
+
+  return `${base} border-white bg-gray-custom text-white`;
+};
+
+// 시간대별 상태 텍스트 (디버깅/표시용)
+const getTimeSlotStatus = (time) => {
+  const schedule = findScheduleForTime(innerDate.value, time);
+
+  if (props.mode === "reservation") {
+    if (!schedule) return "운영안함";
+    return schedule.isAvailable ? "예약가능" : "예약됨";
+  } else if (props.mode === "schedule") {
+    return schedule ? "등록됨" : "등록가능";
+  }
+
+  return "";
 };
 </script>
 
@@ -114,6 +207,7 @@ const btnClass = (time) => {
       :hide-offset-dates="true"
       :day-class="dayClass"
       :locale="locale"
+      :min-date="today"
       @update:model-value="updateDate"
     />
   </div>
@@ -127,7 +221,8 @@ const btnClass = (time) => {
           :key="t"
           :class="btnClass(t)"
           @click="toggleTime(t)"
-          :disabled="isTimeSlotTaken(innerDate, t)"
+          :disabled="isTimeSlotDisabled(innerDate, t)"
+          :title="getTimeSlotStatus(t)"
         >
           {{ t }}
         </button>
@@ -142,7 +237,8 @@ const btnClass = (time) => {
           :key="t"
           :class="btnClass(t)"
           @click="toggleTime(t)"
-          :disabled="isTimeSlotTaken(innerDate, t)"
+          :disabled="isTimeSlotDisabled(innerDate, t)"
+          :title="getTimeSlotStatus(t)"
         >
           {{ t }}
         </button>
@@ -153,10 +249,27 @@ const btnClass = (time) => {
           :key="t"
           :class="btnClass(t)"
           @click="toggleTime(t)"
-          :disabled="isTimeSlotTaken(innerDate, t)"
+          :disabled="isTimeSlotDisabled(innerDate, t)"
+          :title="getTimeSlotStatus(t)"
         >
           {{ t }}
         </button>
+      </div>
+    </div>
+
+    <!-- 범례 추가 (선택사항) -->
+    <div class="mt-4 flex gap-3 text-[10px] text-gray-400">
+      <div class="flex items-center gap-1">
+        <div class="h-3 w-3 rounded border border-white bg-gray-custom"></div>
+        <span>예약가능</span>
+      </div>
+      <div class="flex items-center gap-1">
+        <div class="h-3 w-3 rounded bg-red-600"></div>
+        <span>예약됨</span>
+      </div>
+      <div class="flex items-center gap-1">
+        <div class="h-3 w-3 rounded bg-gray-700 opacity-50"></div>
+        <span>운영안함</span>
       </div>
     </div>
   </div>
