@@ -2,11 +2,10 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import profileDefault from "@/assets/images/mascot/profile.png";
-
 import BaseHeader from "@/components/common/BaseHeader.vue";
-import BaseBadge from "@/components/common/BaseBadge.vue";
-import ReviewList from "@/components/common/ReviewList.vue";
+import BaseTabNavigation from "@/components/common/BaseTabNavigation.vue";
+
+import TrainingInfo from "@/components/training/TrainingInfo.vue";
 import TrainerRoutineSection from "@/components/trainer/training/TrainerRoutineSection.vue";
 
 import { getReviews } from "@/composables/api/useReviewApi";
@@ -20,6 +19,7 @@ const router = useRouter();
 
 const trainingData = ref(null);
 const reviewList = ref([]);
+const activeTab = ref("details"); //Navi
 const num = (v) => (v == null ? 0 : Number(v));
 
 const expandedSections = ref({
@@ -48,6 +48,18 @@ const toggleSection = (category) => {
   expandedSections.value[category] = !expandedSections.value[category];
 };
 
+// 탭 변경 핸들러
+const handleTabChange = (tabId) => {
+  activeTab.value = tabId;
+};
+
+// 탭 목록 정의
+const tabs = [
+  { id: "details", label: "상세 설명" },
+  { id: "reviews", label: "리뷰" },
+  { id: "qna", label: "QnA" },
+];
+
 onMounted(async () => {
   const trainingId = route.params.trainingId;
 
@@ -65,7 +77,7 @@ onMounted(async () => {
       thumbnailUrl: detail.thumbnailUrl || "",
       trainerProfileUrl: detail.trainerProfileImage,
       trainerName: detail.trainerName,
-      trainerRating: detail.trainerRating,
+      trainingRating: detail.trainingRating,
       studentCount: num(detail.enrolledTraineeCount ?? detail.traineeCount),
       totalWeeks: 4,
     };
@@ -114,89 +126,67 @@ onMounted(async () => {
   }
 });
 </script>
-
 <template>
-  <div
-    v-if="trainingData"
-    class="min-h-screen overflow-y-auto bg-realBlack px-6 pb-20 pt-4 text-white"
-  >
-    <BaseHeader title="트레이닝 상세" @back="goBack" />
-
-    <div class="mt-4 flex items-center gap-2">
-      <BaseBadge>{{ trainingData.level }}</BaseBadge>
-      <BaseBadge>{{ trainingData.category }}</BaseBadge>
-      <BaseBadge variant="primary" class="ml-auto">
-        총 리워드 {{ trainingData.reward }}
-      </BaseBadge>
-    </div>
-
-    <div
-      class="mt-6 flex h-48 w-full items-center justify-center overflow-hidden rounded-lg bg-gray-800"
-    >
-      <img
-        :src="trainingData.thumbnailUrl"
-        alt="트레이닝 썸네일"
-        class="h-full w-full object-cover"
-      />
-    </div>
-
-    <div class="mt-6 flex items-center justify-between">
-      <div class="flex items-center gap-3 rounded-lg p-2">
-        <div
-          class="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-700"
-        >
-          <img
-            v-if="trainingData.trainerProfileUrl"
-            :src="trainingData.trainerProfileUrl"
-            alt="프로필"
-            class="h-full w-full object-cover"
-          />
-          <img
-            v-else
-            :src="profileDefault"
-            alt="기본 프로필"
-            class="h-full w-full"
-          />
-        </div>
-        <p class="font-bold text-white">{{ trainingData.trainerName }}</p>
-      </div>
-
-      <div class="flex items-center gap-2 text-caption text-gray-200">
-        <div class="flex items-center gap-1">
-          <img src="@/assets/images/star.svg" alt="별점" class="h-3 w-3" />
-          <span>{{ trainingData.trainerRating }}</span>
-        </div>
-        <span>|</span>
-        <span>{{ trainingData.studentCount }}명 수강</span>
-        <span>|</span>
-        <span>{{ trainingData.totalWeeks }}주</span>
-      </div>
-    </div>
-
-    <div class="mt-6">
-      <h2 class="text-heading font-bold">{{ trainingData.title }}</h2>
-      <p class="mt-2 text-body text-gray-300">
-        {{ trainingData.description }}
-      </p>
-    </div>
-
-    <div class="my-6 h-px bg-gray-800"></div>
-
-    <ReviewList :reviews="reviewList" />
-
-    <div class="my-6 h-px bg-gray-800"></div>
-
+  <div>
+    <BaseHeader @back="goBack()" title="트레이닝 상세"></BaseHeader>
     <div>
-      <h3 class="mb-4 text-xl font-bold">루틴 목록</h3>
-      <TrainerRoutineSection
-        v-for="(routines, category) in categorizedRoutines"
-        :key="category"
-        :title="sectionTitles[category]"
-        :routines="routines"
-        :is-expanded="expandedSections[category]"
-        :show-add-button="false"
-        @toggle="toggleSection(category)"
+      <TrainingInfo
+        v-if="trainingData"
+        :training-data="trainingData"
+        user-role="trainer"
       />
+    </div>
+
+    <!-- BaseTabNavigation 사용 -->
+    <div class="mx-3 my-3">
+      <BaseTabNavigation
+        :tabs="tabs"
+        :default-tab="'details'"
+        container-class=""
+        @tab-change="handleTabChange"
+      >
+        <!-- 상세 설명 탭 컨텐츠 -->
+        <template #details>
+          <div>
+            <!-- 트레이닝 설명 -->
+            <div v-if="trainingData?.description" class="mx-2 mb-6">
+              <div class="border-l-4p-4 mb-4 rounded-lg">
+                <p class="text-body leading-relaxed text-gray-300">
+                  {{ trainingData.description }}
+                </p>
+              </div>
+            </div>
+
+            <!-- 루틴 목록 -->
+            <div>
+              <div class="mb-2 ml-2 text-body font-bold">루틴 목록</div>
+              <TrainerRoutineSection
+                v-for="(routines, category) in categorizedRoutines"
+                :key="category"
+                :title="sectionTitles[category]"
+                :routines="routines"
+                :is-expanded="expandedSections[category]"
+                :show-add-button="false"
+                @toggle="toggleSection(category)"
+              />
+            </div>
+          </div>
+        </template>
+
+        <!-- 리뷰 탭 컨텐츠 -->
+        <template #reviews>
+          <div class="space-y-4">
+            <div class="py-8 text-center text-gray-500">리뷰가 없습니다.</div>
+          </div>
+        </template>
+
+        <!-- QnA 탭 컨텐츠 -->
+        <template #qna>
+          <div class="py-8 text-center text-gray-500">
+            <p>QnA가 없습니다.</p>
+          </div>
+        </template>
+      </BaseTabNavigation>
     </div>
   </div>
 </template>

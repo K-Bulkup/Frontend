@@ -1,7 +1,9 @@
 // src/stores/routineLock.js
 import { defineStore } from "pinia";
+import { useAuthStore } from "@/stores/auth";
+import { useEnrollmentStore } from "@/stores/enrollment";
 
-const STORAGE_KEY = "kbulkup:routineLock:v1";
+const STORAGE_KEY = "kbulkup:routineLock:v2";
 
 function load() {
   try {
@@ -17,28 +19,60 @@ function save(state) {
   } catch {}
 }
 
+function scopedKey({ userId, trainingId, enrollmentId, routineId }) {
+  const u = String(userId ?? "anon");
+  const t =
+    enrollmentId != null
+      ? `enr:${enrollmentId}`
+      : trainingId != null
+      ? `tr:${trainingId}`
+      : "tr:na";
+  const r = String(routineId ?? "");
+  return `${u}::${t}::${r}`;
+}
+
 export const useRoutineLockStore = defineStore("routineLock", {
   state: () => ({
-    // key: routineId(string), value: true
-    lockedByRoutineId: load(),
+    // { [scopedKey]: true }
+    lockedByKey: load(),
   }),
   actions: {
     _save() {
-      save(this.lockedByRoutineId);
+      save(this.lockedByKey);
     },
-    lock(id) {
-      this.lockedByRoutineId[String(id)] = true;
+    _ctx(ctx = {}) {
+      const auth = useAuthStore();
+      const enroll = useEnrollmentStore();
+      return {
+        userId: ctx.userId ?? auth?.userId ?? auth?.user?.userId ?? "anon",
+        trainingId: ctx.trainingId ?? null,
+        enrollmentId: ctx.enrollmentId ?? enroll?.enrollmentId ?? null,
+        routineId: ctx.routineId,
+      };
+    },
+    lock(ctx) {
+      const k = scopedKey(this._ctx(ctx));
+      this.lockedByKey[k] = true;
       this._save();
     },
-    unlock(id) {
-      delete this.lockedByRoutineId[String(id)];
+    unlock(ctx) {
+      const k = scopedKey(this._ctx(ctx));
+      delete this.lockedByKey[k];
       this._save();
     },
-    isLocked(id) {
-      return !!this.lockedByRoutineId[String(id)];
+    isLocked(ctx) {
+      const k = scopedKey(this._ctx(ctx));
+      return !!this.lockedByKey[k];
+    },
+    clearAllForUser(userId) {
+      const prefix = `${userId}::`;
+      for (const k of Object.keys(this.lockedByKey)) {
+        if (k.startsWith(prefix)) delete this.lockedByKey[k];
+      }
+      this._save();
     },
     clearAll() {
-      this.lockedByRoutineId = {};
+      this.lockedByKey = {};
       this._save();
     },
   },
