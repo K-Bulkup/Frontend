@@ -7,6 +7,7 @@ import BaseTabNavigation from "@/components/common/BaseTabNavigation.vue";
 
 import TrainingInfo from "@/components/training/TrainingInfo.vue";
 import TrainerRoutineSection from "@/components/trainer/training/TrainerRoutineSection.vue";
+import ReviewList from "@/components/common/ReviewList.vue";
 
 import { getReviews } from "@/composables/api/useReviewApi";
 import {
@@ -20,6 +21,10 @@ const router = useRouter();
 const trainingData = ref(null);
 const reviewList = ref([]);
 const activeTab = ref("details"); //Navi
+
+const averageRating = ref(0);
+const totalReviews = ref(0);
+
 const num = (v) => (v == null ? 0 : Number(v));
 
 const expandedSections = ref({
@@ -110,9 +115,12 @@ onMounted(async () => {
   try {
     const response = await getReviews(trainingId);
 
-    if (response.success) {
-      reviewList.value = response.data.map((review, index) => ({
-        id: index,
+    if (response.success && response.data) {
+      averageRating.value = response.data.averageRating || 0;
+      totalReviews.value = response.data.totalReviewCount || 0;
+
+      reviewList.value = (response.data.reviews || []).map((review, index) => ({
+        id: review.id || index,
         author: review.username,
         rating: review.rating,
         content: review.content,
@@ -123,6 +131,8 @@ onMounted(async () => {
   } catch (error) {
     console.error("리뷰 API 호출 중 오류:", error);
     reviewList.value = [];
+    averageRating.value = 0;
+    totalReviews.value = 0;
   }
 });
 </script>
@@ -175,9 +185,11 @@ onMounted(async () => {
 
         <!-- 리뷰 탭 컨텐츠 -->
         <template #reviews>
-          <div class="space-y-4">
-            <div class="py-8 text-center text-gray-500">리뷰가 없습니다.</div>
-          </div>
+          <ReviewList
+            :average-rating="averageRating"
+            :total-reviews="totalReviews"
+            :reviews="reviewList"
+          />
         </template>
 
         <!-- QnA 탭 컨텐츠 -->

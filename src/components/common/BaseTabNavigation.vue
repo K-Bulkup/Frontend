@@ -18,7 +18,8 @@ const props = defineProps({
   },
 });
 
-defineEmits(["tab-change"]);
+const emit = defineEmits(["tab-change"]);
+
 // 기본 탭 설정
 const activeTab = ref(
   props.defaultTab || (props.tabs.length > 0 ? props.tabs[0].id : ""),
@@ -60,7 +61,7 @@ watch(
       </button>
     </div>
     <!-- 탭 컨텐츠 -->
-    <div class="mt-4">
+    <div class="mt-4 min-h-screen">
       <template v-for="tab in tabs" :key="`content-${tab.id}`">
         <div v-if="activeTab === tab.id">
           <slot :name="tab.id" :tab="tab" :active-tab="activeTab">
