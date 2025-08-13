@@ -8,6 +8,8 @@ import { getReviews } from "@/composables/api/useReviewApi";
 import LoadingOverlay from "@/components/common/LoadingOverlay.vue";
 
 import BaseHeader from "@/components/common/BaseHeader.vue";
+import BaseButton from "@/components/common/BaseButton.vue";
+
 import TrainingInfo from "@/components/training/TrainingInfo.vue";
 import PaymentModal from "@/components/common/PaymentModal.vue";
 
@@ -220,13 +222,13 @@ const handlePayment = async (pg) => {
     </div>
 
     <div class="mt-12 pb-8">
-      <button
+      <BaseButton
         @click="proceedToPayment"
         :disabled="isLoading"
-        class="h-14 w-full rounded-xl bg-white text-lg font-bold text-black active:bg-gray-200"
+        class="h-14 w-full rounded-xl text-subTitle font-bold"
       >
         결제하기
-      </button>
+      </BaseButton>
     </div>
 
     <PaymentModal
