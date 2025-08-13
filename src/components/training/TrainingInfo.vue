@@ -1,10 +1,12 @@
 <script setup>
 import { computed } from "vue";
+import { useRouter } from "vue-router";
 
 import BaseTag from "../common/BaseTag.vue";
-
 import star from "@/assets/images/star.svg";
 import nodata from "@/assets/images/mascot/nodata.png";
+
+const router = useRouter();
 
 // Props 정의
 const props = defineProps({
@@ -43,6 +45,15 @@ const levelBadge = computed(() => {
   return { text: level, backgroundColor };
 });
 
+// 트레이너 페이지로 이동
+const goToTrainerProfile = () => {
+  try {
+    router.push(`/trainee/trainer/${props.trainingData.trainerId}`);
+  } catch {
+    console.error("이동할 트레이너의 ID가 없습니다.");
+  }
+};
+
 const formattedPrice = (price) => {
   return (price || 0).toLocaleString() + "원";
 };
@@ -55,7 +66,7 @@ const formattedPrice = (price) => {
       <div class="flex pr-4 pt-3">
         <!-- 썸네일 박스 (고정) -->
         <div class="flex-shrink-0 overflow-hidden rounded-2xl px-3 py-4">
-          <div class="h-[163px] w-[108px] overflow-hidden rounded-xl">
+          <div class="h-[178px] w-[113px] overflow-hidden rounded-xl">
             <img
               :src="trainingData.thumbnailUrl || nodata"
               :alt="`${trainingData.title} 강의 썸네일`"
@@ -79,10 +90,11 @@ const formattedPrice = (price) => {
           </div>
 
           <!-- 수강생 수와 별점 / 트레이니에게는 트레이너의 프로필 이미지도 보이게 -->
-          <div class="my-2 flex items-center gap-3 text-body text-gray-300">
+          <div class="my-3 flex items-center gap-3 text-body text-gray-300">
             <div
               v-if="userRole === 'trainee' && trainingData.trainerName"
-              class="flex items-center gap-1 font-bold text-gray-300"
+              class="flex cursor-pointer items-center gap-1 font-bold text-gray-300"
+              @click="goToTrainerProfile"
             >
               <img
                 :src="trainingData.trainerProfileUrl"
@@ -126,7 +138,7 @@ const formattedPrice = (price) => {
           </div>
           <div
             v-if="userRole === 'trainee'"
-            class="flex items-center gap-1 text-subTitle font-bold text-gray-300"
+            class="flex items-center gap-1 text-[24px] font-bold text-gray-300"
           >
             {{ formattedPrice(trainingData.price) }}
           </div>

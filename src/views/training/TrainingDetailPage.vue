@@ -127,19 +127,7 @@ onMounted(async () => {
   await finalizeIfRedirected();
 });
 
-const formattedPrice = computed(() =>
-  trainingData.value ? trainingData.value.price.toLocaleString() : "",
-);
-
 const goBack = () => router.back();
-
-const goToTrainerPage = () => {
-  if (trainingData.value?.trainerId) {
-    router.push(`/trainee/trainer/${trainingData.value.trainerId}`);
-  } else {
-    console.error("이동할 트레이너의 ID가 없습니다.");
-  }
-};
 
 const proceedToPayment = () => {
   modalVisible.value = true;
@@ -222,25 +210,24 @@ const handlePayment = async (pg) => {
 <template>
   <div>
     <BaseHeader title="트레이닝 상세" @back="goBack" />
-    <main v-if="trainingData">
-      <div>
-        <TrainingInfo
-          v-if="trainingData"
-          :training-data="trainingData"
-          user-role="trainee"
-        />
-      </div>
+    <div>
+      <!-- 트레이닝 상세 정보 -->
+      <TrainingInfo
+        v-if="trainingData"
+        :training-data="trainingData"
+        user-role="trainee"
+      />
+    </div>
 
-      <div class="mt-12 pb-8">
-        <button
-          @click="proceedToPayment"
-          :disabled="isLoading"
-          class="h-14 w-full rounded-xl bg-white text-lg font-bold text-black active:bg-gray-200"
-        >
-          결제하기
-        </button>
-      </div>
-    </main>
+    <div class="mt-12 pb-8">
+      <button
+        @click="proceedToPayment"
+        :disabled="isLoading"
+        class="h-14 w-full rounded-xl bg-white text-lg font-bold text-black active:bg-gray-200"
+      >
+        결제하기
+      </button>
+    </div>
 
     <PaymentModal
       :visible="modalVisible"
