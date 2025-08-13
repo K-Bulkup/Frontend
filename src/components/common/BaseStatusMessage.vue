@@ -12,20 +12,15 @@ defineProps({
 
 <template>
   <div class="mb-6 text-center">
-    <div v-if="icon" class="text-display mb-4">
+    <div v-if="icon" class="mb-4">
       {{ icon }}
     </div>
 
-    <h2
-      :class="[
-        'text-white',
-        variant === 'status' ? 'text-title' : 'text-subTitle font-semibold',
-      ]"
-    >
+    <div class="pt-10 text-[18px] font-semibold text-gray-300">
       {{ title }}
-    </h2>
+    </div>
 
-    <p class="mt-1 text-input text-gray-50">
+    <p class="mt-1 text-input text-gray-300">
       {{ subtitle }}
     </p>
   </div>

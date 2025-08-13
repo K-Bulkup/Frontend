@@ -1,5 +1,5 @@
 <script setup>
-import ConnectSuccessModal from "@/components/common/ConnectSuccessModal.vue";
+import ConnectSuccessModal from "@/components/common/ActionStateModal.vue";
 
 const emit = defineEmits(["confirm"]);
 

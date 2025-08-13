@@ -5,7 +5,7 @@ import { useAuthStore } from "@/stores/auth";
 import apiClient from "@/plugins/axios";
 import BaseButton from "@/components/common/BaseButton.vue";
 import BaseInput from "@/components/common/BaseInput.vue";
-import ConnectSuccessModal from "@/components/common/ConnectSuccessModal.vue";
+import ConnectSuccessModal from "@/components/common/ActionStateModal.vue";
 import ConnectFailureModal from "@/components/common/ConnectFailureModal.vue";
 
 const router = useRouter();

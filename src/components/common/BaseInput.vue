@@ -1,5 +1,5 @@
 <script setup>
-import { useAttrs } from "vue";
+import { useAttrs, ref } from "vue";
 
 const props = defineProps({
   modelValue: String,
@@ -20,15 +20,26 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue"]);
 const inputAttrs = useAttrs();
+
+const isClicked = ref(false);
+
+// 클릭 모션 처리
+const handleClick = () => {
+  isClicked.value = true;
+  setTimeout(() => {
+    isClicked.value = false;
+  }, 150);
+};
 </script>
 
 <template>
-  <div class="flex w-full flex-col items-center">
+  <div class="flex w-full flex-col items-center text-input">
     <div
-      class="flex items-center gap-3 rounded-xl border bg-gray-600 px-4 py-3"
+      @click="handleClick"
+      class="flex cursor-text items-center gap-3 rounded-xl bg-gray-900 px-4 py-3 transition-all duration-150"
       :class="[
-        isInvalid ? 'border-error' : 'border-gray-600',
-        'transition duration-200',
+        isInvalid ? 'border-error' : 'border-gray-900',
+        isClicked ? 'scale-[0.98] shadow-inner' : 'scale-100 shadow-sm',
       ]"
       style="width: 332px; height: 64px"
     >
@@ -40,18 +51,19 @@ const inputAttrs = useAttrs();
         @input="(e) => emit('update:modelValue', e.target.value)"
         :type="type"
         :placeholder="placeholder"
-        class="flex-1 appearance-none !bg-transparent text-white placeholder-gray-500 outline-none [caret-color:#fff] focus:outline-none focus:ring-0"
+        class="pointer-events-auto flex-1 appearance-none !bg-transparent text-white placeholder-gray-500 outline-none [caret-color:#fff] focus:outline-none focus:ring-0"
         :class="$slots.icon ? 'ml-2' : ''"
       />
     </div>
     <!-- 에러 메시지를 왼쪽 정렬로 변경 -->
     <div v-if="isInvalid && errorMessage" class="w-full max-w-[360px]">
-      <p class="pl-[5px] pt-[6px] text-left text-caption text-error">
+      <p class="pl-5 pt-1 text-body2 text-error">
         {{ errorMessage }}
       </p>
     </div>
   </div>
 </template>
+
 <style scoped>
 /* 크롬/사파리 자동완성 및 기본 배경 강제 덮기 */
 :deep(input:-webkit-autofill),
