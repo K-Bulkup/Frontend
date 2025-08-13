@@ -11,6 +11,7 @@ import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseButton from "@/components/common/BaseButton.vue";
 import BaseTabNavigation from "@/components/common/BaseTabNavigation.vue";
 
+import ReviewList from "@/components/common/ReviewList.vue";
 import TrainingInfo from "@/components/training/TrainingInfo.vue";
 import PaymentModal from "@/components/common/PaymentModal.vue";
 
