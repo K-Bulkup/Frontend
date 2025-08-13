@@ -6,7 +6,7 @@ import { useSubmitReview } from "@/composables/review/useCreateReview.js";
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseTextarea from "@/components/common/BaseTextarea.vue";
 import BaseButton from "@/components/common/BaseButton.vue";
-import ReviewSuccessModal from "@/components/common/ConnectSuccessModal.vue";
+import ActionStateModal from "@/components/common/ActionStateModal.vue";
 import ReviewFailureModal from "@/components/common/ConnectFailureModal.vue";
 
 const router = useRouter();
@@ -118,7 +118,7 @@ onMounted(async () => {
       </BaseButton>
     </div>
 
-    <ReviewSuccessModal
+    <ActionStateModal
       v-if="isSuccessModalVisible"
       title="리뷰가 등록되었습니다"
       subtitle="소중한 후기 감사합니다!"
