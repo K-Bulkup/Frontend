@@ -8,8 +8,7 @@ defineProps({
 </script>
 
 <template>
-  <header class="mb-6 flex h-10 items-center justify-center">
-    <h2 class="text-heading text-white">{{ title }}</h2>
-    <div class="w-8"></div>
+  <header class="flex items-center justify-center px-5 pt-5">
+    <h2 class="font-bold text-white">{{ title }}</h2>
   </header>
 </template>
