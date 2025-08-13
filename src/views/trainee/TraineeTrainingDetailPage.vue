@@ -2,18 +2,19 @@
 import { ref, computed, onMounted, onActivated, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useEnrollmentStore } from "@/stores/enrollment";
-import { getTraineeTrainingDetail } from "@/composables/api/trainee/training/traineeTrainingDetailAPI";
-import { getTraineeTrainingStatus } from "@/composables/api/trainee/training/traineeTrainingDetailAPI";
+import {
+  getTraineeTrainingDetail,
+  getTraineeTrainingStatus,
+} from "@/composables/api/trainee/training/traineeTrainingDetailAPI";
 import { createCounseling } from "@/composables/api/useCounselingApi";
 import { useRoutineLockStore } from "@/stores/routineLock";
+import { useAuthStore } from "@/stores/auth";
 
 import profileDefault from "@/assets/images/mascot/profile.png";
-
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import TraineeRoutineSection from "@/components/trainee/training/TraineeRoutineSection.vue";
 import ActionButton from "@/components/trainee/training/ActionButton.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
-import { useAuthStore } from "@/stores/auth";
 import StarIcon from "@/assets/images/star.svg";
 
 const router = useRouter();
@@ -26,48 +27,38 @@ const trainingData = ref(null);
 const hasWrittenReview = ref(false);
 const chatRoomCreated = ref(false);
 const trainingId = ref(route.params.trainingId);
-const userId = authStore.userId;
-// 숫자 보정 헬퍼
+const userKey = computed(() =>
+  String(authStore.userId ?? authStore.user?.userId ?? "anon"),
+);
 const num = (v) => (v == null ? 0 : Number(v));
 
-// 서버 응답에서 "PASS"만 true가 되도록 넓게 판정
-const isServerPass = (r) =>
-  r?.completed === "PASS" ||
-  r?.passFailResult === "PASS" ||
-  r?.status === "PASS" ||
-  r?.isPassed === true;
+/** ✅ 체크/진행률 기준: 서버가 주는 '완료' 신호만 인정 */
+const isServerPass = (r) => {
+  const s = (r?.passFailResult ?? r?.status ?? r?.result ?? "")
+    .toString()
+    .toUpperCase();
+  if (s === "PASS" || s === "COMPLETED" || s === "TRUE") return true;
+  if (r?.status === true) return true;
+  if (r?.isPassed === true) return true;
+  if (r?.completed === true || r?.isCompleted === true) return true;
+  return false; // ⛔ completedAt 등의 날짜는 절대 사용하지 않음
+};
 
-// 서버 루틴 → 화면 루틴으로 매핑 (serverPass 플래그를 보존)
-const convertRoutinesWithLock = (routineList) =>
+// 목록 루틴 매핑: 체크/진행률은 서버만 신뢰
+const convertRoutines = (routineList) =>
   routineList?.map((r) => {
-    const id = String(r.routineId);
     const serverPass = isServerPass(r);
     return {
-      id,
+      id: String(r.routineId),
       name: r.title,
-      serverPass, // 보존해두고
-      // ✅ 완료 = 서버 PASS or 로컬 lock
-      completed: serverPass || routineLock.isLocked(id),
+      serverPass,
+      completed: serverPass, // ✅ 체크는 서버만
       rewardPoint: r.rewardPoint,
       completedAt: r.completedAt,
     };
   }) || [];
 
-// 잠금 상태 변경 시 'completed'만 다시 합성
-const applyLocalLockToTrainingData = () => {
-  const td = trainingData.value;
-  if (!td?.routines) return;
-  const recompute = (list) =>
-    list?.map((r) => ({
-      ...r,
-      completed: !!(r.serverPass || routineLock.isLocked(String(r.id))),
-    })) || [];
-  td.routines["스트레칭"] = recompute(td.routines["스트레칭"]);
-  td.routines["근력"] = recompute(td.routines["근력"]);
-  td.routines["유산소"] = recompute(td.routines["유산소"]);
-};
-
-// API 호출 및 데이터 매핑
+// 서버 호출
 const loadTrainingData = async () => {
   try {
     const eidNum = Number(enrollmentStore.enrollmentId);
@@ -79,6 +70,7 @@ const loadTrainingData = async () => {
 
     const raw = res.data.data;
 
+    // 서버가 enrollmentId를 내려주면 저장 (다음 호출부터 파라미터 포함)
     if (raw.enrollmentId) {
       enrollmentStore.enrollmentId = raw.enrollmentId;
     } else {
@@ -92,7 +84,6 @@ const loadTrainingData = async () => {
       trainerProfileUrl: raw.trainerProfileUrl || null,
       trainerId: raw.trainerId,
       trainerRating: raw.averageRating,
-      // ✅ traineeCount 우선, 없으면 enrolled/total 대체
       studentCount: num(
         raw.traineeCount ?? raw.enrolledTraineeCount ?? raw.totalTraineeCount,
       ),
@@ -101,16 +92,13 @@ const loadTrainingData = async () => {
       progress: raw.progress,
       totalReward: raw.totalScore,
       routines: {
-        스트레칭: convertRoutinesWithLock(raw.routines?.["스트레칭"]),
-        근력: convertRoutinesWithLock(raw.routines?.["근력"]),
-        유산소: convertRoutinesWithLock(raw.routines?.["유산소"]),
+        스트레칭: convertRoutines(raw.routines?.["스트레칭"]),
+        근력: convertRoutines(raw.routines?.["근력"]),
+        유산소: convertRoutines(raw.routines?.["유산소"]),
       },
       level: raw.level,
       category: raw.category,
     };
-
-    // 서버값 세팅 후, 잠금과 합성값을 다시 보정
-    applyLocalLockToTrainingData();
   } catch (err) {
     console.error("🚨 트레이닝 상세 조회 실패:", err);
   }
@@ -130,27 +118,33 @@ onMounted(() => {
   loadTrainingData();
   checkTrainingStatus();
 });
-
-// 뒤로 돌아와도 최신화
 onActivated(() => {
   loadTrainingData();
 });
 
-// 잠금 상태가 바뀌면 합성값 즉시 반영
+// ✅ 루틴 상세에서 PASS → 로컬락 기록 → 여기 watch가 서버 재조회
 watch(
-  () => routineLock.lockedByRoutineId,
-  () => applyLocalLockToTrainingData(),
+  () => routineLock.lockedByKey,
+  () => {
+    loadTrainingData();
+  },
   { deep: true },
 );
 
-// 트레이너 상세 페이지로 이동
-const goToTrainerPage = () => {
-  if (trainingData.value?.trainerId) {
-    router.push(`/trainee/trainer/${trainingData.value.trainerId}`);
-  } else {
-    console.error("이동할 트레이너의 ID가 없습니다.");
-  }
-};
+// ----------------- 섹션 잠금/완료 판정 -----------------
+
+// v2 스코프 컨텍스트(로컬락 조회용)
+const ctxBase = computed(() => ({
+  userId: userKey.value,
+  trainingId: String(route.params.trainingId),
+  enrollmentId: enrollmentStore.enrollmentId ?? null,
+}));
+
+// "다음 섹션 열림" 판정에서만 로컬락을 인정 (체크/진행률은 서버만)
+const isDoneForUnlock = (q) =>
+  !!q?.id &&
+  (q.completed ||
+    routineLock.isLocked({ ...ctxBase.value, routineId: String(q.id) }));
 
 const expandedSections = ref({
   stretching: true,
@@ -158,29 +152,31 @@ const expandedSections = ref({
   cardio: false,
 });
 
-// 섹션 잠금 여부 (루틴 없을 때도 잠금 처리)
 const isSectionLocked = (key) => {
   if (!trainingData.value?.routines) return false;
 
-  const routineMap = {
-    stretching: "스트레칭",
-    strength: "근력",
-    cardio: "유산소",
-  };
-  const routineList = trainingData.value.routines[routineMap[key]];
+  const S = trainingData.value.routines["스트레칭"];
+  const M = trainingData.value.routines["근력"];
+  const C = trainingData.value.routines["유산소"];
 
-  if (!routineList || routineList.length === 0) return true;
-
+  if (key === "stretching") {
+    // 스트레칭은 항상 열림 (아이템 없으면 잠금)
+    return !(S && S.length > 0);
+  }
   if (key === "strength") {
-    return !trainingData.value.routines["스트레칭"]?.every((q) => q.completed);
+    if (!M || M.length === 0) return true; // 근력 없으면 잠금
+    if (!S || S.length === 0) return true; // 선행 섹션 없으면 잠금
+    return !S.every(isDoneForUnlock); // ✅ 로컬락 OR 서버PASS
   }
   if (key === "cardio") {
-    return !trainingData.value.routines["근력"]?.every((q) => q.completed);
+    if (!C || C.length === 0) return true;
+    if (!M || M.length === 0) return true;
+    return !M.every(isDoneForUnlock); // ✅ 로컬락 OR 서버PASS
   }
   return false;
 };
 
-// 완료 여부 계산
+// ✅ 체크/진행률(서버 기준) — 기존 유지
 const isStretchingComplete = computed(
   () =>
     trainingData.value?.routines["스트레칭"]?.length > 0 &&
@@ -191,83 +187,81 @@ const isStrengthComplete = computed(
     trainingData.value?.routines["근력"]?.length > 0 &&
     trainingData.value.routines["근력"].every((q) => q.completed),
 );
+const isCardioComplete = computed(
+  () =>
+    trainingData.value?.routines["유산소"]?.length > 0 &&
+    trainingData.value.routines["유산소"].every((q) => q.completed),
+);
 const areAllQuestsComplete = computed(
   () =>
     isStretchingComplete.value &&
     isStrengthComplete.value &&
-    trainingData.value?.routines["유산소"]?.every((q) => q.completed),
+    isCardioComplete.value,
 );
 
-// 루틴 상세 이동 (완료면 열람, 미완료면 응시)
-const goToRoutineDetail = (quest) => {
-  if (!quest?.id) {
-    console.error("❌ 루틴 ID가 존재하지 않음:", quest);
-    return;
-  }
-  const base = `/trainee/mypage/training/${route.params.trainingId}/routine/${quest.id}`;
-  if (quest.completed) {
+// ✅ 버튼 노출은 'UI 기준 완료'(서버PASS 또는 로컬락)
+const isStretchingDoneForUI = computed(() => {
+  const S = trainingData.value?.routines["스트레칭"];
+  return S?.length > 0 && S.every(isDoneForUnlock);
+});
+const isStrengthDoneForUI = computed(() => {
+  const M = trainingData.value?.routines["근력"];
+  return M?.length > 0 && M.every(isDoneForUnlock);
+});
+const isCardioDoneForUI = computed(() => {
+  const C = trainingData.value?.routines["유산소"];
+  return C?.length > 0 && C.every(isDoneForUnlock);
+});
+const areAllQuestsDoneForUI = computed(
+  () =>
+    isStretchingDoneForUI.value &&
+    isStrengthDoneForUI.value &&
+    isCardioDoneForUI.value,
+);
+
+// 이동
+const goToRoutineDetail = (q) => {
+  if (!q?.id) return console.error("❌ 루틴 ID가 존재하지 않음:", q);
+  const base = `/trainee/mypage/training/${route.params.trainingId}/routine/${q.id}`;
+  const eid = enrollmentStore.enrollmentId;
+  if (q.completed)
     router.push(base); // 열람 모드
-  } else {
-    const eid = enrollmentStore.enrollmentId;
-    if (eid)
-      router.push(`${base}?enrollmentId=${eid}`); // 응시 모드
-    else router.push(base); // 비정상 케이스 대비
-  }
+  else router.push(eid ? `${base}?enrollmentId=${eid}` : base); // 응시 모드
 };
 
-// 1:1 PT 채팅
-const goToPtPage = async () => {
-  try {
-    const traineeId = authStore.user?.userId;
-    const trainingIdNum = Number(route.params.trainingId);
-    const response = await createCounseling(trainingIdNum, traineeId);
-    const roomId = response.data.data.roomId;
-    router.push(`/common/pt-chat/${roomId}`);
-  } catch (error) {
-    console.error("채팅방 생성 또는 조회 실패:", error);
-  }
+// 기간/버튼
+const goToTrainerPage = () => {
+  if (trainingData.value?.trainerId)
+    router.push(`/trainee/trainer/${trainingData.value.trainerId}`);
+  else console.error("이동할 트레이너의 ID가 없습니다.");
 };
-
-const goToReviewPage = () => {
+const goToReviewPage = () =>
   router.push(`/trainee/mypage/review/${route.params.trainingId}`);
-};
-
 const goBack = () => router.back();
 
-// 섹션 토글 (잠금 상태면 차단)
-const toggleSection = (key) => {
-  expandedSections.value[key] = !expandedSections.value[key];
-};
-
-// 트레이닝 기간 체크
 const isTrainingExpired = computed(() => {
   if (!trainingData.value?.startDate) return false;
   const endDate = new Date(trainingData.value.startDate);
   endDate.setMonth(endDate.getMonth() + 1);
   return new Date() > endDate;
 });
-
 const trainingDeadline = computed(() => {
   if (!trainingData.value?.startDate) return "";
-  const startDate = new Date(trainingData.value.startDate);
-  startDate.setMonth(startDate.getMonth() + 1);
-  return `${startDate.getFullYear()}.${String(startDate.getMonth() + 1).padStart(2, "0")}.${String(
-    startDate.getDate(),
-  ).padStart(2, "0")}`;
+  const d = new Date(trainingData.value.startDate);
+  d.setMonth(d.getMonth() + 1);
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 });
 
-const showReviewButton = computed(() => {
-  return areAllQuestsComplete.value || isTrainingExpired.value;
-});
+// ⬇⬇⬇ 여기만 교체: 버튼은 UI 기준 완료로 즉시 노출
+const showReviewButton = computed(
+  () => areAllQuestsDoneForUI.value || isTrainingExpired.value,
+);
+const showChatButton = computed(() => areAllQuestsDoneForUI.value);
 
-const showChatButton = computed(() => {
-  return areAllQuestsComplete.value;
-});
-
-// 다른 사람이 추가한 startChat 유지
+// Q&A/채팅
 const startChat = async () => {
   try {
-    const response = await createCounseling(trainingId.value, userId);
+    const response = await createCounseling(trainingId.value, userKey.value);
     if (response.data.success && response.data.data?.roomId) {
       alert("채팅방이 생성되었습니다.");
       router.push(`/common/pt-chat/${response.data.data.roomId}`);
@@ -279,9 +273,10 @@ const startChat = async () => {
     alert("채팅방 생성 중 오류가 발생했습니다. 다시 시도해주세요.");
   }
 };
-
-const goToQnaPage = () => {
+const goToQnaPage = () =>
   router.push(`/trainee/mypage/training/${route.params.trainingId}/qna`);
+const toggleSection = (k) => {
+  expandedSections.value[k] = !expandedSections.value[k];
 };
 </script>
 
@@ -290,7 +285,6 @@ const goToQnaPage = () => {
     <BaseHeader title="트레이닝 상세" @back="goBack" />
 
     <main v-if="trainingData" class="flex-1">
-      <!-- 제목 + 기한 (SAFE: trainingData 안에서 사용) -->
       <div class="mb-8 mt-7 flex items-end justify-between">
         <h1 class="text-subTitle font-bold leading-tight text-white">
           {{ trainingData.title }}
@@ -299,12 +293,9 @@ const goToQnaPage = () => {
           >수강 종료: {{ trainingDeadline }}</span
         >
       </div>
-      <!-- 진행률 카드 (AFTER) -->
-      <div class="mb-4">
-        <ProgressBar :value="trainingData.progress" />
-      </div>
 
-      <!-- 트레이너 카드 (AFTER) -->
+      <div class="mb-4"><ProgressBar :value="trainingData.progress" /></div>
+
       <div class="mb-12 rounded-xl bg-gray-900 p-4">
         <div class="flex items-center gap-3">
           <button @click="goToTrainerPage" class="flex items-center gap-3">
@@ -331,8 +322,6 @@ const goToQnaPage = () => {
               </p>
             </div>
           </button>
-
-          <!-- Q&A 버튼 -->
           <button
             @click="goToQnaPage"
             class="ml-auto rounded-full bg-primary px-3 py-1.5 text-input font-bold text-black shadow"
@@ -342,7 +331,6 @@ const goToQnaPage = () => {
         </div>
       </div>
 
-      <!-- 스트레칭 -->
       <TraineeRoutineSection
         title="스트레칭"
         subtitle="금융 익히기"
@@ -358,7 +346,6 @@ const goToQnaPage = () => {
         "
       />
 
-      <!-- 근력 (스트레칭 완료 후 잠금 해제) -->
       <TraineeRoutineSection
         title="근력"
         subtitle="금융 근력 키우기"
@@ -374,7 +361,6 @@ const goToQnaPage = () => {
         "
       />
 
-      <!-- 유산소 (근력 완료 후 잠금 해제) -->
       <TraineeRoutineSection
         title="유산소"
         subtitle="금융 체력 기르기"
@@ -390,7 +376,6 @@ const goToQnaPage = () => {
         "
       />
 
-      <!-- 액션 버튼 -->
       <div class="mt-10 space-y-3">
         <ActionButton
           v-if="showReviewButton"
