@@ -1,9 +1,10 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import { postQnAQuestion } from "@/composables/api/useQnAQuestion";
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseTextarea from "@/components/common/BaseTextarea.vue";
-import { postQnAQuestion } from "@/composables/api/useQnAQuestion";
+import BaseButton from "@/components/common/BaseButton.vue";
 const router = useRouter();
 const route = useRoute();
 
@@ -55,57 +56,63 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-realBlack text-white">
-    <BaseHeader title="잘문 등록하기" @back="handleBack" class="mt-4" />
+  <div class="flex min-h-screen flex-col px-7 pb-20">
+    <BaseHeader title="잘문 등록하기" @back="handleBack" />
 
-    <div class="mx-7 mb-6">
-      <!-- Course Title -->
-      <div class="mb-6 rounded-xl border border-white bg-realBlack p-6">
-        <h1 class="text-center text-heading font-semibold text-white">
+    <div class="flex-grow">
+      <div class="mb-6">
+        <!-- Course Title -->
+        <h2 class="mb-6 mt-8 text-subTitle font-semibold">
           {{ courseTitle }}
-        </h1>
-      </div>
-      <!-- Review Section -->
-      <div class="mt-8">
-        <BaseTextarea
-          v-model="questionTitle"
-          label="질문 제목을 작성해주세요"
-          description=""
-          placeholder=""
-          :maxlength="100"
-          :minlength="5"
-          :rows="5"
-        />
-      </div>
+        </h2>
+        <!-- Review Section -->
 
-      <!-- Review Section -->
-      <div class="mt-8">
-        <BaseTextarea
-          v-model="questionContent"
-          label="질문 내용을 작성해주세요"
-          description=""
-          placeholder=""
-          :maxlength="500"
-          :minlength="10"
-          :rows="5"
-        />
+        <div class="title-compact mt-10">
+          <BaseTextarea
+            v-model="questionTitle"
+            label="질문 제목을 작성해주세요"
+            description=""
+            placeholder=""
+            :maxlength="100"
+            :minlength="5"
+            :rows="2"
+          />
+        </div>
+
+        <!-- Review Section -->
+        <div class="mt-14">
+          <BaseTextarea
+            v-model="questionContent"
+            label="질문 내용을 작성해주세요"
+            description=""
+            placeholder=""
+            :maxlength="500"
+            :minlength="10"
+            :rows="5"
+          />
+        </div>
       </div>
     </div>
 
     <!-- Submit Button -->
-    <div class="mx-7 mt-8">
-      <button
+    <div class="mt-10">
+      <BaseButton
         @click="handleSubmit"
         :disabled="!isFormValid || isSubmitting"
-        :class="[
-          'w-full rounded-xl py-3 text-body font-semibold transition-colors duration-200',
-          isFormValid
-            ? 'border border-gray-100 bg-black text-white hover:opacity-80'
-            : 'cursor-not-allowed border border-gray-700 bg-gray-700 text-gray-200',
-        ]"
+        :class="w - full"
       >
         질문 작성 완료
-      </button>
+      </BaseButton>
     </div>
   </div>
 </template>
+<style scoped>
+/* 제목 BaseTextarea 안의 실제 <textarea>에만 적용 */
+.title-compact :deep(textarea) {
+  height: 58px; /* 원하는 값으로 조절 (예: 36px, 40px, 44px 등) */
+  min-height: 44px; /* 컴포넌트의 기본 min-height 무력화 */
+  padding-top: 8px; /* 필요하면 안쪽 여백도 살짝 줄이기 */
+  padding-bottom: 8px;
+  line-height: 1.25rem; /* 텍스트 세로 정렬 안정화(선택) */
+}
+</style>
