@@ -5,7 +5,7 @@ import { useRouter } from "vue-router";
 import TrainingCard from "@/components/trainee/training/home/TrainingCard.vue";
 
 import logo from "@/assets/images/mascot/logo.png";
-import chatIcon from "@/assets/images/trainee/training/Chat_Circle.svg";
+// chatIcon.svg는 사용 안 함(인라인 SVG로 대체)
 
 import { getTraineeTraining } from "@/composables/api/trainee/mypage/traineeTrainingApi";
 import {
@@ -15,15 +15,12 @@ import {
 
 // state
 const router = useRouter();
-
 const searchQuery = ref("");
 const selectedCategory = ref("전체");
 const categories = ref(["전체"]);
-
 const allTrainingsCache = ref([]);
 const currentSource = ref([]);
 const trainings = ref([]);
-
 const inProgress = ref([]);
 const ipContainer = ref(null);
 
@@ -39,7 +36,6 @@ const mapListItem = (t) => ({
   thumbnailUrl: t.thumbnailUrl,
   isPurchased: t.purchased ?? false,
 });
-
 const mapInProgressItem = (e) => ({
   trainingId: e.trainingId ?? e.training?.trainingId ?? e.training?.id ?? e.id,
   title: e.title ?? e.training?.title ?? "",
@@ -68,25 +64,21 @@ const fetchInProgress = async () => {
     inProgress.value = [];
   }
 };
-
 const fetchAllTrainings = async () => {
   try {
     const res = await getAllTrainings();
     const raw = res?.data?.data ?? [];
     allTrainingsCache.value = raw.map(mapListItem);
-
     const uniq = Array.from(
       new Set(raw.map((t) => t.category).filter(Boolean)),
     );
     categories.value = ["전체", ...uniq];
-
     currentSource.value = [...allTrainingsCache.value];
     applyFilter();
   } catch (err) {
     console.error("🚨 전체 트레이닝 목록 조회 실패:", err);
   }
 };
-
 const fetchSearchResults = async (keyword) => {
   try {
     const res = await searchTrainings(keyword);
@@ -135,7 +127,6 @@ const ipPages = computed(() => {
   for (let i = 0; i < arr.length; i += 2) pages.push(arr.slice(i, i + 2));
   return pages;
 });
-
 const scrollCarousel = (dir = "next") => {
   const el = ipContainer.value;
   if (!el) return;
@@ -150,11 +141,9 @@ const goToDetail = (training) => {
     allTrainingsCache.value.find((t) => t.trainingId === training.trainingId)
       ?.isPurchased ||
     false;
-
   if (purchased) router.push(`/trainee/mypage/training/${training.trainingId}`);
   else router.push(`/training/${training.trainingId}`);
 };
-
 const goToPtPage = () => router.push("/common/pt-history");
 
 // lifecycle
@@ -168,23 +157,33 @@ onMounted(async () => {
   <div
     class="relative min-h-screen bg-realBlack px-4 pb-24 pt-4 font-sans text-white"
   >
-    <!-- 상단 영역: 로고 크게 + 채팅 버튼 '가운데 정렬 & 오른쪽 끝' -->
+    <!-- 상단: 로고 크게 + 채팅 버튼(오른쪽 끝, 세로 가운데). 아이콘=인라인 SVG -->
     <div class="mb-8 flex h-24 items-center justify-between pr-1 md:h-28">
       <img :src="logo" alt="KBULKUP" class="h-24 w-auto md:h-28" />
       <button
         type="button"
         @click="goToPtPage"
         aria-label="채팅"
-        class="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-black shadow-md"
+        class="flex h-10 w-10 items-center justify-center rounded-full bg-background text-primary shadow-md"
       >
-        <img :src="chatIcon" alt="" class="h-5 w-5" />
+        <svg
+          viewBox="0 0 24 24"
+          class="h-6 w-6"
+          fill="currentColor"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <path
+            d="M12 3.5c-4.97 0-9 3.58-9 8 0 1.95.78 3.74 2.09 5.16a1 1 0 0 1 .24.67l-.08 1.84a.75.75 0 0 0 1.03.74l1.98-.79c.2-.08.43-.1.64-.06 1.01.22 2.07.34 3.1.34 4.97 0 9-3.58 9-8s-4.03-8-9-8Zm-6.5 8c0-3.31 3.14-6 7-6s7 2.69 7 6-3.14 6-7 6c-1 0-2.05-.12-3.06-.37-.46-.1-.95-.07-1.39.11l-1.06.43.04-.93c.02-.48-.16-.95-.5-1.31C6.78 13.5 5.5 11.83 5.5 11.5Z"
+          />
+        </svg>
       </button>
     </div>
 
-    <!-- 수강중인 트레이닝 -->
+    <!-- 수강중인 트레이닝 (더 큼) -->
     <section class="mb-8">
       <div class="mb-3 flex items-center justify-between">
-        <h2 class="text-subTitle">수강중인 트레이닝</h2>
+        <h2 class="text-input">수강중인 트레이닝</h2>
         <button
           type="button"
           @click="scrollCarousel('next')"
@@ -197,7 +196,7 @@ onMounted(async () => {
 
       <div
         ref="ipContainer"
-        class="flex snap-x snap-mandatory gap-4 overflow-x-auto scrollbar-hide"
+        class="flex snap-x snap-mandatory gap-5 overflow-x-auto scrollbar-hide"
         style="scroll-behavior: smooth"
       >
         <!-- 페이지(2개 세로) -->
@@ -206,37 +205,38 @@ onMounted(async () => {
           :key="idx"
           class="min-w-full snap-start"
         >
-          <div class="flex flex-col gap-4">
+          <div class="flex flex-col gap-5">
             <div
               v-for="ip in page"
               :key="ip.trainingId"
-              class="rounded-r15 bg-gray-800 px-4 py-4 shadow-md"
+              class="rounded-r15 bg-gray-custom px-5 py-5 shadow-md"
             >
               <button
                 type="button"
-                class="flex w-full items-center gap-3 text-left"
+                class="flex w-full items-center gap-4 text-left"
                 @click="goToDetail(ip)"
               >
                 <img
                   :src="ip.thumbnailUrl"
                   alt=""
-                  class="rounded-r15 h-14 w-14 flex-none object-cover"
+                  class="rounded-r15 h-16 w-16 flex-none object-cover"
                 />
                 <div class="min-w-0 flex-1">
-                  <div class="truncate text-body font-medium">
+                  <div class="text-subTitle2 truncate font-medium">
                     {{ ip.title }}
                   </div>
-
-                  <!-- 진행률: 더 크고(높이 h-3) 덜 둥글게(rounded-md) -->
                   <div
-                    class="mt-2 flex items-center justify-between text-body2 text-gray-200"
+                    class="mt-2 flex items-center justify-between text-body2 text-white"
                   >
                     <span>진행률</span>
-                    <span>{{ Math.round(ip.progress || 0) }}%</span>
+                    <span class="text-body2 text-primary"
+                      >{{ Math.round(ip.progress || 0) }}%</span
+                    >
                   </div>
-                  <div class="mt-1 h-3 w-full rounded-md bg-gray-700">
+                  <!-- 더 두껍게 -->
+                  <div class="mt-1 h-[14px] w-full rounded-md bg-gray-900">
                     <div
-                      class="h-3 rounded-md bg-primary"
+                      class="h-[14px] rounded-md bg-primary"
                       :style="{ width: (ip.progress || 0) + '%' }"
                     />
                   </div>
@@ -248,24 +248,23 @@ onMounted(async () => {
 
         <div
           v-if="!inProgress.length"
-          class="w-full py-3 text-body2 text-gray-500"
+          class="w-full py-3 text-body2 text-gray-600"
         >
           수강중인 트레이닝이 없습니다.
         </div>
       </div>
     </section>
 
-    <!-- 트레이닝 목록 -->
+    <!-- 트레이닝 목록 (모바일 2열 → 넓어지면 3열) -->
     <section class="mb-8">
-      <h2 class="mb-3 text-subTitle">트레이닝 목록</h2>
+      <h2 class="mb-3 text-input">트레이닝 목록</h2>
 
-      <!-- 검색 -->
       <div class="relative mb-4">
         <input
           v-model="searchQuery"
           type="text"
           placeholder="강의를 검색해보세요"
-          class="rounded-pill h-10 w-full bg-gray-800 px-4 text-input placeholder-gray-200 focus:outline-none"
+          class="rounded-pill h-10 w-full bg-gray-900 px-4 text-body2 text-gray-300 placeholder-gray-200 focus:outline-none"
         />
         <img
           src="@/assets/images/search.svg"
@@ -274,12 +273,11 @@ onMounted(async () => {
         />
       </div>
 
-      <!-- 카테고리 칩 -->
       <div class="mb-4 flex gap-2 overflow-x-auto scrollbar-hide">
         <button
           v-for="c in categories"
           :key="c"
-          class="rounded-pill whitespace-nowrap border px-3 py-1 text-body2"
+          class="rounded-pill whitespace-nowrap border px-3 py-1 text-body3"
           :class="
             selectedCategory === c
               ? 'border-transparent bg-primary text-black'
@@ -293,8 +291,8 @@ onMounted(async () => {
       </div>
     </section>
 
-    <!-- 3열 리스트 -->
-    <main class="grid grid-cols-3 gap-4">
+    <!-- 여기서 카드 더 크게 보기 위해 모바일 2열, sm 이상 3열 -->
+    <main class="grid grid-cols-2 gap-5 sm:grid-cols-3">
       <TrainingCard
         v-for="training in trainings"
         :key="training.trainingId"
