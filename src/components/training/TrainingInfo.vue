@@ -42,6 +42,10 @@ const levelBadge = computed(() => {
 
   return { text: level, backgroundColor };
 });
+
+const formattedPrice = (price) => {
+  return (price || 0).toLocaleString() + "원";
+};
 </script>
 
 <template>
@@ -68,26 +72,37 @@ const levelBadge = computed(() => {
         <div class="flex-1 rounded-2xl pt-7 text-white">
           <!-- 제목 -->
           <div
-            class="mb-4 line-clamp-3 overflow-hidden text-subTitle font-bold leading-tight"
+            class="line-clamp-3 overflow-hidden text-subTitle font-bold leading-tight"
             style="display: -webkit-box; -webkit-box-orient: vertical"
           >
             {{ trainingData.title }}
           </div>
 
-          <!-- 수강생 수와 별점 -->
-          <div class="mb-4 flex items-center gap-3 text-body text-gray-300">
+          <!-- 수강생 수와 별점 / 트레이니에게는 트레이너의 프로필 이미지도 보이게 -->
+          <div class="my-2 flex items-center gap-3 text-body text-gray-300">
+            <div
+              v-if="userRole === 'trainee' && trainingData.trainerName"
+              class="flex items-center gap-1 font-bold text-gray-300"
+            >
+              <img
+                :src="trainingData.trainerProfileUrl"
+                :alt="trainingData.trainerName"
+                class="h-7 w-7 rounded-full object-cover"
+              />
+              <span>{{ trainingData.trainerName }}</span>
+            </div>
             <span class="flex items-center gap-1">
               수강생
               {{ trainingData.studentCount?.toLocaleString() || "0" }}명
             </span>
             <span class="flex items-center gap-1">
               <img :src="star" alt="별점" class="h-4 w-4" />
-              {{ trainingData.trainingRating }}
+              {{ trainingData.rating || 0 }}
             </span>
           </div>
 
           <!-- 태그 영역 -->
-          <div class="flex gap-1">
+          <div class="mb-2 flex gap-1">
             <!-- 초급 태그 (초록색) -->
             <BaseTag
               v-if="levelBadge"
@@ -105,25 +120,18 @@ const levelBadge = computed(() => {
             />
 
             <BaseTag
-              :text="'0P'"
+              :text="trainingData.reward || '0P'"
               class="rounded-full bg-gray-600 px-3 py-1.5 text-sm font-medium text-white"
             />
           </div>
+          <div
+            v-if="userRole === 'trainee'"
+            class="flex items-center gap-1 text-subTitle font-bold text-gray-300"
+          >
+            {{ formattedPrice(trainingData.price) }}
+          </div>
         </div>
       </div>
-    </div>
-
-    <!-- 트레이너 정보 (트레이니에게만 표시) -->
-    <div
-      v-if="userRole === 'trainee' && trainingData.trainerName"
-      class="mb-6 flex items-center gap-3 text-gray-300"
-    >
-      <img
-        :src="trainingData.trainerProfileUrl"
-        :alt="trainingData.trainerName"
-        class="h-8 w-8 rounded-full object-cover"
-      />
-      <span>{{ trainingData.trainerName }}</span>
     </div>
   </div>
 </template>

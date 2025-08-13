@@ -7,13 +7,9 @@ import { traineeTrainingPayment } from "@/composables/api/trainee/training/train
 import { getReviews } from "@/composables/api/useReviewApi";
 import LoadingOverlay from "@/components/common/LoadingOverlay.vue";
 
-import profileDefault from "@/assets/images/mascot/profile.png";
-
-import PaymentModal from "@/components/common/PaymentModal.vue";
-import ReviewList from "@/components/common/ReviewList.vue";
-
 import BaseHeader from "@/components/common/BaseHeader.vue";
-import BaseBadge from "@/components/common/BaseBadge.vue";
+import TrainingInfo from "@/components/training/TrainingInfo.vue";
+import PaymentModal from "@/components/common/PaymentModal.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -49,7 +45,7 @@ const loadTrainingDetail = async () => {
       trainerName: raw.trainerNickname || "트레이너명 준비중",
       trainerId: raw.trainerId ?? raw.trainerID,
       trainerProfileUrl: raw.trainerProfileUrl,
-      trainerRating: raw.averageRating,
+      rating: raw.averageRating,
       studentCount: num(
         raw.traineeCount ?? raw.enrolledTraineeCount ?? raw.totalTraineeCount,
       ),
@@ -214,76 +210,16 @@ const handlePayment = async (pg) => {
 </script>
 
 <template>
-  <div
-    class="flex min-h-screen flex-col overflow-y-auto bg-realBlack px-6 pb-20 pt-4"
-  >
+  <div>
+    <BaseHeader title="트레이닝 상세" @back="goBack" />
     <main v-if="trainingData">
-      <BaseHeader title="트레이닝 상세" @back="goBack" />
-
-      <div class="mt-4 flex items-center gap-2">
-        <BaseBadge>{{ trainingData.level }}</BaseBadge>
-        <BaseBadge>{{ trainingData.category }}</BaseBadge>
-        <BaseBadge variant="primary" class="ml-auto">
-          총 리워드 {{ trainingData.reward }}
-        </BaseBadge>
-      </div>
-
-      <div
-        class="mt-6 flex h-48 w-full items-center justify-center overflow-hidden rounded-lg bg-gray-800"
-      >
-        <img
-          :src="trainingData.thumbnailUrl"
-          alt="트레이닝 썸네일"
-          class="h-full w-full object-cover"
+      <div>
+        <TrainingInfo
+          v-if="trainingData"
+          :training-data="trainingData"
+          user-role="trainee"
         />
       </div>
-
-      <div class="mt-6 flex items-center justify-between">
-        <div
-          @click="goToTrainerPage"
-          class="flex cursor-pointer items-center gap-3 rounded-lg p-2 transition-colors hover:bg-gray-800"
-        >
-          <div
-            class="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-700"
-          >
-            <img
-              v-if="trainingData.trainerProfileUrl"
-              :src="trainingData.trainerProfileUrl"
-              alt="프로필"
-              class="h-full w-full object-cover"
-            />
-            <img
-              v-else
-              :src="profileDefault"
-              alt="기본 프로필"
-              class="h-full w-full"
-            />
-          </div>
-          <p class="font-bold text-white">{{ trainingData.trainerName }}</p>
-        </div>
-
-        <div class="text-caption flex items-center gap-2 text-gray-200">
-          <div class="flex items-center gap-1">
-            <img src="@/assets/images/star.svg" alt="별점" class="h-3 w-3" />
-            <span>{{ trainingData.trainerRating }}</span>
-          </div>
-          <span>|</span>
-          <span>{{ trainingData.studentCount }}명 수강</span>
-          <span>|</span>
-          <span>{{ trainingData.totalWeeks }}주</span>
-        </div>
-      </div>
-
-      <h2 class="text-heading mt-5 font-bold text-white">
-        {{ trainingData.title }}
-      </h2>
-      <p class="mt-2 text-body text-gray-300">{{ trainingData.description }}</p>
-
-      <div class="mb-4 mt-8 h-px bg-gray-800"></div>
-      <ReviewList :reviews="reviewList" />
-      <div class="my-6 h-px bg-gray-800"></div>
-
-      <div class="text-title font-bold text-white">{{ formattedPrice }}원</div>
 
       <div class="mt-12 pb-8">
         <button
