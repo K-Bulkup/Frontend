@@ -65,7 +65,7 @@ onMounted(async () => {
       thumbnailUrl: detail.thumbnailUrl || "",
       trainerProfileUrl: detail.trainerProfileImage,
       trainerName: detail.trainerName,
-      trainerRating: detail.trainerRating,
+      trainingRating: detail.trainingRating,
       studentCount: num(detail.enrolledTraineeCount ?? detail.traineeCount),
       totalWeeks: 4,
     };
@@ -161,10 +161,10 @@ onMounted(async () => {
         <p class="font-bold text-white">{{ trainingData.trainerName }}</p>
       </div>
 
-      <div class="flex items-center gap-2 text-caption text-gray-200">
+      <div class="text-caption flex items-center gap-2 text-gray-200">
         <div class="flex items-center gap-1">
           <img src="@/assets/images/star.svg" alt="별점" class="h-3 w-3" />
-          <span>{{ trainingData.trainerRating }}</span>
+          <span>{{ trainingData.trainingRating }}</span>
         </div>
         <span>|</span>
         <span>{{ trainingData.studentCount }}명 수강</span>
