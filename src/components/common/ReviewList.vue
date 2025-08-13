@@ -19,7 +19,7 @@ defineProps({
 
 <template>
   <div v-if="reviews && reviews.length > 0">
-    <div class="mb-6 flex items-end justify-between">
+    <div class="mb-6 flex items-end justify-between px-2">
       <span class="text-5xl font-bold text-gray-300">{{
         averageRating.toFixed(1)
       }}</span>
