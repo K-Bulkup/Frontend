@@ -161,8 +161,8 @@ onMounted(async () => {
           <div class="flex items-start justify-between">
             <div class="flex items-center space-x-3">
               <img
-                src="@/assets/images/kbulkup-logo.png"
-                alt="kbulkup-logo"
+                src="@/assets/images/purse.png"
+                alt="purse"
                 class="h-10 w-10"
               />
               <div>
@@ -191,9 +191,9 @@ onMounted(async () => {
 
           <div class="mt-4 flex items-center space-x-3">
             <img
-              src="@/assets/images/kbulkup-logo.png"
-              alt="keumyook"
-              class="h-kbulkup-logo w-10"
+              src="@/assets/images/receipt.png"
+              alt="receipt"
+              class="h-10 w-10"
             />
             <div>
               <p class="text-caption text-gray-300">{{ currentMonthLabel }}</p>
@@ -353,8 +353,8 @@ onMounted(async () => {
           <div class="flex items-start justify-between">
             <div class="flex items-center space-x-3">
               <img
-                src="@/assets/images/kbulkup-logo.png"
-                alt="kbulkup-logo"
+                src="@/assets/images/purse.png"
+                alt="purse"
                 class="h-10 w-10"
               />
               <div>
@@ -380,8 +380,8 @@ onMounted(async () => {
 
           <div class="mt-4 flex items-center space-x-3">
             <img
-              src="@/assets/images/kbulkup-logo.png"
-              alt="kbulkup-logo"
+              src="@/assets/images/receipt.png"
+              alt="receipt"
               class="h-10 w-10"
             />
             <div>
