@@ -5,6 +5,7 @@ import { useTraineeReview } from "@/composables/review/useFetchReview.js";
 import { useSubmitReview } from "@/composables/review/useCreateReview.js";
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseTextarea from "@/components/common/BaseTextarea.vue";
+import BaseButton from "@/components/common/BaseButton.vue";
 import ReviewSuccessModal from "@/components/common/ConnectSuccessModal.vue";
 import ReviewFailureModal from "@/components/common/ConnectFailureModal.vue";
 
@@ -55,80 +56,68 @@ onMounted(async () => {
   await getTraineeReview(trainingId);
 });
 </script>
+
 <template>
-  <div class="min-h-screen bg-realBlack text-white">
-    <!-- Header -->
-    <BaseHeader title="리뷰 작성" @back="handleBack" class="mt-4" />
+  <div class="flex min-h-screen flex-col px-7 pb-20 pt-4">
+    <BaseHeader title="리뷰 작성" @back="handleBack" />
 
-    <!-- Course Info Card -->
-    <div class="mx-7 mb-6 rounded-xl border border-gray-100 bg-black p-6">
-      <h3 class="text-center text-body font-semibold text-white">
-        {{ reviewData?.title || "강의 정보를 불러오는 중..." }}
-      </h3>
-    </div>
+    <div class="flex-grow">
+      <div class="mb-6">
+        <h2 class="mb-6 mt-6 text-subTitle font-semibold">
+          {{ reviewData?.title }}
+        </h2>
 
-    <!-- Rating Section -->
-    <div class="mx-7 mb-6">
-      <h2 class="mb-3 text-heading font-semibold text-white">
-        강의는 어떠셨나요?
-      </h2>
-      <p class="mb-6 text-subtext text-gray-200">별점을 선택해주세요</p>
+        <h2 class="mb-3 text-body font-semibold">트레이닝은 어떠셨나요?</h2>
+        <p class="mb-6 text-input text-gray-200">별점을 선택해주세요</p>
 
-      <!-- Star Rating -->
-      <div class="mb-8 flex justify-center gap-4">
-        <button
-          v-for="star in 5"
-          :key="star"
-          @click="setRating(star)"
-          class="transition-colors duration-200"
-        >
-          <svg
-            class="h-6 w-6"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+        <div class="mb-8 flex justify-center gap-4">
+          <button
+            v-for="star in 5"
+            :key="star"
+            @click="setRating(star)"
+            class="transition-colors duration-200"
           >
-            <path
-              d="M12 2L15.09 8.26L22 9L17 13.74L18.18 20.42L12 17.27L5.82 20.42L7 13.74L2 9L8.91 8.26L12 2Z"
-              :stroke="star <= rating ? '#FBE081' : '#D0D0D0'"
-              :fill="star <= rating ? '#FBE081' : 'none'"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </button>
-      </div>
+            <svg
+              class="h-6 w-6"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 2L15.09 8.26L22 9L17 13.74L18.18 20.42L12 17.27L5.82 20.42L7 13.74L2 9L8.91 8.26L12 2Z"
+                :stroke="star <= rating ? '#FFD700' : '#D0D0D0'"
+                :fill="star <= rating ? '#FFD700' : 'none'"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
 
-      <!-- Review Section -->
-      <div class="mt-8">
-        <BaseTextarea
-          v-model="reviewText"
-          label="리뷰를 작성해주세요"
-          description="강의에 대한 솔직한 후기를 남겨주세요"
-          placeholder="리뷰를 입력해주세요..."
-          :maxlength="500"
-          :minlength="10"
-          :rows="5"
-        />
+        <div class="mt-14">
+          <BaseTextarea
+            v-model="reviewText"
+            description="강의에 대한 솔직한 후기를 남겨주세요"
+            placeholder="리뷰를 입력해주세요..."
+            :maxlength="500"
+            :minlength="10"
+            :rows="5"
+          />
+        </div>
       </div>
     </div>
 
-    <!-- Submit Button -->
-    <div class="mx-7 mt-8">
-      <button
+    <div class="mt-10">
+      <BaseButton
         @click="submitReview"
-        :disabled="!isFormValid"
-        :class="[
-          'w-full rounded-xl py-3 text-body font-semibold transition-colors duration-200',
-          isFormValid
-            ? 'border border-gray-100 bg-black text-white hover:opacity-80'
-            : 'cursor-not-allowed border border-gray-700 bg-gray-700 text-gray-200',
-        ]"
+        :isDisabled="!isFormValid"
+        class="w-full"
       >
         리뷰 작성 완료
-      </button>
+      </BaseButton>
     </div>
+
     <ReviewSuccessModal
       v-if="isSuccessModalVisible"
       title="리뷰가 등록되었습니다"
