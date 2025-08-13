@@ -106,10 +106,13 @@ onMounted(async () => {
     </div>
 
     <!-- 등록 버튼 -->
-    <div class="fixed bottom-20 right-6 z-50">
+    <div
+      class="fixed bottom-[120px] z-50"
+      style="right: max(1rem, calc(50vw - 180px))"
+    >
       <button
         @click="handleCreateQuestion"
-        class="h-15 w-15 flex items-center justify-center rounded-full bg-gray-900 shadow-lg"
+        class="flex h-14 w-14 items-center justify-center rounded-full bg-gray-800 shadow-lg ring-1 ring-black/20 transition-transform hover:scale-105 active:scale-95"
         style="filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.25))"
       >
         <svg class="h-8 w-8 text-primary" viewBox="0 0 30 30" fill="none">
