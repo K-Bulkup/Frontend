@@ -5,6 +5,7 @@ import { getRoutineDetail } from "@/composables/api/trainee/training/routineDeta
 import { submitRoutineResult } from "@/composables/api/trainee/training/routineResultAPI";
 import { useEnrollmentStore } from "@/stores/enrollment";
 import { useRoutineLockStore } from "@/stores/routineLock";
+import { useAuthStore } from "@/stores/auth";
 
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import RoutineChat from "@/components/trainee/training/RoutineChat.vue";
@@ -24,6 +25,7 @@ const router = useRouter();
 const route = useRoute();
 const enrollmentStore = useEnrollmentStore();
 const routineLock = useRoutineLockStore();
+const authStore = useAuthStore();
 
 const currentRoutine = ref(null);
 const certificationPhotos = ref([]);
@@ -37,7 +39,50 @@ const isEntryMode = computed(
   () => !!route.query.enrollmentId && !isLocked.value,
 );
 
-const routineType = computed(() => currentRoutine.value?.type || "SUBJECTIVE");
+// ✅ 타입 정규화(영문/한글/숫자코드/변형 전부 흡수)
+const normalizeRoutineType = (t) => {
+  const s = String(t ?? "")
+    .trim()
+    .toUpperCase();
+
+  // 한글 우선 처리
+  if (/주관/.test(s)) return "SUBJECTIVE";
+  if (/^OX$|TRUE|FALSE|T\/F|O\/X/.test(s)) return "OX";
+  // PHOTO(=사진 인증)도 실천형으로 취급
+  if (
+    /실천|행동|실습|연습|PRACT|PRACTICE|PRACTICAL|ACTION|TASK|EXER(CISE)?|ACTIVITY|BEHAVIOR|PHOTO|IMAGE|PICTURE|UPLOAD|EVIDENCE/.test(
+      s,
+    )
+  )
+    return "PRACTICE";
+
+  // 영문/코드 처리
+  if (/(SUBJ|SUBJECT|SUBJECTIVE|ESSAY|TEXT|SHORT_?ANSWER)/.test(s))
+    return "SUBJECTIVE";
+  if (/^(OX|TRUE_FALSE|TF|BINARY)$/.test(s)) return "OX";
+  // PRACTICE 변형을 더 포괄
+  if (
+    /실천|행동|실습|연습|PRACT|PRACTICE|PRACTICAL|ACTION|TASK|EXER(CISE)?|ACTIVITY|BEHAVIOR/.test(
+      s,
+    )
+  )
+    return "PRACTICE";
+
+  // 숫자 코드(예: 1=주관식, 2=OX, 3=실천형 가정)
+  const n = Number(s);
+  if (!Number.isNaN(n)) {
+    if (n === 1) return "SUBJECTIVE";
+    if (n === 2) return "OX";
+    if (n === 3) return "PRACTICE";
+  }
+
+  // 모르면 안전하게 주관식
+  return "SUBJECTIVE";
+};
+
+const routineType = computed(() =>
+  normalizeRoutineType(currentRoutine.value?.type ?? "SUBJECTIVE"),
+);
 const isSubjective = computed(() => routineType.value === "SUBJECTIVE");
 const isOX = computed(() => routineType.value === "OX");
 const isPractice = computed(() => routineType.value === "PRACTICE");
@@ -53,15 +98,24 @@ const routineGroup = computed(() => {
   if (/유산소/.test(raw)) return "유산소";
   return "스트레칭";
 });
-const groupIcon = computed(() => {
-  switch (routineGroup.value) {
-    case "근력":
-      return IconStrength;
-    case "유산소":
-      return IconCardio;
-    default:
-      return IconStretch;
-  }
+const groupIcon = computed(() =>
+  routineGroup.value === "근력"
+    ? IconStrength
+    : routineGroup.value === "유산소"
+      ? IconCardio
+      : IconStretch,
+);
+
+// v2 스코프 컨텍스트
+const userKey = computed(() =>
+  String(authStore.userId ?? authStore.user?.userId ?? "anon"),
+);
+const scopeCtx = (routineId) => ({
+  routineId: String(routineId),
+  userId: userKey.value,
+  trainingId: String(route.params.trainingId),
+  enrollmentId:
+    Number(route.query.enrollmentId || enrollmentStore.enrollmentId) || null,
 });
 
 const loadRoutineDetail = async () => {
@@ -70,7 +124,7 @@ const loadRoutineDetail = async () => {
     const raw = res.data;
 
     const id = String(route.params.routineId);
-    const localLocked = routineLock.isLocked(id);
+    const localLocked = routineLock.isLocked(scopeCtx(id));
 
     currentRoutine.value = {
       id,
@@ -80,9 +134,8 @@ const loadRoutineDetail = async () => {
       category: raw.category,
       reward: raw.routineScore,
       videoUrl: raw.routineVideoUrl || null,
-      type: String(
-        raw.routineType ?? route.query.type ?? "SUBJECTIVE",
-      ).toUpperCase(),
+      // ⛔ 쿼리 폴백 제거: 서버 값만 신뢰
+      type: normalizeRoutineType(raw?.routineType ?? raw?.type),
       completed: localLocked,
     };
     isLocked.value = localLocked;
@@ -150,8 +203,10 @@ const handleCertificationSubmit = async (submission) => {
 
     submissionStatus.value = result === "PASS" ? "success" : "failure";
 
+    const ctx = scopeCtx(id);
+
     if (result === "PASS") {
-      routineLock.lock(id);
+      routineLock.lock(ctx); // v2 스코프 잠금
       isLocked.value = true;
       currentRoutine.value.completed = true;
       acquiredReward.value = currentRoutine.value.reward;
@@ -161,7 +216,7 @@ const handleCertificationSubmit = async (submission) => {
         router.replace({ path: route.path, query: rest });
       }
     } else {
-      routineLock.unlock(id);
+      routineLock.unlock(ctx);
       isLocked.value = false;
       currentRoutine.value.completed = false;
       acquiredReward.value = 0;
@@ -204,9 +259,8 @@ const retrySubmission = () => {
             </h2>
             <span
               class="rounded-full bg-[#3A3A3A] px-2 py-[2px] text-[11px] leading-none text-white"
+              >{{ typeLabel }}</span
             >
-              {{ typeLabel }}
-            </span>
           </div>
           <p class="text-body text-gray-300">
             {{ currentRoutine.description }}
@@ -234,12 +288,20 @@ const retrySubmission = () => {
             @submit="handleCertificationSubmit"
           />
           <RoutineTypePractice
+            v-else-if="isPractice"
+            :minimal="true"
+            :loading="isLoading"
+            @submit="handleCertificationSubmit"
+          />
+          <!-- 모르는 타입은 주관식 폴백 -->
+          <RoutineTypeSubjective
             v-else
             :minimal="true"
             :loading="isLoading"
             @submit="handleCertificationSubmit"
           />
         </div>
+
         <div
           v-else-if="isLocked"
           class="bg-gray-custom mt-8 rounded-xl px-4 py-5 text-center text-gray-500"
@@ -248,16 +310,14 @@ const retrySubmission = () => {
         </div>
       </template>
 
-      <!-- 2) 영상 없는 케이스: 배경 풀블랙 -->
+      <!-- 2) 영상 없는 케이스 -->
       <template v-else>
-        <!-- 여기만 변경: bg-black/70 → bg-realBlack -->
         <div
           class="fixed inset-0 z-20 flex items-center justify-center bg-realBlack px-6"
         >
           <div
             class="w-full max-w-[340px] rounded-[16px] bg-[#1A1A1A] p-5 shadow-[0_12px_32px_rgba(0,0,0,0.6)]"
           >
-            <!-- 상단 -->
             <div class="flex items-start gap-3">
               <img
                 :src="groupIcon"
@@ -288,10 +348,8 @@ const retrySubmission = () => {
               </button>
             </div>
 
-            <!-- 설명 -->
             <p class="mt-4 text-gray-300">{{ currentRoutine.description }}</p>
 
-            <!-- 입력폼 (라벨 없음) -->
             <div v-if="isEntryMode" class="mt-6 space-y-6">
               <RoutineTypeSubjective
                 v-if="isSubjective"
@@ -306,6 +364,12 @@ const retrySubmission = () => {
                 @submit="handleCertificationSubmit"
               />
               <RoutineTypePractice
+                v-else-if="isPractice"
+                :minimal="true"
+                :loading="isLoading"
+                @submit="handleCertificationSubmit"
+              />
+              <RoutineTypeSubjective
                 v-else
                 :minimal="true"
                 :loading="isLoading"
@@ -323,7 +387,6 @@ const retrySubmission = () => {
         </div>
       </template>
 
-      <!-- 인증 채팅 피드 -->
       <div
         v-if="certificationPhotos.length"
         class="mt-8 flex flex-col items-end space-y-3"
