@@ -77,11 +77,12 @@ const levelBadge = computed(() => {
           <!-- 수강생 수와 별점 -->
           <div class="mb-4 flex items-center gap-3 text-body text-gray-300">
             <span class="flex items-center gap-1">
-              수강생 {{ trainingData.studentCount?.toLocaleString() || "0" }}
+              수강생
+              {{ trainingData.studentCount?.toLocaleString() || "0" }}명
             </span>
             <span class="flex items-center gap-1">
               <img :src="star" alt="별점" class="h-4 w-4" />
-              {{ trainingData.trainerRating || "4.8" }}
+              {{ trainingData.trainingRating }}
             </span>
           </div>
 
