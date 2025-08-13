@@ -11,45 +11,55 @@ import QnAList from "@/components/training/QnAList.vue";
 const router = useRouter();
 const route = useRoute();
 const num = (v) => (v == null ? 0 : Number(v));
-const trainingId = ref(route.params.trainingId);
+// const trainingId = ref(route.params.trainingId);
 const trainingData = ref(null); // ✅ TrainingInfo용 데이터
 const courseTitle = ref("");
 
 const qnaData = ref([]);
 
-const getQnAList = async () => {
-  try {
-    // ① API 동시 호출
-    const [qnaResp, detailResp] = await Promise.all([
-      getTrainingQnAListDetail(trainingId.value),
-      // getTrainerTrainingDetail(trainingId.value),
-    ]);
+const handleBack = () => router.back();
 
-    // ② QnA 응답 파싱
+const handleCreateQuestion = () => {
+  router.push({
+    path: `/trainee/mypage/training/${trainingId.value}/question`,
+    query: { courseTitle: courseTitle.value },
+  });
+};
+
+onMounted(async () => {
+  const trainingId = route.params.trainingId;
+
+  try {
+    // ✅ 트레이닝 상세
+    const { data: res } = await getTrainerTrainingDetail(trainingId);
+    const detail = res.data;
+
+    console.log("트레이닝 detail", detail);
+
+    trainingData.value = {
+      level: detail.difficulty,
+      category: detail.category,
+      reward: `${detail.totalReward}P`,
+      title: detail.title,
+      description: detail.description,
+      thumbnailUrl: detail.thumbnailUrl || "",
+      trainerProfileUrl: detail.trainerProfileImage,
+      trainerName: detail.trainerName,
+      trainingRating: detail.trainingRating,
+      studentCount: num(detail.enrolledTraineeCount ?? detail.traineeCount),
+      totalWeeks: 4,
+    };
+  } catch (e) {
+    console.error("트레이닝 상세 오류:", e);
+  }
+
+  try {
+    const qnaResp = await getTrainingQnAListDetail(trainingId);
+
     const body = qnaResp?.data?.data ?? {};
     const rawList = body.trainingQnADetails ?? [];
     courseTitle.value = body.trainingTitle ?? "";
-    console.log("body", body.value);
 
-    // ③ TrainingInfo용 데이터 세팅
-    const detail = detailResp?.data ?? {};
-    trainingData.value = {
-      title: detail.title ?? body.trainingTitle ?? "제목 없음",
-      description: detail.description ?? "", // TrainingInfo validator 통과용
-      thumbnailUrl: detail.thumbnailUrl || "",
-      trainerProfileUrl: detail.trainerProfileImage || "",
-      trainerName: detail.trainerName || "",
-      trainingRating: detail.trainingRating ?? body.trainingRating ?? 4.8,
-      level: detail.difficulty ?? "초급",
-      category: detail.category ?? "",
-      reward: detail.totalReward != null ? `${detail.totalReward}P` : "0P",
-      studentCount: num(
-        detail.enrolledTraineeCount ?? detail.traineeCount ?? body.traineeCount,
-      ),
-      totalWeeks: detail.totalWeeks ?? 4,
-    };
-
-    // ④ QnA 리스트 매핑
     const fmt = (arr) => {
       if (!arr || arr.length < 3) return "";
       const [yyyy, mm, dd, hh = 0, mi = 0] = arr;
@@ -72,18 +82,7 @@ const getQnAList = async () => {
   } catch (e) {
     console.error("❌ Q&A 리스트 조회 실패:", e);
   }
-};
-
-const handleBack = () => router.back();
-
-const handleCreateQuestion = () => {
-  router.push({
-    path: `/trainee/mypage/training/${trainingId.value}/question`,
-    query: { courseTitle: courseTitle.value },
-  });
-};
-
-onMounted(getQnAList);
+});
 </script>
 
 <template>
@@ -93,7 +92,7 @@ onMounted(getQnAList);
 
     <!-- TrainingInfo: 데이터 준비되면 표시 -->
     <div v-if="trainingData">
-      <TrainingInfo :training-data="trainingData" user-role="trainee" />
+      <TrainingInfo :training-data="trainingData" user-role="trainer" />
     </div>
 
     <!-- ✅ 중간 구분선 -->
