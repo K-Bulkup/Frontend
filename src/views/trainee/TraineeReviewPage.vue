@@ -5,7 +5,7 @@ import { useTraineeReview } from "@/composables/review/useFetchReview.js";
 import { useSubmitReview } from "@/composables/review/useCreateReview.js";
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseTextarea from "@/components/common/BaseTextarea.vue";
-import ReviewSuccessModal from "@/components/common/ConnectSuccessModal.vue";
+import ReviewSuccessModal from "@/components/common/ActionStateModal.vue";
 import ReviewFailureModal from "@/components/common/ConnectFailureModal.vue";
 
 const router = useRouter();
@@ -69,10 +69,10 @@ onMounted(async () => {
 
     <!-- Rating Section -->
     <div class="mx-7 mb-6">
-      <h2 class="mb-3 text-heading font-semibold text-white">
+      <h2 class="text-heading mb-3 font-semibold text-white">
         강의는 어떠셨나요?
       </h2>
-      <p class="mb-6 text-subtext text-gray-200">별점을 선택해주세요</p>
+      <p class="text-subtext mb-6 text-gray-200">별점을 선택해주세요</p>
 
       <!-- Star Rating -->
       <div class="mb-8 flex justify-center gap-4">

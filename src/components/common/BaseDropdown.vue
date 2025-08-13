@@ -33,6 +33,7 @@ const emit = defineEmits(["update:modelValue"]);
 const isDropdownOpen = ref(false);
 const selectedValue = ref(props.modelValue);
 const hoveredOption = ref(null);
+const clickedOption = ref(null); // 클릭된 옵션 상태 추가
 
 // modelValue 변경 감지
 watch(
@@ -49,13 +50,27 @@ watch(selectedValue, (newValue) => {
 
 const toggleDropdown = () => {
   isDropdownOpen.value = !isDropdownOpen.value;
+
+  // 드롭다운이 열릴 때 클릭된 상태 초기화
+  if (isDropdownOpen.value) {
+    clickedOption.value = null;
+  }
 };
 
 const handleOptionSelect = (option) => {
+  // 클릭하자마자 바로 색상 변경
+  const optionValue = getOptionValue(option);
+  clickedOption.value = optionValue;
+
   // 객체 배열인 경우 valueKey에 해당하는 값을, 아니면 옵션 자체를 사용
   const value = props.valueKey ? option[props.valueKey] : option;
-  selectedValue.value = value;
-  isDropdownOpen.value = false;
+
+  // 약간의 지연 후 값 업데이트 및 드롭다운 닫기
+  setTimeout(() => {
+    selectedValue.value = value;
+    isDropdownOpen.value = false;
+    clickedOption.value = null;
+  }, 150);
 };
 
 // 옵션의 표시 텍스트를 반환하는 함수
@@ -91,9 +106,9 @@ const isPlaceholder = computed(() => {
 </script>
 
 <template>
-  <div class="w-full px-4 pb-3 pt-2">
+  <div class="w-full px-4 pt-2">
     <!-- 라벨 -->
-    <label class="mb-2 block text-sm text-white">
+    <label class="mb-2 block pl-5 text-input text-gray-300">
       {{ label }}
     </label>
 
@@ -101,17 +116,17 @@ const isPlaceholder = computed(() => {
       <!-- 드롭다운 버튼 -->
       <button
         @click="toggleDropdown"
-        class="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-100 px-4 py-3 text-left focus:outline-none"
-        style="width: 360px; height: 60px"
+        class="flex items-center justify-between rounded-xl bg-gray-900 px-4 py-3 text-left focus:outline-none"
+        style="width: 332px; height: 64px"
       >
         <span
-          :class="isPlaceholder ? 'text-gray-500' : 'text-black'"
+          :class="isPlaceholder ? 'text-gray-500' : 'text-gray-300'"
           class="text-sm"
         >
           {{ displayValue }}
         </span>
         <svg
-          class="h-5 w-5 text-gray-400 transition-transform"
+          class="h-5 w-5 text-gray-300 transition-transform"
           :class="{ 'rotate-180': isDropdownOpen }"
           fill="none"
           stroke="currentColor"
@@ -137,8 +152,8 @@ const isPlaceholder = computed(() => {
       >
         <div
           v-if="isDropdownOpen"
-          class="absolute left-0 top-full z-10 mt-1 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg"
-          style="width: 360px"
+          class="absolute top-full z-10 mt-1 overflow-hidden rounded-xl bg-gray-900 shadow-lg"
+          style="width: 332px"
         >
           <button
             v-for="(option, index) in options"
@@ -146,21 +161,17 @@ const isPlaceholder = computed(() => {
             @click="handleOptionSelect(option)"
             @mouseenter="hoveredOption = getOptionValue(option)"
             @mouseleave="hoveredOption = null"
-            class="flex items-center px-4 py-3 text-left text-sm transition-colors focus:outline-none"
-            style="width: 360px; height: 60px"
+            class="flex items-center justify-center rounded-2xl px-4 py-3 text-center text-body transition-colors"
+            style="width: 332px; height: 80px"
             :class="[
-              // 선택된 상태
-              getOptionValue(option) === selectedValue
-                ? 'bg-primary font-medium text-black'
+              // 클릭된 상태 (최우선)
+              clickedOption === getOptionValue(option)
+                ? 'bg-primary text-black'
                 : // hover 상태
                   hoveredOption === getOptionValue(option)
-                  ? 'bg-gray-200 text-black'
+                  ? 'bg-primary/10 text-white'
                   : // 기본 상태
-                    'bg-white text-black',
-              // active 스타일
-              getOptionValue(option) !== selectedValue
-                ? 'active:bg-primary active:text-black'
-                : '',
+                    'bg-gray-900 text-white',
             ]"
           >
             {{ getOptionDisplay(option) }}

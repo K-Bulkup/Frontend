@@ -3,7 +3,7 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAccountConnect } from "@/composables/asset/useCreateAsset";
 import { awaitUserReady } from "@/composables/user/awaitUserReady";
-import ConnectSuccessModal from "@/components/common/ConnectSuccessModal.vue";
+import ConnectSuccessModal from "@/components/common/ActionStateModal.vue";
 import ConnectFailureModal from "@/components/common/ConnectFailureModal.vue";
 import LoadingOverlay from "@/components/common/LoadingOverlay.vue";
 import BaseHeader from "@/components/common/BaseHeader.vue";
