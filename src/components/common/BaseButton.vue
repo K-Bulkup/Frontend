@@ -13,7 +13,7 @@ const emit = defineEmits(["click"]);
     @click="emit('click', $event)"
     :class="[
       // 크기 & 배치
-      'w-btn h-btn mx-auto block rounded-xl font-semibold',
+      'mx-auto block h-btn w-btn rounded-xl font-semibold',
       // 내용 중앙 정렬
       'flex items-center justify-center gap-2 text-center',
       // 색/상태

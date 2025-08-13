@@ -7,7 +7,7 @@ import BaseButton from "@/components/common/BaseButton.vue";
 import BaseInput from "@/components/common/BaseInput.vue";
 import BaseSelectRole from "@/components/common/BaseSelectRole.vue";
 import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
-import ConnectSuccessModal from "@/components/common/ConnectSuccessModal.vue";
+import ConnectSuccessModal from "@/components/common/ActionStateModal.vue";
 import ConnectFailureModal from "@/components/common/ConnectFailureModal.vue";
 import BaseBottomIllustration from "@/components/common/BaseBottomIllustration.vue";
 

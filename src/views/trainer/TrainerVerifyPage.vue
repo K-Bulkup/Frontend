@@ -12,13 +12,12 @@ const handleBack = () => {
 </script>
 
 <template>
-  <BaseHeader title="자격증 검증" @back="handleBack" />
+  <BaseHeader title="자격 인증" @back="handleBack" />
 
   <!-- 페이지 설명 -->
   <BaseStatusMessage
     title="자격 정보를 입력해주세요"
     subtitle="합격증 번호와 발급 번호를 입력해주세요."
   />
-
   <CertificatesInfo />
 </template>
