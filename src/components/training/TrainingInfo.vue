@@ -83,7 +83,7 @@ const formattedPrice = (price) => {
         <div class="flex-1 rounded-2xl pt-7 text-white">
           <!-- 제목 -->
           <div
-            class="line-clamp-3 overflow-hidden text-subTitle font-bold leading-tight"
+            class="line-clamp-2 overflow-hidden text-subTitle font-bold leading-tight"
             style="display: -webkit-box; -webkit-box-orient: vertical"
           >
             {{ trainingData.title }}
