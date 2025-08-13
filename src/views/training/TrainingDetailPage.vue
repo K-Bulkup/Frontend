@@ -234,7 +234,7 @@ const handlePayment = async (pg) => {
         user-role="trainee"
       />
     </div>
-    <div class="m-3">
+    <div class="m-3 h-[430px]">
       <BaseTabNavigation
         :tabs="tabs"
         :default-tab="'details'"
@@ -263,16 +263,14 @@ const handlePayment = async (pg) => {
         </template>
       </BaseTabNavigation>
     </div>
-    <div class="fixed bottom-24 left-0 right-0">
-      <div class="flex justify-center">
-        <BaseButton
-          @click="proceedToPayment"
-          :disabled="isLoading"
-          class="h-14 rounded-xl text-subTitle font-bold"
-        >
-          결제하기
-        </BaseButton>
-      </div>
+    <div>
+      <BaseButton
+        @click="proceedToPayment"
+        :disabled="isLoading"
+        class="h-14 w-full max-w-sm rounded-xl px-2 text-subTitle font-bold"
+      >
+        결제하기
+      </BaseButton>
     </div>
 
     <PaymentModal
