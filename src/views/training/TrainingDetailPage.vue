@@ -9,6 +9,7 @@ import LoadingOverlay from "@/components/common/LoadingOverlay.vue";
 
 import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseButton from "@/components/common/BaseButton.vue";
+import BaseTabNavigation from "@/components/common/BaseTabNavigation.vue";
 
 import TrainingInfo from "@/components/training/TrainingInfo.vue";
 import PaymentModal from "@/components/common/PaymentModal.vue";
@@ -21,10 +22,22 @@ const trainingData = ref(null);
 const reviewList = ref([]);
 const averageRating = ref(0);
 const totalReviews = ref(0);
+const activeTab = ref("details"); //탭 변경
 
 const modalVisible = ref(false);
 const isLoading = ref(false);
 const num = (v) => (v == null ? 0 : Number(v));
+
+// 탭 변경 핸들러
+const handleTabChange = (tabId) => {
+  activeTab.value = tabId;
+};
+
+// 탭 목록 정의
+const tabs = [
+  { id: "details", label: "상세 설명" },
+  { id: "reviews", label: "리뷰" },
+];
 
 // ✅ 여러 형태 대비: user?.userId | user?.id | store.userId | localStorage
 const resolvedUserId = computed(() => {
@@ -220,15 +233,45 @@ const handlePayment = async (pg) => {
         user-role="trainee"
       />
     </div>
-
-    <div class="mt-12 pb-8">
-      <BaseButton
-        @click="proceedToPayment"
-        :disabled="isLoading"
-        class="h-14 w-full rounded-xl text-subTitle font-bold"
+    <div class="m-3">
+      <BaseTabNavigation
+        :tabs="tabs"
+        :default-tab="'details'"
+        @tab-change="handleTabChange"
       >
-        결제하기
-      </BaseButton>
+        <template #details>
+          <div>
+            <!-- 트레이닝 설명 -->
+            <div v-if="trainingData?.description" class="mx-2 mb-6">
+              <div class="border-l-4p-4 mb-4 rounded-lg">
+                <p class="text-body leading-relaxed text-gray-300">
+                  {{ trainingData.description }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- 리뷰 탭 컨텐츠 -->
+        <template #reviews>
+          <ReviewList
+            :average-rating="averageRating"
+            :total-reviews="totalReviews"
+            :reviews="reviewList"
+          />
+        </template>
+      </BaseTabNavigation>
+    </div>
+    <div class="fixed bottom-24 left-0 right-0">
+      <div class="flex justify-center">
+        <BaseButton
+          @click="proceedToPayment"
+          :disabled="isLoading"
+          class="h-14 rounded-xl text-subTitle font-bold"
+        >
+          결제하기
+        </BaseButton>
+      </div>
     </div>
 
     <PaymentModal

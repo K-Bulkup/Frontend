@@ -51,7 +51,7 @@ watch(
         :key="tab.id"
         @click="setActiveTab(tab.id)"
         :class="[
-          'flex-1 px-6 py-4 text-center text-sm font-medium transition-colors duration-200',
+          'font-body2 flex-1 px-6 py-4 text-center text-sm transition-colors duration-200',
           activeTab === tab.id
             ? 'text-primary'
             : 'text-gray-300 hover:text-primary',
@@ -61,7 +61,7 @@ watch(
       </button>
     </div>
     <!-- 탭 컨텐츠 -->
-    <div class="mt-4 min-h-screen">
+    <div class="mt-4 max-h-96 overflow-y-auto scrollbar-hide">
       <template v-for="tab in tabs" :key="`content-${tab.id}`">
         <div v-if="activeTab === tab.id">
           <slot :name="tab.id" :tab="tab" :active-tab="activeTab">
