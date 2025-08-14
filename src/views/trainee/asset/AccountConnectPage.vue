@@ -155,11 +155,11 @@ const handleSuccessClose = () => {
     <div class="mb-8 rounded-xl bg-gray-900 p-5">
       <div class="mb-4 flex items-center">
         <img
-          src="@/assets/images/kbulkup-logo.png"
-          alt="kbulkup-logo"
-          class="h-10 w-10"
+          src="@/assets/images/shiledCheck.png"
+          alt="shiledCheck"
+          class="h-10 w-7"
         />
-        <h3 class="text-[14px] font-semibold text-white">보안 안내</h3>
+        <h3 class="ml-1 text-[14px] font-semibold text-white">보안 안내</h3>
       </div>
       <div class="space-y-3 text-[12px] text-white">
         <p>• 계좌 정보는 256비트 SSL 암호화로 안전하게 보호됩니다.</p>

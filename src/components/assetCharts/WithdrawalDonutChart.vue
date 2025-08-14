@@ -84,10 +84,7 @@ const chartData = computed(() => {
 const chartOptions = {
   responsive: true,
   plugins: {
-    legend: {
-      position: "bottom",
-      labels: { color: "#FFFFFF" },
-    },
+    legend: { position: "bottom", labels: { color: "#FFFFFF" } },
     tooltip: {
       enabled: true,
       callbacks: {
@@ -97,24 +94,28 @@ const chartOptions = {
           const data = ctx.dataset.data;
           const isDummy = data.length === 1 && value === 100;
           if (isDummy) return null;
-          return `${label}: ₩${value.toLocaleString()}`; // ← 툴팁은 금액 유지
+          return `${label}: ₩${value.toLocaleString()}`;
         },
       },
     },
     datalabels: {
       display: true,
-      color: "#595959", // 기존 색 유지
+      color: "#595959",
       font: { weight: "bold", size: 12 },
       formatter: (value, context) => {
         const data = context.chart.data.datasets[0].data;
         const total = data.reduce((s, v) => s + v, 0);
+
+        // '데이터 없음' 더미 방지
         const isDummy = data.length === 1 && value === 100;
         if (!total || !value || isDummy) return null;
 
         const pct = (value / total) * 100;
-        return `${pct.toFixed(1)}%`; // ← 퍼센트 표기
-        // 작게 보이는 조각 숨기고 싶으면:
-        // return pct >= 3 ? `${pct.toFixed(1)}%` : null;
+
+        // ✅ 4% 미만은 표기하지 않음
+        if (pct < 4) return null;
+
+        return `${pct.toFixed(1)}%`;
       },
     },
   },

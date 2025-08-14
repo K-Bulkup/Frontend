@@ -97,7 +97,7 @@ const chartOptions = {
     y: {
       ticks: {
         color: "#E5E7EB",
-        stepSize: 2_000_000,
+        stepSize: 1_000_000,
         callback: (v) => Number(v).toLocaleString(),
       },
       grid: {
