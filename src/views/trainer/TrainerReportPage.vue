@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen p-4">
+  <div>
     <BaseHeader title="수익 관리" @back="router.back()" />
 
     <!-- 매출액 요약 -->
