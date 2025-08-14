@@ -281,10 +281,10 @@ const toggleSection = (k) => {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col px-6 pb-24 pt-4">
+  <div class="px flex flex-col">
     <BaseHeader title="트레이닝 상세" @back="goBack" />
 
-    <main v-if="trainingData" class="flex-1">
+    <main v-if="trainingData" class="flex-1 px-6">
       <div class="mb-8 mt-7 flex items-end justify-between">
         <h1 class="text-subTitle font-bold leading-tight text-white">
           {{ trainingData.title }}
