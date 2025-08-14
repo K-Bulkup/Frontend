@@ -84,9 +84,16 @@ const isSaveButtonDisabled = computed(() => {
 
 watch(
   () => form.quizType,
-  (newQuizType) => {
-    if (newQuizType !== "OX") {
-      form.routineAnswer = "";
+  (newQuizType, oldQuizType) => {
+    if (oldQuizType) {
+      form.title = "";
+      form.description = "";
+      form.videoUrl = "";
+      isUrlInputVisible.value = false;
+
+      if (newQuizType !== "OX") {
+        form.routineAnswer = "";
+      }
     }
   },
 );
@@ -163,12 +170,14 @@ const modalTitle = computed(() => {
               label="루틴명"
               placeholder="루틴명을 입력해주세요"
               v-model="form.title"
+              :isTextarea="true"
             />
             <BaseFormField
               variant="dark"
               label="루틴 내용"
               placeholder="루틴 내용을 입력해주세요"
               v-model="form.description"
+              :isTextarea="true"
             />
 
             <div v-if="form.quizType === 'OX'">

@@ -51,6 +51,7 @@ const handleSectionToggle = (sectionKey) => {
           label="트레이닝명"
           placeholder="트레이닝명을 입력해주세요"
           v-model="trainerName"
+          :isTextarea="true"
         />
       </div>
       <div class="mb-8">
@@ -59,7 +60,7 @@ const handleSectionToggle = (sectionKey) => {
           label="트레이닝 소개"
           placeholder="트레이닝에 대한 소개를 입력해주세요"
           v-model="description"
-          :rows="4"
+          :isTextarea="true"
         />
       </div>
 

@@ -161,10 +161,17 @@ const goToDetail = (training) => {
     allTrainingsCache.value.find((t) => t.trainingId === training.trainingId)
       ?.isPurchased ||
     false;
-  if (purchased) router.push(`/trainee/mypage/training/${training.trainingId}`);
-  else router.push(`/training/${training.trainingId}`);
+
+  if (purchased) {
+    router.push(`/trainee/mypage/training/${training.trainingId}`);
+  } else {
+    router.push(`/training/${training.trainingId}`);
+  }
 };
-const goToPtPage = () => router.push("/common/pt-history");
+
+// PT 페이지 이동
+const goToPtPage = () => {
+  router.push("/common/pt/history");
 
 // lifecycle
 onMounted(async () => {

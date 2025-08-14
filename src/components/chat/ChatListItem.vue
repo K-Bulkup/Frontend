@@ -3,80 +3,61 @@ import { computed } from "vue";
 import { UserIcon } from "lucide-vue-next";
 
 const props = defineProps({
-  chatData: {
-    type: Object,
-    required: true,
-  },
-  userName: {
-    type: String,
-    required: true,
-  },
-  remainingDays: {
-    type: String,
-    required: true,
-  },
-  courseTitle: {
-    type: String,
-    required: true,
-  },
-  lastMessage: {
-    type: String,
-    required: true,
-  },
-  timestamp: {
-    type: String,
-    required: true,
-  },
-  unreadCount: {
-    type: Number,
-    default: 0,
-  },
-  isExpired: {
-    type: Boolean,
-    default: false,
-  },
-  opponentProfileUrl: {
-    type: String,
-    default: false,
-  },
+  chatData: { type: Object, required: true },
+  userName: { type: String, required: true },
+  courseTitle: { type: String, required: true },
+  lastMessage: { type: String, required: true },
+  timestamp: { type: String, required: true },
+  unreadCount: { type: Number, default: 0 },
+  status: { type: String, required: true }, // "예약완료" | "진행중" | "완료" | "취소"
+  opponentProfileUrl: { type: String, default: "" },
 });
 
-defineEmits(["click"]);
+const emit = defineEmits(["click"]);
 
-const remainingDaysClass = computed(() => {
-  if (props.isExpired || props.remainingDays === "만료") {
-    return "bg-gray-400"; // 만료
+const isClickable = computed(() => props.status !== "예약완료");
+
+const statusClasses = computed(() => {
+  switch (props.status) {
+    case "예약완료":
+      return "border-primary bg-primary/20 text-white";
+    case "진행중":
+      return "border-green-500 bg-green-500/20 text-green-300";
+    case "완료":
+      return "border-error bg-error/20 text-gray-300";
+    case "취소":
+      return "border-gray-600 bg-gray-600/30 text-gray-300";
+    default:
+      return "border-gray-600 bg-gray-600/30 text-gray-300";
   }
-
-  const hourMatch = props.remainingDays.match(/(\d+)시간/);
-  const minuteMatch = props.remainingDays.match(/(\d+)분/);
-
-  const hours = hourMatch ? parseInt(hourMatch[1], 10) : 0;
-  const minutes = minuteMatch ? parseInt(minuteMatch[1], 10) : 0;
-  const totalMinutes = hours * 60 + minutes;
-
-  if (totalMinutes <= 60) {
-    return "bg-red-500"; // 🔴 1시간 이하
-  }
-
-  return "bg-green-500"; // ✅ 1시간 초과
 });
+
+function handleClick() {
+  if (!isClickable.value) return;
+  emit("click", props.chatData);
+}
 </script>
 
 <template>
   <div
-    class="flex cursor-pointer items-center border-b border-gray-800 p-4 transition-colors hover:bg-gray-900"
-    @click="$emit('click', chatData)"
+    class="my-4 flex items-center rounded-r15 bg-gray-custom p-4 transition-opacity"
+    :class="
+      isClickable
+        ? 'cursor-pointer hover:bg-opacity-70'
+        : 'cursor-not-allowed opacity-70'
+    "
+    @click="handleClick"
   >
-    <div class="relative mr-3">
+    <!-- 프로필 -->
+    <div class="relative mr-4">
       <div
-        class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-600"
+        class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-gray-600"
       >
         <template v-if="opponentProfileUrl">
           <img
             :src="opponentProfileUrl"
             alt="상대방 프로필"
-            class="h-12 w-12 object-cover"
+            class="h-12 w-12 rounded-full object-cover"
           />
         </template>
         <template v-else>
@@ -85,34 +66,44 @@ const remainingDaysClass = computed(() => {
       </div>
       <div
         v-if="unreadCount > 0"
-        class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500"
+        class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-error"
       >
-        <span class="text-xs font-bold text-white">{{
-          unreadCount > 9 ? "9+" : unreadCount
-        }}</span>
+        <span class="text-body4 font-normal text-white">
+          {{ unreadCount > 9 ? "9+" : unreadCount }}
+        </span>
       </div>
     </div>
 
+    <!-- 내용 -->
     <div class="min-w-0 flex-1">
       <div class="mb-1 flex items-center justify-between">
         <div class="flex items-center space-x-2">
-          <span class="font-medium text-white">{{ userName }}</span>
-          <span
-            class="rounded-full px-2 py-1 text-xs"
-            :class="remainingDaysClass"
-          >
-            {{ remainingDays }}
-          </span>
+          <span class="text-input font-bold text-white">{{ userName }}</span>
+          <div class="rounded-xl bg-gray-600 px-3">
+            <span class="text-body3 font-normal text-white">{{
+              courseTitle
+            }}</span>
+          </div>
         </div>
-        <span class="text-xs text-gray-400">{{ timestamp }}</span>
+        <span
+          class="relative -top-[1px] px-1 text-body3 font-normal text-gray-500"
+        >
+          {{ timestamp }}
+        </span>
       </div>
 
-      <div class="mb-1 text-sm font-medium text-gray-300">
-        {{ courseTitle }}
-      </div>
-
-      <div class="flex items-center">
-        <p class="flex-1 truncate text-xs text-gray-400">{{ lastMessage }}</p>
+      <div class="flex items-end justify-between">
+        <div class="mr-2 flex-1">
+          <p class="break-words text-body3 font-normal text-gray-500">
+            {{ lastMessage }}
+          </p>
+        </div>
+        <!-- 상태 배지 -->
+        <div class="flex-shrink-0">
+          <div class="rounded-pill border px-3" :class="statusClasses">
+            <span class="text-button font-normal">{{ status }}</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
