@@ -87,9 +87,15 @@ const convertQuizTypeToLabel = (type) => {
           @click="emit('edit-routine', routine)"
           class="flex cursor-pointer items-center justify-between rounded-r15 bg-gray-custom p-3 transition-colors hover:bg-gray-900"
         >
-          <div class="flex items-center gap-4">
-            <span class="pl-2 text-body text-white">{{ routine.title }}</span>
-            <BaseTag :text="convertQuizTypeToLabel(routine.quizType)" />
+          <div class="flex min-w-0 items-center gap-4">
+            <span class="truncate pl-2 text-body text-white">{{
+              routine.title
+            }}</span>
+
+            <BaseTag
+              class="flex-shrink-0"
+              :text="convertQuizTypeToLabel(routine.quizType)"
+            />
           </div>
         </div>
       </div>

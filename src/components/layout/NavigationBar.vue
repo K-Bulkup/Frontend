@@ -49,7 +49,7 @@ const navItems = {
       id: "pt-history",
       icon: "comments",
       label: "1:1 PT",
-      path: "/common/pt-history",
+      path: "/common/pt/history",
     },
   ],
 };

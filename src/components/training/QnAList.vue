@@ -1,6 +1,7 @@
 <script setup>
-import { ref, computed } from "vue";
-
+import { ref, computed, nextTick } from "vue";
+import { postQnAAnswer } from "@/composables/api/useQnAAnswer";
+import editIcon from "@/assets/images/trainer/mypage/edit.png";
 /** 공통 Q&A 리스트 컴포넌트
  * props:
  *  - items: [{ id, title, content, answer, hasAnswer, questionDate, answerDate, ... }]
@@ -11,11 +12,44 @@ const props = defineProps({
   items: { type: Array, default: () => [] },
   initialTab: { type: String, default: "completed" },
   accordion: { type: Boolean, default: false },
+  isTrainer: { type: Boolean, default: false },
+  trainingId: { type: [Number, String], required: true },
 });
-const emit = defineEmits(["tab-change", "open", "close", "toggle"]);
+
+const emit = defineEmits([
+  "tab-change",
+  "open",
+  "close",
+  "toggle",
+  "answered",
+  "answer-error",
+]);
 
 const selectedTab = ref(props.initialTab);
 const openIds = ref(new Set());
+// textarea ref들 저장
+const textareaRefs = ref({}); // { [qnaId]: HTMLTextAreaElement | undefined }
+
+// 아이콘 클릭 시 동작
+const tryPencilSubmit = async (it) => {
+  if (!props.isTrainer || selectedTab.value !== "pending" || it.hasAnswer)
+    return;
+
+  const text = (answers.value[it.id] || "").trim();
+
+  // 내용이 없으면 펼치고 포커스만
+  if (!text) {
+    if (!isOpen(it.id)) toggle(it.id);
+    await nextTick();
+    textareaRefs.value[it.id]?.focus();
+    return;
+  }
+
+  // 내용이 있으면 바로 등록
+  if (!isSubmitting(it.id)) {
+    submitAnswer(it);
+  }
+};
 
 const isOpen = (id) => openIds.value.has(id);
 const toggle = (id) => {
@@ -36,6 +70,41 @@ const filtered = computed(() =>
     selectedTab.value === "completed" ? !!it.hasAnswer : !it.hasAnswer,
   ),
 );
+
+// ✅ 트레이너 답변 폼 상태
+const answers = ref({}); // { [qnaId]: string }
+const submitting = ref(new Set()); // 로딩 중인 qnaId 모음
+const isSubmitting = (id) => submitting.value.has(id);
+
+const cancelAnswer = (id) => {
+  answers.value[id] = "";
+};
+
+const submitAnswer = async (it) => {
+  const text = (answers.value[it.id] || "").trim();
+  if (!props.isTrainer || selectedTab.value !== "pending" || !text) return;
+  if (!props.trainingId) {
+    alert("trainingId가 없습니다.");
+    return;
+  }
+
+  submitting.value.add(it.id);
+  try {
+    await postQnAAnswer(props.trainingId, it.id, text);
+    // 로컬 UI 즉시 반영
+    it.hasAnswer = true;
+    it.answer = text;
+    it.answerDate = new Date().toISOString().slice(0, 16).replace("T", " ");
+    answers.value[it.id] = "";
+    emit("answered", { id: it.id, answer: text });
+  } catch (e) {
+    console.error(e);
+    emit("answer-error", { id: it.id, error: e });
+    alert("답변 등록에 실패했습니다.");
+  } finally {
+    submitting.value.delete(it.id);
+  }
+};
 </script>
 
 <template>
@@ -122,7 +191,6 @@ const filtered = computed(() =>
               </p>
             </div>
 
-            <!-- 접힘: ←  / 펼침: ↓  (왼쪽 아이콘을 -90deg 회전) -->
             <svg
               class="ml-3 h-6 w-6 flex-shrink-0 transition-transform"
               :class="isOpen(it.id) ? '-rotate-90' : 'rotate-0'"
@@ -143,7 +211,7 @@ const filtered = computed(() =>
           <transition name="fade">
             <div v-show="isOpen(it.id)" class="mt-3 space-y-3">
               <!-- 질문 -->
-              <div class="w-full rounded-xl bg-[#2C2C2C] p-4">
+              <div class="relative w-full rounded-xl bg-[#2C2C2C] p-4">
                 <p
                   class="mb-4 whitespace-pre-wrap break-words break-all text-body2 leading-relaxed"
                 >
@@ -157,7 +225,51 @@ const filtered = computed(() =>
                 </div>
               </div>
 
-              <!-- 답변 -->
+              <!-- ✅ 트레이너 전용: 미완료 탭에서 미답변 항목이면 답변 입력 폼 노출 -->
+              <div
+                v-if="isTrainer && selectedTab === 'pending' && !it.hasAnswer"
+                class="w-full rounded-xl bg-[#2C2C2C] p-4"
+              >
+                <textarea
+                  v-model="answers[it.id]"
+                  @keydown.enter.ctrl.prevent="submitAnswer(it)"
+                  class="w-full resize-none overflow-y-auto border-none bg-transparent text-sm leading-relaxed text-white placeholder-gray-500 outline-none"
+                  style="
+                    min-height: 10px;
+                    max-height: 300px;
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                  "
+                />
+                <div class="mt-3 flex items-center justify-between">
+                  <span class="text-sm text-gray-400">
+                    {{ (answers[it.id] || "").length }}자
+                  </span>
+                  <div class="flex gap-2">
+                    <button
+                      class="rounded-lg bg-gray-600 px-4 py-2 text-body2"
+                      type="button"
+                      :disabled="isSubmitting(it.id)"
+                      @click="cancelAnswer(it.id)"
+                    >
+                      취소
+                    </button>
+                    <button
+                      class="rounded-lg bg-primary px-4 py-2 text-body2 text-black disabled:opacity-50"
+                      type="button"
+                      :disabled="
+                        isSubmitting(it.id) ||
+                        !(answers[it.id] || '').trim().length
+                      "
+                      @click="submitAnswer(it)"
+                    >
+                      {{ isSubmitting(it.id) ? "등록 중..." : "답변 등록" }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 답변 표시 -->
               <div
                 v-if="it.hasAnswer && it.answer"
                 class="w-full rounded-xl bg-[#2C2C2C] p-4"
@@ -201,5 +313,9 @@ const filtered = computed(() =>
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+textarea::-webkit-scrollbar,
+div::-webkit-scrollbar {
+  display: none;
 }
 </style>
