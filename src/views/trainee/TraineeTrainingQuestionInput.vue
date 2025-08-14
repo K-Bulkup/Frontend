@@ -56,10 +56,10 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col px-7 pb-20">
+  <div class="flex min-h-screen flex-col pb-20">
     <BaseHeader title="잘문 등록하기" @back="handleBack" />
 
-    <div class="flex-grow">
+    <div class="flex-grow px-7">
       <div class="mb-6">
         <!-- Course Title -->
         <h2 class="mb-6 mt-8 text-subTitle font-semibold">
