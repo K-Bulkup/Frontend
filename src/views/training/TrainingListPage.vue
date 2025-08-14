@@ -153,7 +153,8 @@ const goToDetail = (training) => {
 const goToPtPage = () => {
   router.push("/common/pt/history");
 
-// lifecycle
+  // lifecycle
+};
 onMounted(async () => {
   await Promise.all([fetchAllTrainings(), fetchInProgress()]);
   await nextTick();
@@ -226,10 +227,10 @@ onMounted(async () => {
                 <img
                   :src="ip.thumbnailUrl"
                   alt=""
-                  class="rounded-r15 h-16 w-16 flex-none object-cover"
+                  class="h-16 w-16 flex-none rounded-r15 object-cover"
                 />
                 <div class="min-w-0 flex-1">
-                  <div class="text-subTitle2 truncate font-medium">
+                  <div class="truncate text-subTitle2 font-medium">
                     {{ ip.title }}
                   </div>
                   <div
@@ -271,7 +272,7 @@ onMounted(async () => {
           v-model="searchQuery"
           type="text"
           placeholder="강의를 검색해보세요"
-          class="rounded-pill h-10 w-full bg-gray-900 px-4 text-body2 text-gray-300 placeholder-gray-200 focus:outline-none"
+          class="h-10 w-full rounded-pill bg-gray-900 px-4 text-body2 text-gray-300 placeholder-gray-200 focus:outline-none"
         />
         <img
           src="@/assets/images/search.svg"
@@ -284,7 +285,7 @@ onMounted(async () => {
         <button
           v-for="c in categories"
           :key="c"
-          class="rounded-pill whitespace-nowrap border px-3 py-1 text-body3"
+          class="whitespace-nowrap rounded-pill border px-3 py-1 text-body3"
           :class="
             selectedCategory === c
               ? 'border-transparent bg-primary text-black'
