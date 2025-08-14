@@ -53,6 +53,8 @@ const convertRoutines = (routineList) =>
       name: r.title,
       serverPass,
       completed: serverPass, // ✅ 체크는 서버만
+      routineType: r.routineType,
+      quizType: r.quizType,
       rewardPoint: r.rewardPoint,
       completedAt: r.completedAt,
     };
@@ -92,9 +94,9 @@ const loadTrainingData = async () => {
       progress: raw.progress,
       totalReward: raw.totalScore,
       routines: {
-        스트레칭: convertRoutines(raw.routines?.["스트레칭"]),
-        근력: convertRoutines(raw.routines?.["근력"]),
-        유산소: convertRoutines(raw.routines?.["유산소"]),
+        스트레칭: convertRoutines(raw.routines?.["스트레칭"] || []),
+        근력: convertRoutines(raw.routines?.["근력"] || []),
+        유산소: convertRoutines(raw.routines?.["유산소"] || []),
       },
       level: raw.level,
       category: raw.category,

@@ -33,7 +33,7 @@ const iconSrc = computed(() => {
 });
 
 // 타입 코드 → 라벨 매핑
-const TYPE_LABELS = { SUBJECTIVE: "주관식", OX: "OX", PRACTICE: "실천형" };
+const TYPE_LABELS = { SHORT_ANSWER: "주관식", OX: "OX", PHOTO: "실천형" };
 const toTypeCode = (v) => String(v ?? "").toUpperCase();
 
 // (진짜 데이터가 전혀 없을 때만) 데모 폴백
@@ -63,7 +63,7 @@ async function fetchTypeLabel(routineId) {
       const res = await getRoutineDetail(routineId);
       // 루틴 상세 쪽은 기존 코드상 res.data에 본문이 있었음
       const raw = res?.data;
-      const code = toTypeCode(raw?.routineType ?? raw?.type);
+      const code = toTypeCode(raw?.quizType);
       const label = TYPE_LABELS[code] ?? "주관식"; // 최종 기본값은 주관식
       fetchedTypeLabelById[routineId] = label;
       return label;
@@ -94,7 +94,8 @@ async function prefetchMissingTypes() {
       q &&
       q.id &&
       !q.typeLabel &&
-      !toTypeCode(q.type) &&
+      // 👇 이 조건을 수정하여, quizType이 있지만 LABEL 맵에 없는 경우도 감지하도록 합니다.
+      !TYPE_LABELS[toTypeCode(q.quizType)] &&
       !fetchedTypeLabelById[q.id],
   );
 
@@ -120,7 +121,7 @@ const hasRealQuests = computed(
 const displayQuests = computed(() => {
   if (hasRealQuests.value) {
     return props.quests.map((q, i) => {
-      const typeCode = toTypeCode(q?.type);
+      const typeCode = toTypeCode(q?.quizType);
       const tag =
         // 1) 상위에서 내려준 라벨
         q?.typeLabel ??
