@@ -1,23 +1,17 @@
+<!-- src/pages/trainee/trainer/TraineeTrainerDetail.vue -->
 <script setup>
 import { reactive, ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import badgeIcon from "@/assets/images/trainer/mypage/badge.png";
 import starIcon from "@/assets/images/star.svg";
 import profileDefault from "@/assets/images/mascot/profile.png";
-
-import BaseHeader from "@/components/common/BaseHeader.vue";
-import TrainerCareerDisplay from "@/components/trainee/trainer/TrainerCareerDisplay.vue";
-import TrainingList from "@/components/trainee/trainer/TrainingList.vue";
 
 import { traineeTrainerApi } from "@/composables/api/trainee/trainer/traineeTrainerApi";
 import { getTraineeTrainingPreDetail } from "@/composables/api/trainee/training/traineeTrainingPreDetailAPI";
 
-// 라우팅 관련
 const route = useRoute();
 const router = useRouter();
 
-// 트레이너 기본 데이터
 const trainerData = reactive({
   username: "트레이너",
   userProfileUrl: profileDefault,
@@ -27,70 +21,99 @@ const trainerData = reactive({
   totalAverageRating: 0.0,
 });
 
-const num = (v) => (v == null ? 0 : Number(v));
 const trainingList = ref([]);
-const showTooltip = ref(false);
+const n = (v) => (v == null ? 0 : Number(v));
 
-// 트레이너 정보 + 트레이닝 목록 불러오기
 const fetchTrainerDetail = async () => {
   try {
     const trainerId = route.params.trainerId;
-    const response = await traineeTrainerApi.getTrainerInfo(trainerId);
+    const r = await traineeTrainerApi.getTrainerInfo(trainerId);
 
-    const trainer = response.data.data.trainer;
-    const trainings = response.data.data.trainings;
+    // 통합 응답(payload) 파싱 (구/신 키 모두 대응)
+    const payload = r?.data?.data ?? {};
+    const t = payload.profile ?? payload.trainer ?? {};
+    const trainings = payload.trainings ?? [];
 
-    trainerData.username = trainer.name;
-    trainerData.userProfileUrl = trainer.profileUrl || profileDefault;
-    trainerData.career = trainer.description;
-    // ✅ totalTraineeCount(누적) 우선, 없으면 traineeCount로 대체
-    trainerData.totalTraineeCount = num(
-      trainer.totalTraineeCount ?? trainer.traineeCount,
+    // ✅ 키 불일치 모두 대응 (name/username, profileUrl/userProfileUrl 등)
+    trainerData.username =
+      t.name ?? t.username ?? trainerData.username ?? "트레이너";
+    trainerData.userProfileUrl =
+      t.profileUrl ?? t.userProfileUrl ?? profileDefault;
+    trainerData.career = t.description ?? t.career ?? "";
+    trainerData.totalTraineeCount = n(
+      t.traineeCount ?? t.totalTraineeCount ?? 0,
     );
-    trainerData.totalAverageRating = trainer.averageRating;
-    trainerData.certificates = trainer.isCertified ? ["자격증 있음"] : [];
+    trainerData.totalAverageRating = n(
+      t.averageRating ?? t.totalAverageRating ?? 0,
+    );
+    trainerData.certificates = Array.isArray(t.certificates)
+      ? t.certificates
+      : Array.isArray(payload.certificates)
+        ? payload.certificates
+        : [];
 
-    trainingList.value = trainings;
-  } catch (error) {
-    console.error("트레이너 정보 전체 조회 실패:", error);
+    // 트레이닝 목록
+    trainingList.value = trainings.map((x) => ({
+      id: x.trainingId ?? x.id,
+      title: x.title,
+      price: n(x.price ?? 0),
+      rating: n(x.averageRating ?? 0),
+      level: x.level ?? "초급",
+      thumbnailUrl: x.thumbnailUrl,
+    }));
+  } catch (e) {
+    console.error("트레이너 정보 전체 조회 실패:", e);
   }
 };
 
-onMounted(() => {
-  fetchTrainerDetail();
-});
+const handleBack = () => router.back();
 
-// 뒤로 가기
-const handleGoBack = () => router.back();
-
-// 강의 클릭 시 이동 (결제 전/후에 따른 이동)
-const goToTrainingDetail = async (trainingId) => {
+const goToTrainingDetail = async (id) => {
   try {
-    const response = await getTraineeTrainingPreDetail(trainingId);
-    const detailData = response.data.data;
-
-    if (detailData.progress !== undefined) {
-      // '결제 후' 페이지로 이동
-      router.push(`/trainee/mypage/training/${trainingId}`);
-    } else {
-      // '결제 전' 페이지로 이동
-      router.push(`/training/${trainingId}`);
-    }
-  } catch (error) {
-    console.error("상세 정보 미리보기 실패:", error);
+    const r = await getTraineeTrainingPreDetail(id);
+    const d = r?.data?.data ?? {};
+    if (d.progress !== undefined) router.push(`/trainee/mypage/training/${id}`);
+    else router.push(`/training/${id}`);
+  } catch (e) {
+    console.error("상세 정보 미리보기 실패:", e);
   }
 };
+
+onMounted(fetchTrainerDetail);
 </script>
 
 <template>
-  <div class="min-h-screen pb-10 pt-4 text-white">
-    <div class="px-5 py-6">
-      <BaseHeader title="트레이너 상세" @back="handleGoBack"></BaseHeader>
-      <div class="flex items-start gap-4">
-        <!-- 프로필 이미지 -->
-        <div class="flex-shrink-0">
+  <div class="min-h-screen pb-20 pt-8 text-white">
+    <!-- 헤더: 뒤로가기 아이콘만 -->
+    <header class="mb-6 px-5">
+      <button
+        type="button"
+        @click="handleBack"
+        aria-label="뒤로가기"
+        class="flex h-10 w-10 items-center justify-center rounded-full bg-transparent text-primary hover:bg-gray-900/40"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          class="h-6 w-6"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M15 18l-6-6 6-6"
+          />
+        </svg>
+      </button>
+    </header>
+
+    <!-- 상단 프로필 -->
+    <section class="mb-12 px-5">
+      <div class="flex flex-col items-center">
+        <div class="relative mb-4">
           <div
-            class="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2 border-gray-200 bg-gray-100"
+            class="h-28 w-28 overflow-hidden rounded-full bg-gray-800 ring-2 ring-gray-800"
           >
             <img
               :src="trainerData.userProfileUrl"
@@ -98,85 +121,103 @@ const goToTrainingDetail = async (trainingId) => {
               class="h-full w-full object-cover"
             />
           </div>
+
+          <!-- 인증 뱃지 (첫 번째 자격증 텍스트) -->
+          <div
+            v-if="trainerData.certificates.length"
+            class="absolute left-1/2 top-full z-10 mt-3 -translate-x-1/2 whitespace-nowrap rounded-full bg-primary px-3 py-1 text-body3 font-bold text-black"
+          >
+            {{ trainerData.certificates[0] }}
+          </div>
         </div>
 
-        <!-- 이름, 자격증 -->
-        <div class="mt-2 min-w-0 flex-1">
-          <div class="flex items-center gap-3">
-            <span class="truncate text-2xl font-bold">{{
-              trainerData.username
-            }}</span>
+        <h1 class="mt-6 text-subTitle font-bold">{{ trainerData.username }}</h1>
 
-            <div
-              v-if="trainerData.certificates.length > 0"
-              class="relative inline-block"
-              @mouseenter="showTooltip = true"
-              @mouseleave="showTooltip = false"
+        <div class="mb-8 mt-2 flex items-center gap-3 text-body2 text-gray-200">
+          <span
+            >수강생 {{ trainerData.totalTraineeCount.toLocaleString() }}명</span
+          >
+          <span class="opacity-60">|</span>
+          <span class="flex items-center gap-1 text-body2">
+            <img :src="starIcon" alt="별점" class="h-4 w-4" />
+            {{ trainerData.totalAverageRating.toFixed(1) }}
+          </span>
+        </div>
+
+        <div class="w-full">
+          <div class="rounded-r15 bg-gray-custom px-5 py-5">
+            <p
+              v-if="trainerData.career?.trim()"
+              class="whitespace-pre-wrap text-body2 leading-6 text-gray-50"
             >
-              <span
-                class="flex cursor-default items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-black"
-              >
-                <img :src="badgeIcon" alt="인증" class="h-4 w-4" />
-                인증 완료
-              </span>
-
-              <!-- 툴팁 -->
-              <Transition
-                enter-active-class="transition-all duration-200"
-                enter-from-class="opacity-0 scale-95"
-                enter-to-class="opacity-100 scale-100"
-                leave-active-class="transition-all duration-150"
-                leave-from-class="opacity-100 scale-100"
-                leave-to-class="opacity-0 scale-95"
-              >
-                <div
-                  v-if="showTooltip"
-                  class="absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2"
-                >
-                  <div
-                    class="min-w-max rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-800 shadow-lg"
-                  >
-                    <div class="text-gray-600">
-                      {{ trainerData.certificates.join(", ") }}
-                    </div>
-                    <div
-                      class="absolute bottom-full left-1/2 h-0 w-0 -translate-x-1/2 border-x-4 border-b-4 border-transparent border-b-white"
-                    ></div>
-                  </div>
-                </div>
-              </Transition>
-            </div>
-          </div>
-
-          <!-- 수강생 수 / 별점 -->
-          <div class="mt-3 flex flex-wrap items-center gap-4 text-sm">
-            <span class="flex items-center gap-1.5 text-white">
-              <span class="font-bold">👤</span>
-              수강생 {{ trainerData.totalTraineeCount.toLocaleString() }}명
-            </span>
-            <span class="text-gray-300">|</span>
-            <span class="flex items-center gap-1">
-              <img :src="starIcon" alt="별점" class="h-4 w-4" />
-              <span class="font-medium text-white">
-                {{ trainerData.totalAverageRating.toFixed(1) }}
-              </span>
-            </span>
+              {{ trainerData.career }}
+            </p>
+            <p v-else class="text-center text-body2 text-gray-300">
+              소개글을 작성해주세요!
+            </p>
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- 트레이너 소개 -->
-    <div class="py-4">
-      <TrainerCareerDisplay :career="trainerData.career" />
-    </div>
+    <!-- 운영 중인 트레이닝 -->
+    <section class="mt-12 px-5">
+      <h2 class="mb-5 text-input">운영 중인 트레이닝</h2>
 
-    <!-- 트레이닝 목록 -->
-    <div class="mt-4 px-5 py-4">
-      <TrainingList
-        :courses="trainingList"
-        @selectTraining="goToTrainingDetail"
-      />
-    </div>
+      <div
+        v-if="!trainingList.length"
+        class="rounded-r15 bg-gray-800/60 px-4 py-10 text-center text-gray-300"
+      >
+        등록된 트레이닝이 없습니다.
+      </div>
+
+      <ul v-else class="flex flex-col gap-4">
+        <li
+          v-for="c in trainingList"
+          :key="c.id"
+          class="rounded-2xl border border-gray-900 bg-background px-4 py-4 shadow-sm"
+        >
+          <button
+            type="button"
+            class="flex w-full items-center gap-4 text-left"
+            @click="goToTrainingDetail(c.id)"
+          >
+            <img
+              :src="c.thumbnailUrl"
+              alt=""
+              class="h-14 w-14 flex-none rounded-xl object-cover ring-1 ring-gray-800"
+            />
+
+            <div class="min-w-0 flex-1">
+              <div class="mb-1 flex items-start justify-between gap-2">
+                <p class="line-clamp-1 text-input font-medium">{{ c.title }}</p>
+                <div class="ml-2 flex items-center gap-1 whitespace-nowrap">
+                  <img :src="starIcon" class="h-4 w-4" alt="별점" />
+                  <span class="text-body2">{{
+                    Number(c.rating || 0).toFixed(1)
+                  }}</span>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <span class="text-body2 text-gray-200"
+                  >{{ c.price.toLocaleString() }}원</span
+                >
+                <span
+                  class="rounded-full px-2 py-0.5 text-body3 text-white"
+                  :class="{
+                    'bg-[#008407]': (c.level || '초급') === '초급',
+                    'bg-[#5141FF]': c.level === '중급',
+                    'bg-[#FF4141]': c.level === '고급',
+                  }"
+                >
+                  {{ c.level || "초급" }}
+                </span>
+              </div>
+            </div>
+          </button>
+        </li>
+      </ul>
+    </section>
   </div>
 </template>
