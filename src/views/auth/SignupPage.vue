@@ -132,6 +132,7 @@ const btnAction = () => {
     <ConnectFailureModal @retry="resetForm" />
   </div>
 
+  <!-- 메인 컨텐츠 -->
   <div
     v-else
     class="relative flex min-h-screen flex-col justify-start overflow-hidden px-4 pb-[160px] pt-12"
@@ -171,7 +172,18 @@ const btnAction = () => {
         variant="guide"
       />
 
-      <div class="flex flex-col items-center space-y-4">
+      <!-- step 4일 때는 LoginPage와 동일한 구조 -->
+      <template v-if="step === 4">
+        <div>
+          <BaseSelectRole
+            :selected="selectedRole"
+            @select="handleRoleSelection"
+          />
+        </div>
+      </template>
+
+      <!-- step 1-3일 때는 기존 구조 유지 -->
+      <div v-else class="mt-6 flex flex-col items-center space-y-4">
         <template v-if="step === 1">
           <BaseInput
             v-model="form.email"
@@ -237,15 +249,6 @@ const btnAction = () => {
             "
             error-message="8자리 숫자(19990101 형식)로 입력해주세요"
           />
-        </template>
-
-        <template v-else-if="step === 4">
-          <div>
-            <BaseSelectRole
-              :selected="selectedRole"
-              @select="handleRoleSelection"
-            />
-          </div>
         </template>
       </div>
     </div>
