@@ -14,7 +14,7 @@ const handleBack = () => {
 </script>
 
 <template>
-  <header class="flex items-center justify-between px-5 pt-8">
+  <header class="flex items-center justify-between px-5 pb-3 pt-8">
     <button @click="handleBack">
       <img src="@/assets/images/arrow-back.png" alt="뒤로가기" />
     </button>
