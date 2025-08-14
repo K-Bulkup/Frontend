@@ -85,7 +85,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col">
+  <div class="flex flex-col">
     <!-- Header -->
     <BaseHeader @back="handleBack()" title="Q & A" />
 
