@@ -45,6 +45,9 @@ const characterImage = computed(() => {
       class="absolute inset-0 h-full w-full object-cover"
     />
 
+    <!-- 반투명 레이어 -->
+    <div class="absolute inset-0 bg-black/20"></div>
+
     <div
       class="pointer-events-none absolute inset-x-0 top-1/2 z-10 flex -translate-y-1/2 items-start justify-center"
     >
