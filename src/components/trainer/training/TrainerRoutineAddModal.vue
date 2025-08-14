@@ -84,9 +84,16 @@ const isSaveButtonDisabled = computed(() => {
 
 watch(
   () => form.quizType,
-  (newQuizType) => {
-    if (newQuizType !== "OX") {
-      form.routineAnswer = "";
+  (newQuizType, oldQuizType) => {
+    if (oldQuizType) {
+      form.title = "";
+      form.description = "";
+      form.videoUrl = "";
+      isUrlInputVisible.value = false;
+
+      if (newQuizType !== "OX") {
+        form.routineAnswer = "";
+      }
     }
   },
 );
