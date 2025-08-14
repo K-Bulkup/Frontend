@@ -3,8 +3,8 @@ import { onMounted, ref } from "vue";
 
 import LevelDisplay from "@/components/trainee/mypage/LevelDisplay.vue";
 import GrowthCard from "@/components/trainee/mypage/GrowthCard.vue";
-import UserInfoCard from "@/components/trainee/mypage/UserInfoCard.vue";
 import { getTraineeProfile } from "@/composables/api/trainee/mypage/traineeTrainingApi";
+import CollectionCard from "@/components/trainee/mypage/CollectionCard.vue";
 
 const userName = ref("");
 const growthScore = ref(0);
@@ -31,7 +31,7 @@ onMounted(async () => {
     ]"
   >
     <LevelDisplay :growth-score="growthScore" :apply-backdrop-blur="true">
-      <UserInfoCard :user-name="userName" :growth-score="growthScore" />
+      <CollectionCard :growth-score="growthScore" :user-name="userName" />
       <GrowthCard :growth-score="growthScore" />
     </LevelDisplay>
   </div>

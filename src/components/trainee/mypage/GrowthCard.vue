@@ -41,7 +41,7 @@ const currentLevel = computed(() => {
 </script>
 
 <template>
-  <div class="relative rounded-r15 bg-realBlack/30 p-6 text-white shadow-lg">
+  <div class="relative rounded-r15 bg-gray-800/30 p-6 text-white shadow-lg">
     <div
       class="absolute right-4 top-4 rounded-full bg-white/20 px-4 py-1.5 text-base font-bold backdrop-blur-sm"
     >
