@@ -108,7 +108,7 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div class="mt-10">
+    <div class="mt-10 px-7">
       <BaseButton
         @click="submitReview"
         :isDisabled="!isFormValid"
