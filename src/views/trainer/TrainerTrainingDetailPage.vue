@@ -82,8 +82,8 @@ onMounted(async () => {
       thumbnailUrl: detail.thumbnailUrl || "",
       trainerProfileUrl: detail.trainerProfileImage,
       trainerName: detail.trainerName,
-      trainingRating: detail.trainingRating,
-      studentCount: num(detail.enrolledTraineeCount ?? detail.traineeCount),
+      rating: detail.trainingRating,
+      studentCount: num(detail.enrolledTraineeCount),
       totalWeeks: 4,
     };
 
@@ -138,7 +138,7 @@ onMounted(async () => {
 </script>
 <template>
   <div>
-    <BaseHeader @back="goBack()" title="트레이닝 상세"></BaseHeader>
+    <BaseHeader @back="goBack" title="트레이닝 상세"></BaseHeader>
     <div>
       <TrainingInfo
         v-if="trainingData"
