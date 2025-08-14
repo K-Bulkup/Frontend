@@ -1,21 +1,16 @@
+// src/composables/api/trainee/trainer/traineeTrainerApi.js
 import apiClient from "@/plugins/axios";
 
 export const traineeTrainerApi = {
-  // 트레이너 기본 정보 조회 (강의 포함)
+  // 트레이너 상세(프로필 + 운영 중 트레이닝)
   async getTrainerInfo(trainerId) {
+    // 통합 응답: { profile: {...}, trainings: [...] }
     return await apiClient.get(`/api/trainee/trainers/${trainerId}`);
   },
 
-  // 트레이너 프로필 조회
+  // (옵션) 단일 프로필만 필요할 때
   async getTrainerProfileById(trainerId) {
-    try {
-      const response = await apiClient.get(
-        `/api/trainer/profiles/${trainerId}`,
-      );
-      return response.data;
-    } catch (error) {
-      console.error(`트레이너 ID ${trainerId}의 프로필 조회 실패:`, error);
-      throw error;
-    }
+    const response = await apiClient.get(`/api/trainer/profiles/${trainerId}`);
+    return response.data;
   },
 };
