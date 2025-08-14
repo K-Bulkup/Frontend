@@ -1,9 +1,10 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import dayjs from "dayjs";
 
 import BaseButton from "@/components/common/BaseButton.vue";
+import BaseHeader from "@/components/common/BaseHeader.vue";
 import ActionStateModal from "@/components/common/ActionStateModal.vue";
 import DateTimeSlotsPicker from "@/components/chat/DateTimeSlotsPicker.vue";
 
@@ -13,8 +14,9 @@ import {
 } from "@/composables/api/usePtApi";
 
 const route = useRoute();
-const TRAINER_ID = Number(route.params.trainerId ?? 22);
-const TRAINING_ID = Number(route.params.trainingId ?? 1);
+const router = useRouter();
+const TRAINER_ID = Number(route.params.trainerId);
+const TRAINING_ID = Number(route.params.trainingId);
 
 const selectedDate = ref(null);
 const selectedTimes = ref([]);
@@ -109,14 +111,18 @@ const submitReservation = async () => {
   }
 };
 
-// 모달 닫기 핸들러
 const handleModalClose = () => {
   showModal.value = false;
+};
+
+const handleBack = () => {
+  router.go(-1);
 };
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col px-2 pb-24 pt-4">
+  <div class="flex flex-col">
+    <BaseHeader title="1:1 PT 예약하기" @back="handleBack" />
     <div class="flex-1 overflow-y-auto">
       <DateTimeSlotsPicker
         v-model:modelValueDate="selectedDate"
@@ -136,7 +142,6 @@ const handleModalClose = () => {
       </div>
     </div>
 
-    <!-- 예약 상태 모달 -->
     <ActionStateModal
       v-if="showModal"
       :title="modalConfig.title"

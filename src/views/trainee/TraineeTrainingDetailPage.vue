@@ -254,27 +254,23 @@ const trainingDeadline = computed(() => {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 });
 
-// ⬇⬇⬇ 여기만 교체: 버튼은 UI 기준 완료로 즉시 노출
 const showReviewButton = computed(
   () => areAllQuestsDoneForUI.value || isTrainingExpired.value,
 );
 const showChatButton = computed(() => areAllQuestsDoneForUI.value);
 
 // Q&A/채팅
-const startChat = async () => {
-  try {
-    const response = await createCounseling(trainingId.value, userKey.value);
-    if (response.data.success && response.data.data?.roomId) {
-      alert("채팅방이 생성되었습니다.");
-      router.push(`/common/pt-chat/${response.data.data.roomId}`);
-    } else {
-      throw new Error(response.data.message || "채팅방 생성에 실패했습니다.");
-    }
-  } catch (err) {
-    console.error("🚨 채팅방 생성 실패:", err);
-    alert("채팅방 생성 중 오류가 발생했습니다. 다시 시도해주세요.");
+const reservePt = async () => {
+  if (!trainingData.value?.trainerId) {
+    console.error("트레이너 ID가 없습니다.");
+    return;
   }
+
+  router.push(
+    `/trainee/pt/reservation/${trainingData.value.trainerId}/${route.params.trainingId}`,
+  );
 };
+
 const goToQnaPage = () =>
   router.push(`/trainee/mypage/training/${route.params.trainingId}/qna`);
 const toggleSection = (k) => {
@@ -283,10 +279,10 @@ const toggleSection = (k) => {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col px-6 pb-24 pt-4">
+  <div class="flex min-h-[100dvh] flex-col">
     <BaseHeader title="트레이닝 상세" @back="goBack" />
 
-    <main v-if="trainingData" class="flex-1">
+    <main v-if="trainingData" class="mx-5 flex-1">
       <div class="mb-8 mt-7 flex items-end justify-between">
         <h1 class="text-subTitle font-semibold leading-tight text-white">
           {{ trainingData.title }}
@@ -389,11 +385,11 @@ const toggleSection = (k) => {
         />
         <ActionButton
           v-if="showChatButton"
-          text="트레이너와 1:1 PT"
-          variant="primary"
+          :text="chatRoomCreated ? '1:1 PT 예약 완료' : '1:1 PT 예약하기'"
+          :variant="chatRoomCreated ? 'disabled' : 'secondary'"
           :disabled="chatRoomCreated"
           class="w-full !bg-gray-custom !text-body !font-medium !text-white"
-          @click="startChat"
+          @click="reservePt"
         />
       </div>
     </main>
