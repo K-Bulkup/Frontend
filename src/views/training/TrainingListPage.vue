@@ -253,8 +253,7 @@ const goToDetail = (training) => {
 };
 const goToPtPage = () => router.push("/common/pt-history");
 
-  // lifecycle
-};
+// lifecycle
 onMounted(async () => {
   // Body 스크롤 잠그기 (페이지 컨테이너만 스크롤)
   document.documentElement.style.overflow = "hidden";
@@ -345,7 +344,6 @@ onBeforeUnmount(() => {
                 <img
                   :src="ip.thumbnailUrl"
                   alt=""
-                  class="h-16 w-16 flex-none rounded-r15 object-cover"
                   class="h-16 w-16 flex-none rounded-r15 object-cover"
                 />
                 <div class="min-w-0 flex-1">
@@ -440,6 +438,7 @@ onBeforeUnmount(() => {
         />
       </div>
 
+      <!-- 카테고리 -->
       <div class="mb-4 flex gap-2 overflow-x-auto scrollbar-hide">
         <button
           v-for="c in categories"
@@ -456,9 +455,8 @@ onBeforeUnmount(() => {
           {{ c }}
         </button>
       </div>
-    </section>
 
-      <!-- 카드 그리드: 항상 3열 / 처음엔 1행(3개)만 -->
+      <!-- ✅ 카드 그리드와 센티널을 섹션 내부에 둡니다 -->
       <main class="grid grid-cols-3 gap-x-3 gap-y-6">
         <TrainingCard
           v-for="training in visibleTrainings"
