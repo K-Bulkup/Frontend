@@ -5,24 +5,42 @@
     <div class="relative mt-6 w-full pt-2">
       <div class="mb-4 flex items-center justify-between">
         <label class="pl-5 text-input text-gray-300"> 트레이닝 선택 </label>
-        <div class="flex space-x-4">
-          <label class="flex items-center text-white">
-            <input
-              type="radio"
-              value="total"
-              v-model="displayMode"
-              class="form-radio h-4 w-4 text-primary"
-            />
-            <span class="ml-2">총 누적</span>
+        <div class="flex space-x-2">
+          <input
+            type="radio"
+            id="total"
+            value="total"
+            v-model="displayMode"
+            class="hidden"
+          />
+          <label
+            for="total"
+            class="flex h-[37px] cursor-pointer items-center justify-center rounded-full border px-4 text-xs transition-colors"
+            :class="{
+              'border-primary bg-primary/20': displayMode === 'total',
+              'border-gray-600 text-gray-300 hover:border-primary hover:bg-primary/20':
+                displayMode !== 'total',
+            }"
+          >
+            총 누적
           </label>
-          <label class="flex items-center text-white">
-            <input
-              type="radio"
-              value="last30"
-              v-model="displayMode"
-              class="form-radio h-4 w-4 text-primary"
-            />
-            <span class="ml-2">최근 30일</span>
+          <input
+            type="radio"
+            id="last30"
+            value="last30"
+            v-model="displayMode"
+            class="hidden"
+          />
+          <label
+            for="last30"
+            class="flex h-[37px] cursor-pointer items-center justify-center rounded-full border px-4 text-xs transition-colors"
+            :class="{
+              'border-primary bg-primary/20': displayMode === 'last30',
+              'border-gray-600 text-gray-300 hover:border-primary hover:bg-primary/20':
+                displayMode !== 'last30',
+            }"
+          >
+            최근 30일
           </label>
         </div>
       </div>
@@ -348,39 +366,3 @@ watch(selectedSourceKey, fetchData);
 
 onMounted(fetchData);
 </script>
-
-<style scoped>
-input[type="radio"] {
-  /* For older browsers that don't support accent-color */
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  border: 2px solid #cecece; /* Gray-300 from your config */
-  border-radius: 50%;
-  width: 16px; /* h-4 */
-  height: 16px; /* w-4 */
-  outline: none;
-  cursor: pointer;
-  display: inline-block;
-  position: relative;
-  vertical-align: middle;
-}
-
-input[type="radio"]:checked {
-  background-color: #22e481; /* primary color */
-  border-color: #22e481; /* primary color */
-}
-
-input[type="radio"]:checked::before {
-  content: "";
-  display: block;
-  width: 8px; /* Half of the input size */
-  height: 8px; /* Half of the input size */
-  background-color: #191919; /* background color for the inner dot */
-  border-radius: 50%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-</style>
