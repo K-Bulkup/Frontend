@@ -401,7 +401,7 @@ onBeforeUnmount(() => {
                   class="h-16 w-16 flex-none rounded-r15 object-cover"
                 />
                 <div class="min-w-0 flex-1">
-                  <div class="truncate text-subTitle2 font-medium">
+                  <div class="truncate text-body font-medium">
                     {{ ip.title }}
                   </div>
                   <div

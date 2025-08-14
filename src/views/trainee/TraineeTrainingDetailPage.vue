@@ -53,6 +53,8 @@ const convertRoutines = (routineList) =>
       name: r.title,
       serverPass,
       completed: serverPass, // ✅ 체크는 서버만
+      routineType: r.routineType,
+      quizType: r.quizType,
       rewardPoint: r.rewardPoint,
       completedAt: r.completedAt,
     };
@@ -92,9 +94,9 @@ const loadTrainingData = async () => {
       progress: raw.progress,
       totalReward: raw.totalScore,
       routines: {
-        스트레칭: convertRoutines(raw.routines?.["스트레칭"]),
-        근력: convertRoutines(raw.routines?.["근력"]),
-        유산소: convertRoutines(raw.routines?.["유산소"]),
+        스트레칭: convertRoutines(raw.routines?.["스트레칭"] || []),
+        근력: convertRoutines(raw.routines?.["근력"] || []),
+        유산소: convertRoutines(raw.routines?.["유산소"] || []),
       },
       level: raw.level,
       category: raw.category,
@@ -282,7 +284,7 @@ const toggleSection = (k) => {
 
     <main v-if="trainingData" class="flex-1">
       <div class="mb-8 mt-7 flex items-end justify-between">
-        <h1 class="text-subTitle font-bold leading-tight text-white">
+        <h1 class="text-subTitle font-semibold leading-tight text-white">
           {{ trainingData.title }}
         </h1>
         <span class="text-body3 text-gray-400"
@@ -329,7 +331,7 @@ const toggleSection = (k) => {
 
       <TraineeRoutineSection
         title="스트레칭"
-        subtitle="금융 익히기"
+        subtitle="준비와 기초 다지기"
         :quests="trainingData.routines['스트레칭']"
         :is-locked="isSectionLocked('stretching')"
         :is-expanded="expandedSections.stretching"
@@ -344,7 +346,7 @@ const toggleSection = (k) => {
 
       <TraineeRoutineSection
         title="근력"
-        subtitle="금융 근력 키우기"
+        subtitle="성장을 위한 역량 축적"
         :quests="trainingData.routines['근력']"
         :is-locked="isSectionLocked('strength')"
         :is-expanded="expandedSections.strength"
@@ -359,7 +361,7 @@ const toggleSection = (k) => {
 
       <TraineeRoutineSection
         title="유산소"
-        subtitle="금융 체력 기르기"
+        subtitle="꾸준한 관리 습관 형성"
         :quests="trainingData.routines['유산소']"
         :is-locked="isSectionLocked('cardio')"
         :is-expanded="expandedSections.cardio"

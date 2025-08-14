@@ -98,13 +98,18 @@ const routineGroup = computed(() => {
   if (/유산소/.test(raw)) return "유산소";
   return "스트레칭";
 });
-const groupIcon = computed(() =>
-  routineGroup.value === "근력"
-    ? IconStrength
-    : routineGroup.value === "유산소"
-      ? IconCardio
-      : IconStretch,
-);
+
+const groupIcon = computed(() => {
+  switch (routineGroup.value) {
+    case "근력":
+      return IconStrength;
+    case "유산소":
+      return IconCardio;
+    case "스트레칭":
+    default:
+      return IconStretch;
+  }
+});
 
 // v2 스코프 컨텍스트
 const userKey = computed(() =>
@@ -131,11 +136,12 @@ const loadRoutineDetail = async () => {
       title: raw.routineTitle,
       description: raw.routineDescription,
       level: raw.level,
-      category: raw.category,
+      category: raw.routineType,
       reward: raw.routineScore,
       videoUrl: raw.routineVideoUrl || null,
       // ⛔ 쿼리 폴백 제거: 서버 값만 신뢰
-      type: normalizeRoutineType(raw?.routineType ?? raw?.type),
+      type: normalizeRoutineType(raw.quizType),
+      quizType: raw.quizType,
       completed: localLocked,
     };
     isLocked.value = localLocked;
@@ -304,7 +310,7 @@ const retrySubmission = () => {
 
         <div
           v-else-if="isLocked"
-          class="bg-gray-custom mt-8 rounded-xl px-4 py-5 text-center text-gray-500"
+          class="mt-8 rounded-xl bg-gray-custom px-4 py-5 text-center text-gray-500"
         >
           이미 완료된 루틴입니다.
         </div>
