@@ -199,7 +199,7 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/trainee/pt/reservation",
+    path: "/trainee/pt/reservation/:trainerId/:trainingId",
     component: TraineePtReservationPage,
     meta: { requiresAuth: true },
   },
