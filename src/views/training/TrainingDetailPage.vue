@@ -7,13 +7,13 @@ import { traineeTrainingPayment } from "@/composables/api/trainee/training/train
 import { getReviews } from "@/composables/api/useReviewApi";
 import LoadingOverlay from "@/components/common/LoadingOverlay.vue";
 
-import profileDefault from "@/assets/images/mascot/profile.png";
-
-import PaymentModal from "@/components/common/PaymentModal.vue";
-import ReviewList from "@/components/common/ReviewList.vue";
-
 import BaseHeader from "@/components/common/BaseHeader.vue";
-import BaseBadge from "@/components/common/BaseBadge.vue";
+import BaseButton from "@/components/common/BaseButton.vue";
+import BaseTabNavigation from "@/components/common/BaseTabNavigation.vue";
+
+import ReviewList from "@/components/common/ReviewList.vue";
+import TrainingInfo from "@/components/training/TrainingInfo.vue";
+import PaymentModal from "@/components/common/PaymentModal.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -23,10 +23,22 @@ const trainingData = ref(null);
 const reviewList = ref([]);
 const averageRating = ref(0);
 const totalReviews = ref(0);
+const activeTab = ref("details"); //탭 변경
 
 const modalVisible = ref(false);
 const isLoading = ref(false);
 const num = (v) => (v == null ? 0 : Number(v));
+
+// 탭 변경 핸들러
+const handleTabChange = (tabId) => {
+  activeTab.value = tabId;
+};
+
+// 탭 목록 정의
+const tabs = [
+  { id: "details", label: "상세 설명" },
+  { id: "reviews", label: "리뷰" },
+];
 
 // ✅ 여러 형태 대비: user?.userId | user?.id | store.userId | localStorage
 const resolvedUserId = computed(() => {
@@ -52,7 +64,7 @@ const loadTrainingDetail = async () => {
       trainerName: raw.trainerNickname || "트레이너명 준비중",
       trainerId: raw.trainerId ?? raw.trainerID,
       trainerProfileUrl: raw.trainerProfileUrl,
-      trainerRating: raw.averageRating,
+      rating: raw.averageRating,
       studentCount: num(
         raw.traineeCount ?? raw.enrolledTraineeCount ?? raw.totalTraineeCount,
       ),
@@ -131,19 +143,7 @@ onMounted(async () => {
   await finalizeIfRedirected();
 });
 
-const formattedPrice = computed(() =>
-  trainingData.value ? trainingData.value.price.toLocaleString() : "",
-);
-
 const goBack = () => router.back();
-
-const goToTrainerPage = () => {
-  if (trainingData.value?.trainerId) {
-    router.push(`/trainee/trainer/${trainingData.value.trainerId}`);
-  } else {
-    console.error("이동할 트레이너의 ID가 없습니다.");
-  }
-};
 
 const proceedToPayment = () => {
   modalVisible.value = true;
@@ -224,91 +224,54 @@ const handlePayment = async (pg) => {
 </script>
 
 <template>
-  <div
-    class="flex min-h-screen flex-col overflow-y-auto bg-realBlack px-6 pb-20 pt-4"
-  >
-    <main v-if="trainingData">
-      <BaseHeader title="트레이닝 상세" @back="goBack" />
-
-      <div class="mt-4 flex items-center gap-2">
-        <BaseBadge>{{ trainingData.level }}</BaseBadge>
-        <BaseBadge>{{ trainingData.category }}</BaseBadge>
-        <BaseBadge variant="primary" class="ml-auto">
-          총 리워드 {{ trainingData.reward }}
-        </BaseBadge>
-      </div>
-
-      <div
-        class="mt-6 flex h-48 w-full items-center justify-center overflow-hidden rounded-lg bg-gray-800"
-      >
-        <img
-          :src="trainingData.thumbnailUrl"
-          alt="트레이닝 썸네일"
-          class="h-full w-full object-cover"
-        />
-      </div>
-
-      <div class="mt-6 flex items-center justify-between">
-        <div
-          @click="goToTrainerPage"
-          class="flex cursor-pointer items-center gap-3 rounded-lg p-2 transition-colors hover:bg-gray-800"
-        >
-          <div
-            class="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-700"
-          >
-            <img
-              v-if="trainingData.trainerProfileUrl"
-              :src="trainingData.trainerProfileUrl"
-              alt="프로필"
-              class="h-full w-full object-cover"
-            />
-            <img
-              v-else
-              :src="profileDefault"
-              alt="기본 프로필"
-              class="h-full w-full"
-            />
-          </div>
-          <p class="font-bold text-white">{{ trainingData.trainerName }}</p>
-        </div>
-
-        <div class="text-caption flex items-center gap-2 text-gray-200">
-          <div class="flex items-center gap-1">
-            <img src="@/assets/images/star.svg" alt="별점" class="h-3 w-3" />
-            <span>{{ trainingData.trainerRating }}</span>
-          </div>
-          <span>|</span>
-          <span>{{ trainingData.studentCount }}명 수강</span>
-          <span>|</span>
-          <span>{{ trainingData.totalWeeks }}주</span>
-        </div>
-      </div>
-
-      <h2 class="text-heading mt-5 font-bold text-white">
-        {{ trainingData.title }}
-      </h2>
-      <p class="mt-2 text-body text-gray-300">{{ trainingData.description }}</p>
-
-      <div class="mb-4 mt-8 h-px bg-gray-800"></div>
-      <ReviewList
-        :average-rating="averageRating"
-        :total-reviews="totalReviews"
-        :reviews="reviewList"
+  <div>
+    <BaseHeader title="트레이닝 상세" @back="goBack" />
+    <div>
+      <!-- 트레이닝 상세 정보 -->
+      <TrainingInfo
+        v-if="trainingData"
+        :training-data="trainingData"
+        user-role="trainee"
       />
-      <div class="my-6 h-px bg-gray-800"></div>
+    </div>
+    <div class="m-3 h-[430px]">
+      <BaseTabNavigation
+        :tabs="tabs"
+        :default-tab="'details'"
+        @tab-change="handleTabChange"
+      >
+        <template #details>
+          <div>
+            <!-- 트레이닝 설명 -->
+            <div v-if="trainingData?.description" class="mx-2 mb-6">
+              <div class="border-l-4p-4 mb-4 rounded-lg">
+                <p class="text-body leading-relaxed text-gray-300">
+                  {{ trainingData.description }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </template>
 
-      <div class="text-title font-bold text-white">{{ formattedPrice }}원</div>
-
-      <div class="mt-12 pb-8">
-        <button
-          @click="proceedToPayment"
-          :disabled="isLoading"
-          class="h-14 w-full rounded-xl bg-white text-lg font-bold text-black active:bg-gray-200"
-        >
-          결제하기
-        </button>
-      </div>
-    </main>
+        <!-- 리뷰 탭 컨텐츠 -->
+        <template #reviews>
+          <ReviewList
+            :average-rating="averageRating"
+            :total-reviews="totalReviews"
+            :reviews="reviewList"
+          />
+        </template>
+      </BaseTabNavigation>
+    </div>
+    <div>
+      <BaseButton
+        @click="proceedToPayment"
+        :disabled="isLoading"
+        class="h-14 w-full max-w-sm rounded-xl px-2 text-subTitle font-bold"
+      >
+        결제하기
+      </BaseButton>
+    </div>
 
     <PaymentModal
       :visible="modalVisible"

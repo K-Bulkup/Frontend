@@ -281,7 +281,7 @@ const toggleSection = (k) => {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col bg-realBlack px-6 pb-24 pt-4">
+  <div class="flex min-h-screen flex-col px-6 pb-24 pt-4">
     <BaseHeader title="트레이닝 상세" @back="goBack" />
 
     <main v-if="trainingData" class="flex-1">
@@ -382,7 +382,7 @@ const toggleSection = (k) => {
           :text="hasWrittenReview ? '리뷰 작성 완료' : '리뷰 작성하기'"
           :variant="hasWrittenReview ? 'disabled' : 'secondary'"
           :disabled="hasWrittenReview"
-          class="bg-gray-custom w-full !text-body !font-medium !text-white"
+          class="w-full bg-gray-custom !text-body !font-medium !text-white"
           @click="!hasWrittenReview && goToReviewPage()"
         />
         <ActionButton
@@ -390,7 +390,7 @@ const toggleSection = (k) => {
           text="트레이너와 1:1 PT"
           variant="primary"
           :disabled="chatRoomCreated"
-          class="!bg-gray-custom w-full !text-body !font-medium !text-white"
+          class="w-full !bg-gray-custom !text-body !font-medium !text-white"
           @click="startChat"
         />
       </div>
