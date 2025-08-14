@@ -1,4 +1,4 @@
-<!-- src/pages/trainee/TraineeTrainingList.vue -->
+<!-- src/views/training/TrainingListPage.vue -->
 <script setup>
 import {
   ref,
@@ -10,7 +10,6 @@ import {
 } from "vue";
 import { useRouter } from "vue-router";
 import TrainingCard from "@/components/trainee/training/home/TrainingCard.vue";
-
 import logo from "@/assets/images/mascot/logo.png";
 
 import { getTraineeTraining } from "@/composables/api/trainee/mypage/traineeTrainingApi";
@@ -19,8 +18,10 @@ import {
   searchTrainings,
 } from "@/composables/api/trainee/training/useTrainingListApi";
 
-// state
+// Router
 const router = useRouter();
+
+// ───────────────── state
 const searchQuery = ref("");
 const selectedCategory = ref("전체");
 const categories = ref(["전체"]);
@@ -41,7 +42,31 @@ const ipPages = computed(() => {
 });
 const totalPages = computed(() => ipPages.value.length);
 
-// helpers
+// ───────────────── helpers
+// 백에서 level 포맷이 다양할 때 표준화
+const normalizeLevel = (val) => {
+  if (val == null) return null;
+  const s = String(val).trim();
+  if (!s) return null;
+
+  const map = {
+    초급: "초급",
+    중급: "중급",
+    고급: "고급",
+    BEGINNER: "초급",
+    INTERMEDIATE: "중급",
+    ADVANCED: "고급",
+    LOW: "초급",
+    MID: "중급",
+    HIGH: "고급",
+    1: "초급",
+    2: "중급",
+    3: "고급",
+  };
+  const key = s.toUpperCase?.() ?? s;
+  return map[key] ?? s; // 모르는 값이면 원문 출력
+};
+
 const mapListItem = (t) => ({
   trainingId: t.trainingId,
   title: t.title,
@@ -49,10 +74,11 @@ const mapListItem = (t) => ({
   price: t.price,
   rating: t.averageRating,
   category: t.category,
-  level: t.level,
+  level: normalizeLevel(t.level),
   thumbnailUrl: t.thumbnailUrl,
   isPurchased: t.purchased ?? false,
 });
+
 const mapInProgressItem = (e) => ({
   trainingId: e.trainingId ?? e.training?.trainingId ?? e.training?.id ?? e.id,
   title: e.title ?? e.training?.title ?? "",
@@ -62,7 +88,7 @@ const mapInProgressItem = (e) => ({
   isPurchased: true,
 });
 
-// API
+// ───────────────── API
 const fetchInProgress = async () => {
   try {
     const raw = await getTraineeTraining();
@@ -81,6 +107,7 @@ const fetchInProgress = async () => {
     inProgress.value = [];
   }
 };
+
 const fetchAllTrainings = async () => {
   try {
     const res = await getAllTrainings();
@@ -96,6 +123,7 @@ const fetchAllTrainings = async () => {
     console.error("🚨 전체 트레이닝 목록 조회 실패:", err);
   }
 };
+
 const fetchSearchResults = async (keyword) => {
   try {
     const res = await searchTrainings(keyword);
@@ -109,7 +137,7 @@ const fetchSearchResults = async (keyword) => {
   }
 };
 
-// filter
+// ───────────────── filter
 const applyFilter = () => {
   trainings.value =
     selectedCategory.value === "전체"
@@ -119,7 +147,7 @@ const applyFilter = () => {
         );
 };
 
-// watchers
+// ───────────────── watchers
 let debounceTimer;
 watch(
   () => searchQuery.value,
@@ -137,7 +165,7 @@ watch(
 );
 watch(() => selectedCategory.value, applyFilter);
 
-// 캐러셀 이동 & 페이지 추적
+// ───────────────── 캐러셀 컨트롤
 const handleScroll = () => {
   const el = ipContainer.value;
   if (!el) return;
@@ -154,26 +182,19 @@ const scrollToPage = (idx) => {
 const goPrev = () => scrollToPage(activePage.value - 1);
 const goNext = () => scrollToPage(activePage.value + 1);
 
-// nav
+// ───────────────── nav
 const goToDetail = (training) => {
   const purchased =
     training.isPurchased ||
     allTrainingsCache.value.find((t) => t.trainingId === training.trainingId)
       ?.isPurchased ||
     false;
-
-  if (purchased) {
-    router.push(`/trainee/mypage/training/${training.trainingId}`);
-  } else {
-    router.push(`/training/${training.trainingId}`);
-  }
+  if (purchased) router.push(`/trainee/mypage/training/${training.trainingId}`);
+  else router.push(`/training/${training.trainingId}`);
 };
+const goToPtPage = () => router.push("/common/pt-history");
 
-// PT 페이지 이동
-const goToPtPage = () => {
-  router.push("/common/pt/history");
-
-// lifecycle
+// ───────────────── lifecycle
 onMounted(async () => {
   await Promise.all([fetchAllTrainings(), fetchInProgress()]);
   await nextTick();
@@ -192,7 +213,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <!-- 고정 폭 컨테이너로 모바일 좌우 여백/그리드 간격 안정화 -->
+  <!-- 고정 폭 컨테이너: 모바일 간격 안정화 & 항상 3열 구성 -->
   <div
     class="mx-auto min-h-screen w-full max-w-[420px] px-4 pb-24 pt-2 font-sans text-white"
   >
@@ -229,7 +250,7 @@ onBeforeUnmount(() => {
         class="flex snap-x snap-mandatory gap-5 overflow-x-auto scrollbar-hide"
         style="scroll-behavior: smooth"
       >
-        <!-- 페이지(2개 세로) -->
+        <!-- 2개씩 세로 카드 페이지 -->
         <div
           v-for="(page, idx) in ipPages"
           :key="idx"
@@ -284,7 +305,7 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
-    <!-- 캐러셀 컨트롤: 센터 정렬, 검색창 위 -->
+    <!-- 캐러셀 컨트롤: 검색창 위, 가운데 정렬 -->
     <div
       v-if="totalPages > 1"
       class="mb-6 flex items-center justify-center gap-6"
@@ -343,13 +364,13 @@ onBeforeUnmount(() => {
         />
       </div>
 
-      <!-- 카테고리 칩: 한 줄 유지 + 가로 스크롤(페이지 패딩과 정렬) -->
+      <!-- 카테고리 칩 영역 -->
       <div class="-mx-4 mb-5 overflow-x-auto scrollbar-hide">
         <div class="flex gap-2 whitespace-nowrap px-4">
           <button
             v-for="c in categories"
             :key="c"
-            class="rounded-full border px-3 py-1 text-button transition-colors"
+            class="inline-flex h-[37px] items-center justify-center rounded-full border px-3 text-button transition-colors"
             :class="
               selectedCategory === c
                 ? 'border-primary bg-primary/30 text-white'
@@ -364,7 +385,7 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
-    <!-- 카드 그리드: 항상 3열, 간격 고정 -->
+    <!-- 카드 그리드: 항상 3열 -->
     <main class="grid grid-cols-3 gap-x-3 gap-y-6">
       <TrainingCard
         v-for="training in trainings"
