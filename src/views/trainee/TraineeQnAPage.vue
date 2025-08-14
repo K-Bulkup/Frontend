@@ -101,7 +101,12 @@ onMounted(async () => {
 
     <!-- Q&A 리스트 -->
     <div class="px-6 pb-24">
-      <QnAList :items="qnaData" initial-tab="completed" :accordion="false" />
+      <QnAList
+        :items="qnaData"
+        initial-tab="completed"
+        :accordion="false"
+        :is-trainer="false"
+      />
     </div>
 
     <!-- 등록 버튼 -->

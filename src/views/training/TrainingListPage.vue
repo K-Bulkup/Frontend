@@ -253,7 +253,8 @@ const goToDetail = (training) => {
 };
 const goToPtPage = () => router.push("/common/pt-history");
 
-// ───────────────── lifecycle
+  // lifecycle
+};
 onMounted(async () => {
   // Body 스크롤 잠그기 (페이지 컨테이너만 스크롤)
   document.documentElement.style.overflow = "hidden";
@@ -345,9 +346,10 @@ onBeforeUnmount(() => {
                   :src="ip.thumbnailUrl"
                   alt=""
                   class="h-16 w-16 flex-none rounded-r15 object-cover"
+                  class="h-16 w-16 flex-none rounded-r15 object-cover"
                 />
                 <div class="min-w-0 flex-1">
-                  <div class="truncate text-body font-medium">
+                  <div class="truncate text-subTitle2 font-medium">
                     {{ ip.title }}
                   </div>
                   <div
@@ -438,25 +440,23 @@ onBeforeUnmount(() => {
         />
       </div>
 
-      <!-- 카테고리 칩 -->
-      <div class="-mx-4 mb-5 overflow-x-auto scrollbar-hide">
-        <div class="flex gap-2 whitespace-nowrap px-4">
-          <button
-            v-for="c in categories"
-            :key="c"
-            class="inline-flex h-[37px] items-center justify-center rounded-full border px-3 text-button transition-colors"
-            :class="
-              selectedCategory === c
-                ? 'border-primary bg-primary/30 text-white'
-                : 'border-gray-600 text-white hover:border-primary hover:bg-primary/20'
-            "
-            @click="selectedCategory = c"
-            type="button"
-          >
-            {{ c }}
-          </button>
-        </div>
+      <div class="mb-4 flex gap-2 overflow-x-auto scrollbar-hide">
+        <button
+          v-for="c in categories"
+          :key="c"
+          class="whitespace-nowrap rounded-pill border px-3 py-1 text-body3"
+          :class="
+            selectedCategory === c
+              ? 'border-transparent bg-primary text-black'
+              : 'border-gray-700 text-gray-200'
+          "
+          @click="selectedCategory = c"
+          type="button"
+        >
+          {{ c }}
+        </button>
       </div>
+    </section>
 
       <!-- 카드 그리드: 항상 3열 / 처음엔 1행(3개)만 -->
       <main class="grid grid-cols-3 gap-x-3 gap-y-6">
