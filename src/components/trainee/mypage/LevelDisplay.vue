@@ -35,7 +35,7 @@ const characterImage = computed(() => {
 <template>
   <div
     :class="[
-      'relative min-h-screen w-full overflow-hidden',
+      'relative w-full overflow-hidden',
       { 'bg-black/10 backdrop-blur-sm': applyBackdropBlur },
     ]"
   >
@@ -56,13 +56,9 @@ const characterImage = computed(() => {
     </div>
 
     <div
-      class="pointer-events-none relative z-20 flex min-h-screen flex-col justify-between p-6 pb-24"
+      class="relative z-20 flex h-screen flex-col justify-between overflow-y-hidden p-6 pb-24"
     >
-      <div></div>
-
-      <div class="pointer-events-auto">
-        <slot></slot>
-      </div>
+      <slot></slot>
     </div>
   </div>
 </template>
