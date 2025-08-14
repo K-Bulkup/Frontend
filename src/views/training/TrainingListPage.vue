@@ -29,26 +29,39 @@ const allTrainingsCache = ref([]);
 const currentSource = ref([]);
 const trainings = ref([]);
 
+// 무한스크롤: 3개(1행)부터 시작, 배치로 추가
+const COLS = 3;
+const INITIAL_ROWS = 1;
+const BATCH_ROWS = 3;
+const PAGE_SIZE = COLS * INITIAL_ROWS; // 3
+const BATCH_SIZE = COLS * BATCH_ROWS; // 9
+
+const visibleCount = ref(PAGE_SIZE);
+const visibleTrainings = computed(() =>
+  trainings.value.slice(0, visibleCount.value),
+);
+const hasMore = computed(() => visibleCount.value < trainings.value.length);
+
+// 페이지 스크롤 컨테이너(바디는 잠그고 이 div가 스크롤 담당)
+const pageRef = ref(null);
+
+// 수강중 캐러셀
 const inProgress = ref([]);
 const ipContainer = ref(null);
-
-// 캐러셀 페이지 상태
 const activePage = ref(0);
 const ipPages = computed(() => {
   const arr = inProgress.value || [];
   const pages = [];
-  for (let i = 0; i < arr.length; i += 2) pages.push(arr.slice(i, i + 2)); // 2개씩 세로
+  for (let i = 0; i < arr.length; i += 2) pages.push(arr.slice(i, i + 2));
   return pages;
 });
 const totalPages = computed(() => ipPages.value.length);
 
 // ───────────────── helpers
-// 백에서 level 포맷이 다양할 때 표준화
 const normalizeLevel = (val) => {
   if (val == null) return null;
   const s = String(val).trim();
   if (!s) return null;
-
   const map = {
     초급: "초급",
     중급: "중급",
@@ -64,7 +77,7 @@ const normalizeLevel = (val) => {
     3: "고급",
   };
   const key = s.toUpperCase?.() ?? s;
-  return map[key] ?? s; // 모르는 값이면 원문 출력
+  return map[key] ?? s;
 };
 
 const mapListItem = (t) => ({
@@ -118,7 +131,7 @@ const fetchAllTrainings = async () => {
     );
     categories.value = ["전체", ...uniq];
     currentSource.value = [...allTrainingsCache.value];
-    applyFilter();
+    applyFilter(true); // 초기화
   } catch (err) {
     console.error("🚨 전체 트레이닝 목록 조회 실패:", err);
   }
@@ -129,22 +142,26 @@ const fetchSearchResults = async (keyword) => {
     const res = await searchTrainings(keyword);
     const raw = res?.data?.data ?? [];
     currentSource.value = raw.map(mapListItem);
-    applyFilter();
+    applyFilter(true); // 검색 결과도 초기화
   } catch (err) {
     console.error("🚨 검색 실패:", err);
     currentSource.value = [];
-    applyFilter();
+    applyFilter(true);
   }
 };
 
-// ───────────────── filter
-const applyFilter = () => {
+// ───────────────── filter + reset
+const applyFilter = (shouldReset = false) => {
   trainings.value =
     selectedCategory.value === "전체"
       ? [...currentSource.value]
       : currentSource.value.filter(
           (t) => String(t.category) === String(selectedCategory.value),
         );
+  if (shouldReset) {
+    visibleCount.value = PAGE_SIZE; // 처음엔 3개만
+    resetInfinite();
+  }
 };
 
 // ───────────────── watchers
@@ -156,17 +173,20 @@ watch(
     debounceTimer = setTimeout(() => {
       if (!v.trim()) {
         currentSource.value = [...allTrainingsCache.value];
-        applyFilter();
+        applyFilter(true);
       } else {
         fetchSearchResults(v);
       }
     }, 300);
   },
 );
-watch(() => selectedCategory.value, applyFilter);
+watch(
+  () => selectedCategory.value,
+  () => applyFilter(true),
+);
 
 // ───────────────── 캐러셀 컨트롤
-const handleScroll = () => {
+const handleScrollCarousel = () => {
   const el = ipContainer.value;
   if (!el) return;
   const idx = Math.round(el.scrollLeft / el.clientWidth);
@@ -182,6 +202,45 @@ const scrollToPage = (idx) => {
 const goPrev = () => scrollToPage(activePage.value - 1);
 const goNext = () => scrollToPage(activePage.value + 1);
 
+// ───────────────── 무한스크롤(페이지 스크롤 + 센티널)
+const sentinelRef = ref(null);
+let io = null;
+
+const loadMore = () => {
+  if (!hasMore.value) return;
+  visibleCount.value = Math.min(
+    visibleCount.value + BATCH_SIZE,
+    trainings.value.length,
+  );
+};
+
+const setupInfiniteObserver = () => {
+  if (io) {
+    io.disconnect();
+    io = null;
+  }
+  if (!pageRef.value || !sentinelRef.value) return;
+  io = new IntersectionObserver(
+    (entries) => {
+      if (entries.some((e) => e.isIntersecting)) loadMore();
+    },
+    {
+      root: pageRef.value, // 페이지 스크롤 컨테이너 기준
+      rootMargin: "0px 0px 240px 0px", // 하단 여유로 미리 로드
+      threshold: 0,
+    },
+  );
+  io.observe(sentinelRef.value);
+};
+
+const resetInfinite = () => {
+  nextTick(() => {
+    // 스크롤 맨 위로
+    if (pageRef.value) pageRef.value.scrollTop = 0;
+    setupInfiniteObserver();
+  });
+};
+
 // ───────────────── nav
 const goToDetail = (training) => {
   const purchased =
@@ -196,28 +255,43 @@ const goToPtPage = () => router.push("/common/pt-history");
 
 // ───────────────── lifecycle
 onMounted(async () => {
+  // Body 스크롤 잠그기 (페이지 컨테이너만 스크롤)
+  document.documentElement.style.overflow = "hidden";
+  document.body.style.overflow = "hidden";
+
   await Promise.all([fetchAllTrainings(), fetchInProgress()]);
   await nextTick();
+
   if (ipContainer.value) {
-    ipContainer.value.addEventListener("scroll", handleScroll, {
+    ipContainer.value.addEventListener("scroll", handleScrollCarousel, {
       passive: true,
     });
-    handleScroll();
+    handleScrollCarousel();
   }
+
+  // 무한스크롤 옵저버 준비
+  setupInfiniteObserver();
 });
+
 onBeforeUnmount(() => {
+  // Body 스크롤 복구
+  document.documentElement.style.overflow = "";
+  document.body.style.overflow = "";
+
   if (ipContainer.value) {
-    ipContainer.value.removeEventListener("scroll", handleScroll);
+    ipContainer.value.removeEventListener("scroll", handleScrollCarousel);
   }
+  if (io) io.disconnect();
 });
 </script>
 
 <template>
-  <!-- 고정 폭 컨테이너: 모바일 간격 안정화 & 항상 3열 구성 -->
+  <!-- 바디 대신 이 컨테이너가 스크롤을 담당 -->
   <div
-    class="mx-auto min-h-screen w-full max-w-[420px] px-4 pb-24 pt-2 font-sans text-white"
+    ref="pageRef"
+    class="mx-auto min-h-screen w-full max-w-[420px] overflow-y-auto px-4 pb-24 pt-2 font-sans text-white"
   >
-    <!-- 상단: 로고 + 채팅 버튼(보더) -->
+    <!-- 상단: 로고 + 채팅 버튼 -->
     <div class="mb-4 flex h-20 items-center justify-between pr-1 md:h-24">
       <img :src="logo" alt="KBULKUP" class="h-20 w-auto md:h-24" />
       <button
@@ -305,7 +379,7 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
-    <!-- 캐러셀 컨트롤: 검색창 위, 가운데 정렬 -->
+    <!-- 캐러셀 컨트롤 -->
     <div
       v-if="totalPages > 1"
       class="mb-6 flex items-center justify-center gap-6"
@@ -364,7 +438,7 @@ onBeforeUnmount(() => {
         />
       </div>
 
-      <!-- 카테고리 칩 영역 -->
+      <!-- 카테고리 칩 -->
       <div class="-mx-4 mb-5 overflow-x-auto scrollbar-hide">
         <div class="flex gap-2 whitespace-nowrap px-4">
           <button
@@ -383,17 +457,20 @@ onBeforeUnmount(() => {
           </button>
         </div>
       </div>
-    </section>
 
-    <!-- 카드 그리드: 항상 3열 -->
-    <main class="grid grid-cols-3 gap-x-3 gap-y-6">
-      <TrainingCard
-        v-for="training in trainings"
-        :key="training.trainingId"
-        :training="training"
-        @click="goToDetail(training)"
-        class="cursor-pointer"
-      />
-    </main>
+      <!-- 카드 그리드: 항상 3열 / 처음엔 1행(3개)만 -->
+      <main class="grid grid-cols-3 gap-x-3 gap-y-6">
+        <TrainingCard
+          v-for="training in visibleTrainings"
+          :key="training.trainingId"
+          :training="training"
+          @click="goToDetail(training)"
+          class="cursor-pointer"
+        />
+      </main>
+
+      <!-- 센티널: 이게 화면에 들어오면 다음 배치 로드 -->
+      <div ref="sentinelRef" class="h-8"></div>
+    </section>
   </div>
 </template>
