@@ -281,7 +281,7 @@ const toggleSection = (k) => {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col px-6 pb-24 pt-4">
+  <div class="flex flex-col">
     <BaseHeader title="트레이닝 상세" @back="goBack" />
 
     <main v-if="trainingData" class="flex-1">
