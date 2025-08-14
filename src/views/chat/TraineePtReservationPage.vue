@@ -4,6 +4,7 @@ import { useRoute } from "vue-router";
 import dayjs from "dayjs";
 
 import BaseButton from "@/components/common/BaseButton.vue";
+import ActionStateModal from "@/components/common/ActionStateModal.vue";
 import DateTimeSlotsPicker from "@/components/chat/DateTimeSlotsPicker.vue";
 
 import {
@@ -18,6 +19,14 @@ const TRAINING_ID = Number(route.params.trainingId ?? 1);
 const selectedDate = ref(null);
 const selectedTimes = ref([]);
 const existingSchedules = ref([]);
+
+// 모달 상태 관리
+const showModal = ref(false);
+const modalConfig = ref({
+  title: "",
+  subtitle: "",
+  confirmButtonText: "확인",
+});
 
 const fetchExistingSchedules = async () => {
   try {
@@ -42,7 +51,13 @@ watch(selectedTimes, (val) => {
 
 const submitReservation = async () => {
   if (!selectedDate.value || selectedTimes.value.length !== 1) {
-    alert("예약할 시간을 하나만 선택하세요.");
+    // alert 대신 모달 표시
+    modalConfig.value = {
+      title: "시간 선택 필요",
+      subtitle: "예약할 시간을 하나만 선택하세요.",
+      confirmButtonText: "확인",
+    };
+    showModal.value = true;
     return;
   }
 
@@ -62,18 +77,41 @@ const submitReservation = async () => {
   try {
     const { data } = await createTraineeReservation(payload); // ✅ 예약 생성
     if (data?.success) {
-      alert("예약이 성공적으로 생성되었습니다.");
+      // alert 대신 성공 모달 표시
+      modalConfig.value = {
+        title: "예약 완료!",
+        subtitle: "예약이 성공적으로 생성되었습니다.",
+        confirmButtonText: "확인",
+      };
+      showModal.value = true;
+
       selectedTimes.value = [];
       await fetchExistingSchedules(); // 목록 갱신
     } else {
-      alert(data?.message ?? "예약 생성 실패");
+      // 실패 모달 표시
+      modalConfig.value = {
+        title: "예약 생성 실패",
+        subtitle: data?.message ?? "예약 생성에 실패했습니다.",
+        confirmButtonText: "확인",
+      };
+      showModal.value = true;
       console.log(data);
     }
   } catch (e) {
     console.error("예약 생성 실패:", e);
-    // 서버 표준 응답 메시지 출력
-    alert(e.response?.data?.message ?? "서버 오류가 발생했습니다.");
+    // 에러 모달 표시
+    modalConfig.value = {
+      title: "예약 실패",
+      subtitle: e.response?.data?.message ?? "서버 오류가 발생했습니다.",
+      confirmButtonText: "확인",
+    };
+    showModal.value = true;
   }
+};
+
+// 모달 닫기 핸들러
+const handleModalClose = () => {
+  showModal.value = false;
 };
 </script>
 
@@ -97,5 +135,14 @@ const submitReservation = async () => {
         </BaseButton>
       </div>
     </div>
+
+    <!-- 예약 상태 모달 -->
+    <ActionStateModal
+      v-if="showModal"
+      :title="modalConfig.title"
+      :subtitle="modalConfig.subtitle"
+      :confirm-button-text="modalConfig.confirmButtonText"
+      @close="handleModalClose"
+    />
   </div>
 </template>

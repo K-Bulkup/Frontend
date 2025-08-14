@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import dayjs from "dayjs";
 import BaseButton from "@/components/common/BaseButton.vue";
+import ActionStateModal from "@/components/common/ActionStateModal.vue";
 import DateTimeSlotsPicker from "@/components/chat/DateTimeSlotsPicker.vue";
 import {
   getTrainerSchedules,
@@ -11,6 +12,14 @@ import {
 const selectedDate = ref(null);
 const selectedTimes = ref([]);
 const existingSchedules = ref([]);
+
+// 모달 상태 관리
+const showModal = ref(false);
+const modalConfig = ref({
+  title: "",
+  subtitle: "",
+  confirmButtonText: "확인",
+});
 
 const fetchExistingSchedules = async () => {
   try {
@@ -45,17 +54,41 @@ const submitReservation = async () => {
   try {
     const { data } = await createTrainerSchedules(timeSlots);
     if (data?.success) {
-      alert("일정이 성공적으로 등록되었습니다.");
+      // alert 대신 성공 모달 표시
+      modalConfig.value = {
+        title: "일정 등록 완료!",
+        subtitle: "일정이 성공적으로 등록되었습니다.",
+        confirmButtonText: "확인",
+      };
+      showModal.value = true;
+
       selectedTimes.value = [];
       await fetchExistingSchedules();
     } else {
-      alert("일정 등록 실패");
+      // 실패 모달 표시
+      modalConfig.value = {
+        title: "일정 등록 실패",
+        subtitle: "일정 등록에 실패했습니다. 다시 시도해주세요.",
+        confirmButtonText: "확인",
+      };
+      showModal.value = true;
       console.log(data);
     }
   } catch (e) {
     console.error("등록 실패:", e);
-    alert(e.response?.data?.message ?? "서버 오류가 발생했습니다.");
+    // 에러 모달 표시
+    modalConfig.value = {
+      title: "등록 실패",
+      subtitle: e.response?.data?.message ?? "서버 오류가 발생했습니다.",
+      confirmButtonText: "확인",
+    };
+    showModal.value = true;
   }
+};
+
+// 모달 닫기 핸들러
+const handleModalClose = () => {
+  showModal.value = false;
 };
 </script>
 
@@ -80,5 +113,14 @@ const submitReservation = async () => {
         </BaseButton>
       </div>
     </div>
+
+    <!-- 성공/실패 모달 -->
+    <ActionStateModal
+      v-if="showModal"
+      :title="modalConfig.title"
+      :subtitle="modalConfig.subtitle"
+      :confirm-button-text="modalConfig.confirmButtonText"
+      @close="handleModalClose"
+    />
   </div>
 </template>

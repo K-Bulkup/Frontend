@@ -72,7 +72,7 @@ const handleTabChange = (tabId) => {
     <BaseTabNavigation
       :tabs="tabs"
       :default-tab="currentTab"
-      container-class="max-w-6xl mx-auto px-4 pt-6"
+      container-class="pt-6"
       @tab-change="handleTabChange"
     >
       <!-- PT 내역 탭 -->
