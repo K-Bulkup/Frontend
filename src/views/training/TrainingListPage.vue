@@ -1,11 +1,17 @@
 <!-- src/pages/trainee/TraineeTrainingList.vue -->
 <script setup>
-import { ref, watch, onMounted, nextTick, computed } from "vue";
+import {
+  ref,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+  computed,
+} from "vue";
 import { useRouter } from "vue-router";
 import TrainingCard from "@/components/trainee/training/home/TrainingCard.vue";
 
 import logo from "@/assets/images/mascot/logo.png";
-// chatIcon.svg는 사용 안 함(인라인 SVG로 대체)
 
 import { getTraineeTraining } from "@/composables/api/trainee/mypage/traineeTrainingApi";
 import {
@@ -21,8 +27,19 @@ const categories = ref(["전체"]);
 const allTrainingsCache = ref([]);
 const currentSource = ref([]);
 const trainings = ref([]);
+
 const inProgress = ref([]);
 const ipContainer = ref(null);
+
+// 캐러셀 페이지 상태
+const activePage = ref(0);
+const ipPages = computed(() => {
+  const arr = inProgress.value || [];
+  const pages = [];
+  for (let i = 0; i < arr.length; i += 2) pages.push(arr.slice(i, i + 2)); // 2개씩 세로
+  return pages;
+});
+const totalPages = computed(() => ipPages.value.length);
 
 // helpers
 const mapListItem = (t) => ({
@@ -120,19 +137,22 @@ watch(
 );
 watch(() => selectedCategory.value, applyFilter);
 
-// in-progress pages (2개씩 세로 / 가로 스와이프)
-const ipPages = computed(() => {
-  const arr = inProgress.value || [];
-  const pages = [];
-  for (let i = 0; i < arr.length; i += 2) pages.push(arr.slice(i, i + 2));
-  return pages;
-});
-const scrollCarousel = (dir = "next") => {
+// 캐러셀 이동 & 페이지 추적
+const handleScroll = () => {
   const el = ipContainer.value;
   if (!el) return;
-  const delta = dir === "next" ? el.clientWidth : -el.clientWidth;
-  el.scrollBy({ left: Math.round(delta), behavior: "smooth" });
+  const idx = Math.round(el.scrollLeft / el.clientWidth);
+  activePage.value = Math.min(Math.max(idx, 0), totalPages.value - 1);
 };
+const scrollToPage = (idx) => {
+  const el = ipContainer.value;
+  if (!el) return;
+  const next = Math.min(Math.max(idx, 0), totalPages.value - 1);
+  el.scrollTo({ left: next * el.clientWidth, behavior: "smooth" });
+  activePage.value = next;
+};
+const goPrev = () => scrollToPage(activePage.value - 1);
+const goNext = () => scrollToPage(activePage.value + 1);
 
 // nav
 const goToDetail = (training) => {
@@ -150,27 +170,35 @@ const goToPtPage = () => router.push("/common/pt-history");
 onMounted(async () => {
   await Promise.all([fetchAllTrainings(), fetchInProgress()]);
   await nextTick();
+  if (ipContainer.value) {
+    ipContainer.value.addEventListener("scroll", handleScroll, {
+      passive: true,
+    });
+    handleScroll();
+  }
+});
+onBeforeUnmount(() => {
+  if (ipContainer.value) {
+    ipContainer.value.removeEventListener("scroll", handleScroll);
+  }
 });
 </script>
 
 <template>
-  <div
-    class="relative min-h-screen bg-realBlack px-4 pb-24 pt-4 font-sans text-white"
-  >
-    <!-- 상단: 로고 크게 + 채팅 버튼(오른쪽 끝, 세로 가운데). 아이콘=인라인 SVG -->
-    <div class="mb-8 flex h-24 items-center justify-between pr-1 md:h-28">
-      <img :src="logo" alt="KBULKUP" class="h-24 w-auto md:h-28" />
+  <div class="relative min-h-screen px-4 pb-24 pt-2 font-sans text-white">
+    <!-- 상단: 로고 + 채팅 버튼(보더 추가) -->
+    <div class="mb-4 flex h-20 items-center justify-between pr-1 md:h-24">
+      <img :src="logo" alt="KBULKUP" class="h-20 w-auto md:h-24" />
       <button
         type="button"
         @click="goToPtPage"
         aria-label="채팅"
-        class="flex h-10 w-10 items-center justify-center rounded-full bg-background text-primary shadow-md"
+        class="flex h-10 w-10 items-center justify-center rounded-full border border-gray-800 text-primary shadow-md hover:bg-gray-900/40"
       >
         <svg
           viewBox="0 0 24 24"
           class="h-6 w-6"
           fill="currentColor"
-          xmlns="http://www.w3.org/2000/svg"
           aria-hidden="true"
         >
           <path
@@ -180,18 +208,10 @@ onMounted(async () => {
       </button>
     </div>
 
-    <!-- 수강중인 트레이닝 (더 큼) -->
-    <section class="mb-8">
+    <!-- 수강중인 트레이닝 (섹션 폭 원상복구) -->
+    <section class="mb-4">
       <div class="mb-3 flex items-center justify-between">
         <h2 class="text-input">수강중인 트레이닝</h2>
-        <button
-          type="button"
-          @click="scrollCarousel('next')"
-          class="text-body text-gray-200"
-          aria-label="다음"
-        >
-          &gt;
-        </button>
       </div>
 
       <div
@@ -219,24 +239,23 @@ onMounted(async () => {
                 <img
                   :src="ip.thumbnailUrl"
                   alt=""
-                  class="rounded-r15 h-16 w-16 flex-none object-cover"
+                  class="h-16 w-16 flex-none rounded-r15 object-cover"
                 />
                 <div class="min-w-0 flex-1">
-                  <div class="text-subTitle2 truncate font-medium">
+                  <div class="truncate text-body font-medium">
                     {{ ip.title }}
                   </div>
                   <div
                     class="mt-2 flex items-center justify-between text-body2 text-white"
                   >
                     <span>진행률</span>
-                    <span class="text-body2 text-primary"
-                      >{{ Math.round(ip.progress || 0) }}%</span
-                    >
+                    <span class="text-body2 text-primary">
+                      {{ Math.round(ip.progress || 0) }}%
+                    </span>
                   </div>
-                  <!-- 더 두껍게 -->
-                  <div class="mt-1 h-[14px] w-full rounded-md bg-gray-900">
+                  <div class="mt-2 h-[10px] w-full rounded-md bg-gray-600">
                     <div
-                      class="h-[14px] rounded-md bg-primary"
+                      class="h-[10px] rounded-md bg-primary"
                       :style="{ width: (ip.progress || 0) + '%' }"
                     />
                   </div>
@@ -255,16 +274,57 @@ onMounted(async () => {
       </div>
     </section>
 
-    <!-- 트레이닝 목록 (모바일 2열 → 넓어지면 3열) -->
-    <section class="mb-8">
+    <!-- 캐러셀 컨트롤: 센터 정렬, 검색창 위 -->
+    <div
+      v-if="totalPages > 1"
+      class="mb-6 flex items-center justify-center gap-6"
+    >
+      <button
+        type="button"
+        @click="goPrev"
+        :disabled="activePage === 0"
+        class="rounded-full border px-3 py-1 text-xl leading-none transition-colors"
+        :class="
+          activePage === 0
+            ? 'cursor-not-allowed border-gray-800 text-gray-700'
+            : 'border-gray-600 text-white hover:border-primary hover:bg-primary/20'
+        "
+        aria-label="이전"
+      >
+        ‹
+      </button>
+
+      <div class="text-body2 text-gray-300">
+        {{ activePage + 1 }} / {{ totalPages }}
+      </div>
+
+      <button
+        type="button"
+        @click="goNext"
+        :disabled="activePage >= totalPages - 1"
+        class="rounded-full border px-3 py-1 text-xl leading-none transition-colors"
+        :class="
+          activePage >= totalPages - 1
+            ? 'cursor-not-allowed border-gray-800 text-gray-700'
+            : 'border-gray-600 text-white hover:border-primary hover:bg-primary/20'
+        "
+        aria-label="다음"
+      >
+        ›
+      </button>
+    </div>
+
+    <!-- 트레이닝 목록 -->
+    <section class="mb-6">
       <h2 class="mb-3 text-input">트레이닝 목록</h2>
 
+      <!-- 검색 -->
       <div class="relative mb-4">
         <input
           v-model="searchQuery"
           type="text"
           placeholder="강의를 검색해보세요"
-          class="rounded-pill h-10 w-full bg-gray-900 px-4 text-body2 text-gray-300 placeholder-gray-200 focus:outline-none"
+          class="h-10 w-full rounded-pill bg-gray-900 px-4 text-body2 text-gray-300 placeholder-gray-200 focus:outline-none"
         />
         <img
           src="@/assets/images/search.svg"
@@ -273,25 +333,28 @@ onMounted(async () => {
         />
       </div>
 
-      <div class="mb-4 flex gap-2 overflow-x-auto scrollbar-hide">
-        <button
-          v-for="c in categories"
-          :key="c"
-          class="rounded-pill whitespace-nowrap border px-3 py-1 text-body3"
-          :class="
-            selectedCategory === c
-              ? 'border-transparent bg-primary text-black'
-              : 'border-gray-700 text-gray-200'
-          "
-          @click="selectedCategory = c"
-          type="button"
-        >
-          {{ c }}
-        </button>
+      <!-- 카테고리 칩: 한 줄 유지 + 가로 스크롤 -->
+      <div class="-mx-1 mb-4 overflow-x-auto scrollbar-hide">
+        <div class="flex gap-2 whitespace-nowrap px-1">
+          <button
+            v-for="c in categories"
+            :key="c"
+            class="rounded-full border px-3 py-1 text-button transition-colors"
+            :class="
+              selectedCategory === c
+                ? 'border-primary bg-primary/30 text-white'
+                : 'border-gray-600 text-white hover:border-primary hover:bg-primary/20'
+            "
+            @click="selectedCategory = c"
+            type="button"
+          >
+            {{ c }}
+          </button>
+        </div>
       </div>
     </section>
 
-    <!-- 여기서 카드 더 크게 보기 위해 모바일 2열, sm 이상 3열 -->
+    <!-- 카드 그리드: 모바일 2열, sm↑ 3열 -->
     <main class="grid grid-cols-2 gap-5 sm:grid-cols-3">
       <TrainingCard
         v-for="training in trainings"

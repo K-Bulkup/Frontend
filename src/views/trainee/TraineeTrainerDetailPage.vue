@@ -83,7 +83,7 @@ onMounted(fetchTrainerDetail);
 </script>
 
 <template>
-  <div class="min-h-screen bg-realBlack pb-20 pt-8 text-white">
+  <div class="min-h-screen pb-20 pt-8 text-white">
     <!-- 헤더: 뒤로가기 아이콘만 -->
     <header class="mb-6 px-5">
       <button
