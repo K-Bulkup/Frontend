@@ -32,10 +32,37 @@ const userId = ref(null);
 const messages = ref([]);
 const messageContainer = ref(null);
 
-const { safeSubsribeRoom, unsubscribeRoom, sendMessage } = useChatSocket();
+// 소켓
+const {
+  safeSubsribeRoom, // 기존 오탈자 함수(호환)
+  safeSubscribeRoom, // 새 별칭 (둘 중 아무거나 사용 가능)
+  unsubscribeRoom,
+  subscribeUserQueue, // 옵션: 필요시 요약 큐 구독
+  sendMessage,
+} = useChatSocket();
 
 const handleSendMessage = (text) => {
+  if (!text || !text.trim()) return;
   sendMessage(roomId, text, userId.value);
+};
+
+// 안전한 날짜 파서
+const parseSendAt = (val) => {
+  if (!val) return null;
+  if (Array.isArray(val)) {
+    const [y, m, d, H = 0, M = 0, S = 0] = val;
+    return new Date(y, (m ?? 1) - 1, d ?? 1, H, M, S);
+    // JS Date: month는 0-based
+  }
+  if (typeof val === "string") {
+    const t = new Date(val);
+    if (!Number.isNaN(t.getTime())) return t;
+  }
+  try {
+    const t = new Date(val); // number timestamp 등
+    if (!Number.isNaN(t.getTime())) return t;
+  } catch (_) {}
+  return null;
 };
 
 const scrollToBottom = () => {
@@ -47,19 +74,16 @@ const scrollToBottom = () => {
 };
 
 const columnMappings = {
-  // Transactions 테이블 매핑 (ID 컬럼 제외)
   transactions: {
     transactionType: "거래유형",
     amount: "금액",
     transactionCategory: "거래분류",
     tranDate: "거래일자",
   },
-  // Snapshots 테이블 매핑 (ID 컬럼 제외)
   snapshots: {
     balance: "잔액",
     snapshotDate: "스냅샷일자",
   },
-  // Composition 매핑
   composition: {
     기타: "기타",
     주식: "주식",
@@ -69,7 +93,6 @@ const columnMappings = {
   },
 };
 
-// 제외할 컬럼 정의
 const excludeColumns = {
   transactions: ["transactionId", "userId"],
   snapshots: ["snapshotId", "userId"],
@@ -79,30 +102,25 @@ const jsonToCsv = (jsonArray, dataType) => {
   if (!jsonArray || jsonArray.length === 0) {
     return null;
   }
-
-  // 원본 헤더 추출 및 제외할 컬럼 필터링
   const allHeaders = Object.keys(jsonArray[0]);
   const originalHeaders = allHeaders.filter(
     (header) => !excludeColumns[dataType]?.includes(header),
   );
 
-  // 한글 헤더로 변환
-  const koreanHeaders = originalHeaders.map((header) => {
-    return columnMappings[dataType]?.[header] || header;
-  });
+  const koreanHeaders = originalHeaders.map(
+    (header) => columnMappings[dataType]?.[header] || header,
+  );
 
-  // CSV 문자열 생성
   const csvContent = [
-    koreanHeaders.join(","), // 한글 헤더 행
+    koreanHeaders.join(","), // 한글 헤더
     ...jsonArray.map((row) =>
       originalHeaders
         .map((header) => {
           let value = row[header];
 
-          // 배열 데이터 처리 (날짜 배열의 경우)
+          // 배열 → 날짜 배열 처리
           if (Array.isArray(value)) {
             if (header.includes("Date") || header.includes("date")) {
-              // 날짜 배열을 YYYY-MM-DD 형식으로 변환
               const [year, month, day] = value;
               value = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
             } else {
@@ -110,12 +128,12 @@ const jsonToCsv = (jsonArray, dataType) => {
             }
           }
 
-          // 거래유형 및 거래분류 한글화
+          // 거래유형 한글화(이미 한글이면 그대로)
           if (header === "transactionType") {
-            value = value === "입금" ? "입금" : "출금";
+            value =
+              value === "입금" ? "입금" : value === "출금" ? "출금" : value;
           }
 
-          // 문자열에 쉼표가 있는 경우 따옴표로 감싸기
           if (typeof value === "string" && value.includes(",")) {
             value = `"${value}"`;
           }
@@ -129,17 +147,13 @@ const jsonToCsv = (jsonArray, dataType) => {
   return csvContent;
 };
 
-// 객체를 CSV로 변환하는 함수 (composition 데이터용) - 한글 적용
 const objectToCsv = (obj) => {
-  if (!obj || typeof obj !== "object") {
-    return null;
-  }
+  if (!obj || typeof obj !== "object") return null;
 
   const entries = Object.entries(obj);
   const csvContent = [
-    "자산분류,비율(%)", // 한글 헤더
+    "자산분류,비율(%)",
     ...entries.map(([key, value]) => {
-      // 자산분류명도 한글로 유지
       const koreanKey = columnMappings.composition[key] || key;
       return `${koreanKey},${value}`;
     }),
@@ -148,11 +162,9 @@ const objectToCsv = (obj) => {
   return csvContent;
 };
 
-// 파일 다운로드 함수 (기존과 동일)
 const downloadCsv = (csvContent, filename) => {
   if (!csvContent) return;
 
-  // BOM 추가 (Excel에서 한글이 깨지지 않도록)
   const BOM = "\uFEFF";
   const blob = new Blob([BOM + csvContent], {
     type: "text/csv;charset=utf-8;",
@@ -171,7 +183,6 @@ const downloadCsv = (csvContent, filename) => {
   }
 };
 
-// 수정된 handleDownloadAssets 메서드
 const handleDownloadAssets = async () => {
   try {
     const response = await getTraineeAssetByRoomId(roomId);
@@ -183,26 +194,21 @@ const handleDownloadAssets = async () => {
     }
 
     const { transactions, snapshots, composition } = data;
-
-    // 현재 날짜로 파일명 생성
     const today = new Date().toISOString().split("T")[0];
 
-    // 1. Transactions CSV 생성 및 다운로드
     if (transactions && transactions.length > 0) {
-      const transactionsCsv = jsonToCsv(transactions, "transactions");
-      downloadCsv(transactionsCsv, `${userName.value}_거래내역_${today}.csv`);
+      const csv = jsonToCsv(transactions, "transactions");
+      downloadCsv(csv, `${userName.value}_거래내역_${today}.csv`);
     }
 
-    // 2. Snapshots CSV 생성 및 다운로드
     if (snapshots && snapshots.length > 0) {
-      const snapshotsCsv = jsonToCsv(snapshots, "snapshots");
-      downloadCsv(snapshotsCsv, `${userName.value}_잔액스냅샷_${today}.csv`);
+      const csv = jsonToCsv(snapshots, "snapshots");
+      downloadCsv(csv, `${userName.value}_잔액스냅샷_${today}.csv`);
     }
 
-    // 3. Asset Composition CSV 생성 및 다운로드
     if (composition && composition.assetComposition) {
-      const compositionCsv = objectToCsv(composition.assetComposition);
-      downloadCsv(compositionCsv, `${userName.value}_자산구성_${today}.csv`);
+      const csv = objectToCsv(composition.assetComposition);
+      downloadCsv(csv, `${userName.value}_자산구성_${today}.csv`);
     }
 
     console.log("CSV 파일 다운로드가 완료되었습니다.");
@@ -211,9 +217,10 @@ const handleDownloadAssets = async () => {
   }
 };
 
-const groupByDate = (messages) => {
+const groupByDate = (msgs) => {
   const result = {};
-  for (const msg of messages) {
+  for (const msg of msgs) {
+    if (!msg.sendAt) continue; // 날짜 없는 메시지 스킵(안전)
     const date = dayjs(msg.sendAt).format("YYYY년 M월 D일 dddd");
     if (!result[date]) result[date] = [];
     result[date].push({
@@ -233,41 +240,45 @@ onMounted(async () => {
   try {
     userId.value = await awaitUserReady();
 
+    // 초기 히스토리 로딩
     const response = await getChatHistory(roomId);
-    const chatList = response.data?.data || [];
+    const chatList = response?.data?.data || [];
+    messages.value = chatList.map((msg) => ({
+      id: msg.id,
+      text: msg.message,
+      isOwn: String(msg.senderId) === String(userId.value),
+      sendAt: parseSendAt(msg.sendAt),
+    }));
 
-    messages.value = chatList.map((msg) => {
-      const [year, month, day, hour, minute, second] = msg.sendAt;
-      return {
-        id: msg.id,
-        text: msg.message,
-        isOwn: String(msg.senderId) === String(userId.value),
-        sendAt: new Date(year, month - 1, day, hour, minute, second),
-      };
-    });
-
+    // 상담 상세
     const detailRes = await getCounselingDetail(roomId);
-    const detail = detailRes.data?.data;
+    const detail = detailRes?.data?.data || {};
 
-    status.value = detail.status;
-    userName.value = detail.opponentUserName;
+    status.value = detail?.status ?? "";
+    userName.value = detail?.opponentUserName ?? "";
+
     userProfileUrl.value = {
-      me: detail.myProfileUrl,
-      opponent: detail.opponentProfileUrl,
+      me: detail?.myProfileUrl ?? null,
+      opponent: detail?.opponentProfileUrl ?? null,
     };
 
-    const [year, month, day, hour, minute, second] = detail.expiresAt;
-    expiresAt.value = new Date(year, month - 1, day, hour, minute, second);
+    // 만료일자 파싱 (널가드)
+    expiresAt.value = parseSendAt(detail?.expiresAt);
 
-    safeSubsribeRoom(roomId, async (payload) => {
+    // 방 토픽 구독 (오탈자 함수 유지)
+    await safeSubsribeRoom(roomId, async (payload) => {
+      console.log("📥 [room] payload:", payload);
+
+      const parsedDate = parseSendAt(payload?.sendAt);
       messages.value.push({
         id: Date.now(),
-        text: payload.message,
-        isOwn: String(payload.senderId) === String(userId.value),
-        sendAt: new Date(payload.sendAt),
+        text: payload?.message,
+        isOwn: String(payload?.senderId) === String(userId.value),
+        sendAt: parsedDate,
       });
 
-      if (String(payload.senderId) !== String(userId.value)) {
+      // 상대가 보낸 메시지면 읽음 처리
+      if (String(payload?.senderId) !== String(userId.value)) {
         try {
           await readMessages(roomId, userId.value);
         } catch (err) {
@@ -277,7 +288,6 @@ onMounted(async () => {
 
       scrollToBottom();
     });
-
     scrollToBottom();
   } catch (err) {
     console.error("초기화 실패:", err);
@@ -298,7 +308,7 @@ onBeforeUnmount(() => {
       :room-id="roomId"
       buttonText="자산 다운로드"
       :button-handler="handleDownloadAssets"
-      @back="router.push('/common/pt-history')"
+      @back="router.push('/common/pt/history')"
     />
 
     <div ref="messageContainer" class="flex-1 overflow-y-auto p-4">
@@ -311,7 +321,7 @@ onBeforeUnmount(() => {
           :is-own="message.isOwn"
           :timestamp="message.timestamp"
           :profile-url="
-            message.isOwn ? userProfileUrl.me : userProfileUrl.opponent
+            message.isOwn ? userProfileUrl?.me : userProfileUrl?.opponent
           "
         />
       </div>

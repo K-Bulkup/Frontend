@@ -36,7 +36,12 @@ import TrainingInputPage from "@/views/trainer/TrainerTrainingInputPage.vue";
 
 //chat
 import PtChatPage from "@/views/chat/PtChatPage.vue";
-import PtHistoryPage from "@/views/chat/PtHistoryPage.vue";
+import TrainerPtPage from "@/views/chat/PtPage.vue";
+import PtPage from "@/views/chat/PtPage.vue";
+import TrainerPtReservationPage from "@/views/chat/TrainerPtReservationPage.vue";
+import TrainerPtSchedulePage from "@/views/chat/TrainerPtSchedulePage.vue";
+import TraineePtReservationPage from "@/views/chat/TraineePtReservationPage.vue";
+import TraineePtSchedulePage from "@/views/chat/TraineePtSchedulePage.vue";
 
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
@@ -183,12 +188,32 @@ const routes = [
 
   //chat
   {
-    path: "/common/pt-history",
-    component: PtHistoryPage,
+    path: "/common/pt/history",
+    component: PtPage,
     meta: { requiresAuth: true },
   },
   {
-    path: "/common/pt-chat/:roomId",
+    path: "/trainer/pt/reservation",
+    component: PtPage,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/trainer/pt/schedule",
+    component: PtPage,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/trainee/pt/reservation",
+    component: TraineePtReservationPage,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/trainee/pt/schedule",
+    component: PtPage,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/common/pt/:roomId",
     component: PtChatPage,
     meta: {
       hideNavbar: true,

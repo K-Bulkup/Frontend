@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from "vue";
+import { computed, ref, onMounted, watch } from "vue";
 
 const props = defineProps({
   modelValue: {
@@ -18,9 +18,17 @@ const props = defineProps({
     type: String,
     default: "light", // 'light' | 'dark'
   },
+  isTextarea: {
+    type: Boolean,
+    default: false,
+  },
+  rows: {
+    type: Number,
+    default: 1,
+  },
 });
 
-defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue"]);
 
 const labelClasses = computed(() => [
   "mb-2",
@@ -28,17 +36,69 @@ const labelClasses = computed(() => [
   "text-input",
   props.variant === "dark" ? "text-gray-50" : "text-black",
 ]);
+
+const inputClasses = computed(() => [
+  "w-full",
+  "border-none",
+  "bg-gray-custom",
+  "p-4",
+  "text-input",
+  "text-white",
+  "outline-none",
+  "placeholder:text-gray-300",
+  "rounded-r15",
+  props.isTextarea ? "text-left placeholder:text-center" : "text-center",
+]);
+
+const textareaRef = ref(null);
+
+const adjustHeight = () => {
+  if (textareaRef.value) {
+    textareaRef.value.style.height = "auto";
+    textareaRef.value.style.height = textareaRef.value.scrollHeight + "px";
+  }
+};
+
+watch(() => props.modelValue, adjustHeight);
+onMounted(adjustHeight);
 </script>
 
 <template>
   <div>
     <label :class="labelClasses">{{ label }}</label>
+
+    <!-- Textarea -->
+    <textarea
+      v-if="isTextarea"
+      ref="textareaRef"
+      :rows="rows"
+      :value="modelValue"
+      @input="
+        (e) => {
+          emit('update:modelValue', e.target.value);
+          adjustHeight();
+        }
+      "
+      :placeholder="placeholder"
+      :class="inputClasses"
+      style="
+        min-height: 10px;
+        max-height: 120px;
+        resize: none;
+        overflow-y: auto;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      "
+    />
+
+    <!-- Input -->
     <input
+      v-else
       type="text"
       :value="modelValue"
-      @input="$emit('update:modelValue', $event.target.value)"
+      @input="(e) => emit('update:modelValue', e.target.value)"
       :placeholder="placeholder"
-      class="rounded-r15 w-full border-none bg-gray-custom p-4 text-center text-input text-white outline-none placeholder:text-gray-300"
+      :class="inputClasses"
     />
   </div>
 </template>
