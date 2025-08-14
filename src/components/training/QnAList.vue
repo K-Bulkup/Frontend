@@ -232,10 +232,14 @@ const submitAnswer = async (it) => {
               >
                 <textarea
                   v-model="answers[it.id]"
-                  rows="5"
-                  placeholder=""
                   @keydown.enter.ctrl.prevent="submitAnswer(it)"
-                  class="w-full resize-y rounded-lg border border-gray-600 bg-black/20 p-3 text-body2 outline-none focus:border-primary"
+                  class="w-full resize-none overflow-y-auto border-none bg-transparent text-sm leading-relaxed text-white placeholder-gray-500 outline-none"
+                  style="
+                    min-height: 10px;
+                    max-height: 300px;
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                  "
                 />
                 <div class="mt-3 flex items-center justify-between">
                   <span class="text-sm text-gray-400">
@@ -309,5 +313,9 @@ const submitAnswer = async (it) => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+textarea::-webkit-scrollbar,
+div::-webkit-scrollbar {
+  display: none;
 }
 </style>
