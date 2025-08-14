@@ -109,7 +109,6 @@ const submitReservation = async () => {
   }
 };
 
-// 모달 닫기 핸들러
 const handleModalClose = () => {
   showModal.value = false;
 };
@@ -136,7 +135,6 @@ const handleModalClose = () => {
       </div>
     </div>
 
-    <!-- 예약 상태 모달 -->
     <ActionStateModal
       v-if="showModal"
       :title="modalConfig.title"
