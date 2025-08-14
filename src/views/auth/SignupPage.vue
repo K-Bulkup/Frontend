@@ -132,24 +132,23 @@ const btnAction = () => {
     <ConnectFailureModal @retry="resetForm" />
   </div>
 
-  <!-- 코인 배경 + 하단 고정 버튼 레이아웃 -->
   <div
     v-else
     class="relative flex min-h-screen flex-col justify-start overflow-hidden px-4 pb-[160px] pt-12"
   >
-    <!-- 하단 코인 배경 (컴포넌트로 교체) -->
-    <BaseBottomIllustration
-      :src="coin"
-      :bottom="-8"
-      :width="420"
-      :mdWidth="520"
-      :opacity="0.9"
-      :brightness="0.9"
-      :contrast="0.9"
-    />
+    <!-- 모든 step에 로고 추가 -->
+    <div class="relative z-10 mx-auto w-full max-w-md">
+      <div class="flex justify-center">
+        <img
+          src="@/assets/images/kbulkup-logo.png"
+          alt="K-Bulkup"
+          class="h-30 mx-auto mt-10 w-auto"
+        />
+      </div>
+    </div>
 
     <!-- 내용 -->
-    <div class="relative z-10 mx-auto w-[332px] pt-20">
+    <div class="relative z-10 mx-auto w-[332px]">
       <BaseStatusMessage
         :title="
           step === 1
@@ -172,7 +171,7 @@ const btnAction = () => {
         variant="guide"
       />
 
-      <div class="mt-6 flex flex-col items-center space-y-4">
+      <div class="flex flex-col items-center space-y-4">
         <template v-if="step === 1">
           <BaseInput
             v-model="form.email"
@@ -241,10 +240,12 @@ const btnAction = () => {
         </template>
 
         <template v-else-if="step === 4">
-          <BaseSelectRole
-            :selected="selectedRole"
-            @select="handleRoleSelection"
-          />
+          <div>
+            <BaseSelectRole
+              :selected="selectedRole"
+              @select="handleRoleSelection"
+            />
+          </div>
         </template>
       </div>
     </div>
