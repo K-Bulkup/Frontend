@@ -65,7 +65,7 @@ const convertQuizTypeToLabel = (type) => {
         <CategoryIconBox :icon-src="iconSrc" :alt-text="title" />
 
         <div class="flex flex-col pl-2">
-          <span class="text-body text-white">{{ title }}</span>
+          <span class="text-body text-gray-50">{{ title }}</span>
           <span class="text-body3 text-gray-50">{{ subtitle }}</span>
         </div>
       </div>

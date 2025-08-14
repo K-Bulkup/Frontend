@@ -2,6 +2,11 @@
 import { computed, reactive, watch, onMounted } from "vue";
 import LockIcon from "@/assets/images/trainee/training/Lock.svg";
 import { getRoutineDetail } from "@/composables/api/trainee/training/routineDetailAPI";
+import CategoryIconBox from "@/components/common/CategoryIconBox.vue";
+
+import stretchingIcon from "@/assets/images/mascot/routine/Geumyuk_stretching.png";
+import strengthIcon from "@/assets/images/mascot/routine/Geumyuk_strength.png";
+import cardioIcon from "@/assets/images/mascot/routine/Geumyuk_cardio.png";
 
 const props = defineProps({
   title: String, // 스트레칭 / 근력 / 유산소
@@ -13,6 +18,19 @@ const props = defineProps({
   lockMessage: { type: String, default: "이전 섹션 완료 후 잠금 해제" },
 });
 const emit = defineEmits(["toggle", "routine-click"]);
+
+const iconSrc = computed(() => {
+  switch (props.title) {
+    case "스트레칭":
+      return stretchingIcon;
+    case "근력":
+      return strengthIcon;
+    case "유산소":
+      return cardioIcon;
+    default:
+      return "";
+  }
+});
 
 // 타입 코드 → 라벨 매핑
 const TYPE_LABELS = { SUBJECTIVE: "주관식", OX: "OX", PRACTICE: "실천형" };
@@ -140,29 +158,19 @@ const displayQuests = computed(() => {
   <section class="w-full">
     <!-- 플랫 헤더: 아이콘 큼 + 타이틀 옆 서브타이틀 -->
     <button class="flex w-full items-center gap-3 py-4" @click="emit('toggle')">
-      <div class="h-12 w-12 rounded-xl bg-gray-900/80"></div>
+      <CategoryIconBox :icon-src="iconSrc" :alt-text="title" />
 
-      <div class="flex min-w-0 flex-1 items-center gap-2">
-        <h3 class="truncate text-body font-bold text-white">{{ title }}</h3>
-        <span class="shrink-0 text-button text-gray-400">{{ subtitle }}</span>
+      <div class="flex min-w-0 flex-1 flex-col items-start">
+        <span class="text-body text-gray-50">{{ title }}</span>
+        <span class="text-body3 text-gray-50">{{ subtitle }}</span>
       </div>
 
-      <svg
-        :class="[
-          'h-4 w-4 text-gray-400 transition-transform',
-          isExpanded ? 'rotate-180' : '',
-        ]"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="m6 9 6 6 6-6"
-        />
-      </svg>
+      <img
+        src="@/assets/images/Chevron_Down_XL.svg"
+        alt="펼치기"
+        class="h-5 w-5 transition-transform"
+        :class="{ 'rotate-180': isExpanded }"
+      />
     </button>
 
     <!-- 잠금 -->
