@@ -77,7 +77,7 @@ const handleRetry = () => {
       <!-- Retry Button -->
       <button
         @click="handleRetry"
-        class="h-12 w-full rounded-xl border border-gray-100 bg-black text-heading font-semibold text-white transition-opacity hover:opacity-80"
+        class="text-heading h-12 w-full rounded-xl border border-gray-100 bg-black font-semibold text-white transition-opacity hover:opacity-80"
       >
         {{ retryButtonText }}
       </button>
