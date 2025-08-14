@@ -185,8 +185,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="relative min-h-screen px-4 pb-24 pt-2 font-sans text-white">
-    <!-- 상단: 로고 + 채팅 버튼(보더 추가) -->
+  <!-- 고정 폭 컨테이너로 모바일 좌우 여백/그리드 간격 안정화 -->
+  <div
+    class="mx-auto min-h-screen w-full max-w-[420px] px-4 pb-24 pt-2 font-sans text-white"
+  >
+    <!-- 상단: 로고 + 채팅 버튼(보더) -->
     <div class="mb-4 flex h-20 items-center justify-between pr-1 md:h-24">
       <img :src="logo" alt="KBULKUP" class="h-20 w-auto md:h-24" />
       <button
@@ -208,8 +211,8 @@ onBeforeUnmount(() => {
       </button>
     </div>
 
-    <!-- 수강중인 트레이닝 (섹션 폭 원상복구) -->
-    <section class="mb-4">
+    <!-- 수강중인 트레이닝 -->
+    <section class="mb-5">
       <div class="mb-3 flex items-center justify-between">
         <h2 class="text-input">수강중인 트레이닝</h2>
       </div>
@@ -249,9 +252,9 @@ onBeforeUnmount(() => {
                     class="mt-2 flex items-center justify-between text-body2 text-white"
                   >
                     <span>진행률</span>
-                    <span class="text-body2 text-primary">
-                      {{ Math.round(ip.progress || 0) }}%
-                    </span>
+                    <span class="text-body2 text-primary"
+                      >{{ Math.round(ip.progress || 0) }}%</span
+                    >
                   </div>
                   <div class="mt-2 h-[10px] w-full rounded-md bg-gray-600">
                     <div
@@ -333,9 +336,9 @@ onBeforeUnmount(() => {
         />
       </div>
 
-      <!-- 카테고리 칩: 한 줄 유지 + 가로 스크롤 -->
-      <div class="-mx-1 mb-4 overflow-x-auto scrollbar-hide">
-        <div class="flex gap-2 whitespace-nowrap px-1">
+      <!-- 카테고리 칩: 한 줄 유지 + 가로 스크롤(페이지 패딩과 정렬) -->
+      <div class="-mx-4 mb-5 overflow-x-auto scrollbar-hide">
+        <div class="flex gap-2 whitespace-nowrap px-4">
           <button
             v-for="c in categories"
             :key="c"
@@ -354,8 +357,8 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
-    <!-- 카드 그리드: 모바일 2열, sm↑ 3열 -->
-    <main class="grid grid-cols-2 gap-5 sm:grid-cols-3">
+    <!-- 카드 그리드: 항상 3열, 간격 고정 -->
+    <main class="grid grid-cols-3 gap-x-3 gap-y-6">
       <TrainingCard
         v-for="training in trainings"
         :key="training.trainingId"
