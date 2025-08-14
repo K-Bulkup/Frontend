@@ -284,7 +284,7 @@ const toggleSection = (k) => {
   <div class="flex flex-col">
     <BaseHeader title="트레이닝 상세" @back="goBack" />
 
-    <main v-if="trainingData" class="flex-1">
+    <main v-if="trainingData" class="mx-5 flex-1">
       <div class="mb-8 mt-7 flex items-end justify-between">
         <h1 class="text-subTitle font-bold leading-tight text-white">
           {{ trainingData.title }}
