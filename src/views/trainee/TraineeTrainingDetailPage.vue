@@ -149,7 +149,8 @@ const isDoneForUnlock = (q) =>
     routineLock.isLocked({ ...ctxBase.value, routineId: String(q.id) }));
 
 const expandedSections = ref({
-  stretching: true,
+  // 기본: 모두 닫힘
+  stretching: false,
   strength: false,
   cardio: false,
 });
@@ -287,13 +288,16 @@ const toggleSection = (k) => {
     <BaseHeader title="트레이닝 상세" @back="goBack" />
 
     <main v-if="trainingData" class="flex-1">
-      <div class="mb-8 mt-7 flex items-end justify-between">
-        <h1 class="text-subTitle font-semibold leading-tight text-white">
+      <!-- 🔧 수정: 제목은 줄바꿈으로 넘기고(자르지 않음), 날짜는 한 줄 고정 -->
+      <div class="mb-8 mt-7 flex items-end justify-between gap-3">
+        <h1
+          class="min-w-0 flex-1 break-words text-subTitle font-semibold leading-tight text-white"
+        >
           {{ trainingData.title }}
         </h1>
-        <span class="text-body3 text-gray-400"
-          >수강 종료: {{ trainingDeadline }}</span
-        >
+        <span class="shrink-0 whitespace-nowrap text-body3 text-gray-400">
+          수강 종료: {{ trainingDeadline }}
+        </span>
       </div>
 
       <div class="mb-4"><ProgressBar :value="trainingData.progress" /></div>
