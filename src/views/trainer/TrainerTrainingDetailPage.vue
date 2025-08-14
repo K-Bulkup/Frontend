@@ -164,7 +164,7 @@ onMounted(async () => {
   <div class="flex min-h-[100dvh] flex-col">
     <BaseHeader @back="goBack" title="트레이닝 상세"></BaseHeader>
     <div class="flex-1 overflow-y-auto">
-      <div class="mx-3 my-3 pb-[calc(env(safe-area-inset-bottom)+96px)]">
+      <div class="mx-3 mb-3 pb-[calc(env(safe-area-inset-bottom)+96px)]">
         <TrainingInfo
           v-if="trainingData"
           :training-data="trainingData"

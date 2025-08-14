@@ -12,6 +12,7 @@ export default {
         subTitle: "20px",
         subTitle2: "18px",
         body: "15px",
+        body6: "16px",
         body2: "12px",
         body3: "10px",
         input: "14px",
