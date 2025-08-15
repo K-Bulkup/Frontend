@@ -3,8 +3,8 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAccountConnect } from "@/composables/asset/useCreateAsset";
 import { awaitUserReady } from "@/composables/user/awaitUserReady";
-import ConnectSuccessModal from "@/components/common/ActionStateModal.vue";
-import ConnectFailureModal from "@/components/common/ConnectFailureModal.vue";
+import failImage from "@/assets/images/fail.svg";
+import ActionModal from "@/components/common/ActionStateModal.vue";
 import LoadingOverlay from "@/components/common/LoadingOverlay.vue";
 import BaseHeader from "@/components/common/BaseHeader.vue";
 
@@ -197,14 +197,17 @@ const handleSuccessClose = () => {
     title="자산 연동 중입니다."
     @close="isLoading = false"
   />
-  <ConnectSuccessModal
+  <ActionModal
     v-if="showSuccessModal"
     title="자산 연동에 성공했습니다"
     @close="handleSuccessClose"
   />
-  <ConnectFailureModal
+  <ActionModal
     v-if="showFailureModal"
     title="자산 연동에 실패했습니다"
-    @retry="handleRetry"
+    confirmButtonText="재시도"
+    :image-src="failImage"
+    image-alt="fail"
+    @close="handleRetry"
   />
 </template>
