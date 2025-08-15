@@ -102,7 +102,7 @@ const badgeClass = computed(() => {
         v-if="isAiChat || (!isAiChat && isTrainer)"
         @click="buttonHandler"
         :disabled="buttonDisabled"
-        class="mr-2 mt-2 h-[30px] w-[91px] rounded-lg bg-gray-800 p-2 text-[11px]"
+        class="mr-2 mt-2 h-[32px] w-[100px] rounded-[15px] border border-gray-700 text-body2 font-medium text-gray-200 transition-all"
       >
         {{ buttonText }}
       </button>
