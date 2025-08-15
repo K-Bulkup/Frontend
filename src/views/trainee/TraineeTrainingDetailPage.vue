@@ -32,14 +32,14 @@ const userKey = computed(() =>
 );
 const num = (v) => (v == null ? 0 : Number(v));
 
-// ✅ 서버 Boolean도 문자열/숫자 형태가 섞일 수 있으니 안전하게 정규화
+// 서버 Boolean도 문자열/숫자 형태가 섞일 수 있으니 안전하게 정규화
 const isTrueLike = (v) =>
   v === true ||
   v === 1 ||
   v === "1" ||
   (typeof v === "string" && v.toUpperCase() === "TRUE");
 
-/** ✅ 체크표시 기준: 서버의 completed(Boolean) **만** 신뢰 */
+/** 체크표시 기준: 서버의 completed(Boolean) **만** 신뢰 */
 const convertRoutines = (routineList) =>
   routineList?.map((r, i) => {
     const serverCompleted = isTrueLike(r?.completed);
@@ -119,7 +119,7 @@ onActivated(() => {
   loadTrainingData();
 });
 
-// ✅ 루틴 상세에서 PASS → routineLock 기록 → 여기서 서버 재조회
+// 루틴 상세에서 PASS → routineLock 기록 → 여기서 서버 재조회
 watch(
   () => routineLock.lockedByKey,
   () => {
@@ -173,7 +173,7 @@ const isSectionLocked = (key) => {
   return false;
 };
 
-// ✅ 체크/진행률(서버 기준) — completed만 사용
+// 체크/진행률(서버 기준) — completed만 사용
 const isStretchingComplete = computed(
   () =>
     trainingData.value?.routines["스트레칭"]?.length > 0 &&
@@ -196,7 +196,7 @@ const areAllQuestsComplete = computed(
     isCardioComplete.value,
 );
 
-// ✅ 버튼 노출은 'UI 기준 완료'(서버완료 ∨ 로컬락) — UX 유지
+// 버튼 노출은 'UI 기준 완료'(서버완료 ∨ 로컬락) — UX 유지
 const isStretchingDoneForUI = computed(() => {
   const S = trainingData.value?.routines["스트레칭"];
   return S?.length > 0 && S.every(isDoneForUnlock);
@@ -255,6 +255,12 @@ const showReviewButton = computed(
   () => areAllQuestsDoneForUI.value || isTrainingExpired.value,
 );
 const showChatButton = computed(() => areAllQuestsDoneForUI.value);
+
+const goToQnaPage = () =>
+  router.push(`/trainee/mypage/training/${route.params.trainingId}/qna`);
+const toggleSection = (k) => {
+  expandedSections.value[k] = !expandedSections.value[k];
+};
 </script>
 
 <template>
@@ -298,6 +304,12 @@ const showChatButton = computed(() => areAllQuestsDoneForUI.value);
                 {{ trainingData.trainerRating || "-" }}
               </p>
             </div>
+          </button>
+          <button
+            @click="goToQnaPage"
+            class="ml-auto rounded-full bg-primary px-3 py-1.5 text-input font-bold text-black shadow"
+          >
+            Q&A
           </button>
         </div>
       </div>

@@ -4,16 +4,15 @@ import { useRouter, useRoute } from "vue-router";
 import { useTraineeReview } from "@/composables/review/useFetchReview.js";
 import { useSubmitReview } from "@/composables/review/useCreateReview.js";
 import BaseHeader from "@/components/common/BaseHeader.vue";
-import BaseTextarea from "@/components/common/BaseTextarea.vue";
 import BaseButton from "@/components/common/BaseButton.vue";
 import ActionStateModal from "@/components/common/ActionStateModal.vue";
 import ReviewFailureModal from "@/components/common/ConnectFailureModal.vue";
+import BaseFormField from "@/components/common/BaseFormField.vue";
 
 const router = useRouter();
 const route = useRoute();
 
-const { getTraineeReview, reviewData, errorMessage, isLoading } =
-  useTraineeReview();
+const { getTraineeReview, reviewData } = useTraineeReview();
 const { submitReview: submitReviewRequest } = useSubmitReview();
 
 const isSuccessModalVisible = ref(false);
@@ -21,6 +20,10 @@ const isFailureModalVisible = ref(false);
 const rating = ref(0);
 const reviewText = ref("");
 const trainingId = parseInt(route.params.trainingId);
+
+const isTooShort = computed(
+  () => reviewText.value.length > 0 && reviewText.value.length < 10,
+);
 
 const isFormValid = computed(() => {
   return rating.value > 0 && reviewText.value.length >= 10;
@@ -96,14 +99,27 @@ onMounted(async () => {
         </div>
 
         <div class="mt-14">
-          <BaseTextarea
+          <BaseFormField
             v-model="reviewText"
             description="강의에 대한 솔직한 후기를 남겨주세요"
             placeholder="리뷰를 입력해주세요..."
-            :maxlength="500"
-            :minlength="10"
             :rows="5"
+            :isTextarea="true"
+            variant="dark"
           />
+        </div>
+
+        <!-- 10자 미만일 때만 메시지 표시 -->
+        <div
+          v-if="isTooShort"
+          class="mt-2 flex justify-between text-body2 text-gray-300"
+        >
+          <span>최소 10자 이상 작성해주세요</span>
+          <span>{{ reviewText.length }}/500</span>
+        </div>
+        <div v-else class="mt-2 flex justify-between text-body2 text-gray-300">
+          <span></span>
+          <span>{{ reviewText.length }}/500</span>
         </div>
       </div>
     </div>
