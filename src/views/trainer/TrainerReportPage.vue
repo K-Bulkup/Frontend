@@ -1,4 +1,5 @@
 <template>
+
   <div class="min-h-screen p-4">
     <BaseHeaderWithoutBack title="수익 관리" />
     <!-- 트레이닝 선택 -->
@@ -44,7 +45,7 @@
           </label>
         </div>
       </div>
-
+      
       <!-- 현재 선택된 항목 표시 (항상 표시) -->
       <div class="rounded-xl bg-gray-900 p-4 shadow-lg">
         <button

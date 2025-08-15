@@ -64,28 +64,29 @@ const handleTabChange = (tabId) => {
     router.push(targetTab.path);
   }
 };
+
+const handleBack = () => {
+  router.go(-1);
+};
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col px-2">
-    <BaseHeader title="1:1 PT" @back="goBack" />
+  <div class="flex flex-col">
+    <BaseHeader title="1:1 PT" @back="handleBack" />
     <BaseTabNavigation
       :tabs="tabs"
       :default-tab="currentTab"
       container-class="pt-6"
       @tab-change="handleTabChange"
     >
-      <!-- PT 내역 탭 -->
       <template #history>
         <PtHistoryPage />
       </template>
 
-      <!-- 예약 관리 탭 (트레이너만) -->
       <template #reservation v-if="authStore.role === 'TRAINER'">
         <TrainerPtReservationPage />
       </template>
 
-      <!-- 스케줄 관리 탭 (트레이너용) -->
       <template #schedule v-if="authStore.role === 'TRAINER'">
         <TrainerPtSchedulePage />
       </template>

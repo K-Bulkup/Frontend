@@ -96,7 +96,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="bg-background min-h-screen px-4 pb-20">
+  <div class="px-4 pb-20">
     <!-- 상단 헤더 -->
     <div>
       <BaseHeaderWithLogo @profile-click="handleProfileClick" />
@@ -107,7 +107,7 @@ onMounted(() => {
       <!-- 트레이닝 추가 버튼 -->
       <button
         @click="goToTrainingInput"
-        class="text-button flex h-[37px] w-[107px] items-center justify-center gap-1 rounded-full bg-gray-900 px-2 text-white transition-colors hover:bg-gray-800"
+        class="flex h-[37px] w-[107px] items-center justify-center gap-1 rounded-full bg-gray-900 px-2 text-button text-white transition-colors hover:bg-gray-800"
       >
         <span>+</span>
         <span>트레이닝 추가</span>
@@ -117,7 +117,7 @@ onMounted(() => {
       <button
         @click="setStatusFilter('open')"
         :class="[
-          'text-button flex h-[37px] w-[76px] items-center justify-center rounded-full border transition-colors',
+          'flex h-[37px] w-[76px] items-center justify-center rounded-full border text-button transition-colors',
           isStatusActive('open')
             ? 'border-[#22E481] bg-[#22E481]/20 text-white'
             : 'border-gray-600 text-white hover:border-[#22E481] hover:bg-[#22E481]/20 hover:text-white',
@@ -130,7 +130,7 @@ onMounted(() => {
       <button
         @click="setStatusFilter('pending')"
         :class="[
-          'text-button flex h-[37px] w-[76px] items-center justify-center rounded-full border transition-colors',
+          'flex h-[37px] w-[76px] items-center justify-center rounded-full border text-button transition-colors',
           isStatusActive('pending')
             ? 'border-[#22E481] bg-[#22E481]/20 text-white'
             : 'border-gray-600 text-white hover:border-[#22E481] hover:bg-[#22E481]/20 hover:text-white',
@@ -143,7 +143,7 @@ onMounted(() => {
       <button
         @click="setStatusFilter('rejected')"
         :class="[
-          'text-button flex h-[37px] w-[76px] items-center justify-center rounded-full border transition-colors',
+          'flex h-[37px] w-[76px] items-center justify-center rounded-full border text-button transition-colors',
           isStatusActive('rejected')
             ? 'border-[#22E481] bg-[#22E481]/20 text-white'
             : 'border-gray-600 text-white hover:border-[#22E481] hover:bg-[#22E481]/20 hover:text-white',

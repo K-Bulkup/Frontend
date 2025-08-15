@@ -6,18 +6,18 @@
       @click="$emit('select', role)"
       :class="[
         'flex w-full max-w-[400px] cursor-pointer items-center justify-between rounded-xl px-6 py-4 shadow md:px-10',
-        'border-2 bg-gray-600 transition-colors duration-200', // 공통: 배경 + 테두리 두께
+        'border-2 bg-gray-900 transition-colors duration-200', // 공통: 배경 + 테두리 두께
         selected === role
-          ? 'border-primary'
-          : 'border-gray-600 hover:border-gray-500',
+          ? 'hover:border-primary hover:bg-primary hover:bg-opacity-10'
+          : 'border-gray-900',
       ]"
       style="width: 341px; height: 97px"
     >
       <div>
-        <p class="text-white">
+        <p class="text-body6">
           {{ role === "TRAINER" ? "트레이너" : "회원" }}
         </p>
-        <p class="mt-1 text-subtext text-white">
+        <p class="text-subtext mt-1 text-input text-gray-300">
           {{
             role === "TRAINER"
               ? "회원을 찾고 있어요."
@@ -28,7 +28,7 @@
       <img
         :src="role === 'TRAINER' ? trainerIcon : traineeIcon"
         :alt="role === 'TRAINER' ? '트레이너 아이콘' : '회원 아이콘'"
-        class="h-[60px] w-[60px] shrink-0"
+        class="w-[60px] shrink-0"
       />
     </div>
   </div>

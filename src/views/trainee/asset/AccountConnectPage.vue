@@ -112,9 +112,7 @@ const handleSuccessClose = () => {
 
 <template>
   <!-- Header -->
-  <div class="mb-8 px-4 pt-4 md:mb-10">
-    <BaseHeader title="자산 정보 입력" @back="goBack" />
-  </div>
+  <BaseHeader title="자산 정보 입력" @back="goBack" />
 
   <!-- Main Content -->
   <div class="flex-1 justify-items-center px-4">
