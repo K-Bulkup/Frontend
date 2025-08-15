@@ -129,7 +129,7 @@ const btnAction = () => {
     v-else-if="result === 'fail'"
     class="flex min-h-screen flex-col justify-between px-1 py-20"
   >
-    <ConnectFailureModal @retry="resetForm" />
+    <ConnectFailureModal @close="resetForm" />
   </div>
 
   <!-- 메인 컨텐츠 -->
@@ -167,7 +167,7 @@ const btnAction = () => {
               ? '이름은 공백 없이 12자 이하만 가능합니다.'
               : step === 3
                 ? '응답하신 생년월일은 공개되지 않습니다.'
-                : '트레이너 또는 회원 중 선택해주세요.'
+                : '트레이너 또는 트레이니 중 선택해주세요.'
         "
         variant="guide"
       />
