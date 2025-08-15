@@ -15,7 +15,7 @@ RUN npm run build
 RUN npm install -g http-server
 
 # 올바른 포트 노출
-EXPOSE 3000
+EXPOSE 80
 
 # SPA 지원으로 실행
-CMD ["npx", "http-server", "dist", "-p", "3000", "-a", "0.0.0.0", "--spa"]
+CMD ["npx", "http-server", "dist", "-p", "80", "-a", "0.0.0.0", "--spa"]

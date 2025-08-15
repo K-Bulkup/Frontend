@@ -126,8 +126,8 @@ jobs:
             echo "🔍 Debugging network connectivity..."
 
             # 포트 리스닝 상태 확인
-            echo "Ports listening on 3000:"
-            sudo netstat -tlnp | grep :3000
+            echo "Ports listening on 80:"
+            sudo netstat -tlnp | grep :80
 
             # 컨테이너 상세 정보
             echo "Container details:"
