@@ -3,6 +3,7 @@ version: "3.8"
 
 services:
   vue-app:
+    image: kbulkup-vue:latest
     container_name: kbulkup-vue
     ports:
       - "80:8080"
