@@ -1,9 +1,17 @@
 <script setup>
 import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
+
 import TrainerInfo from "@/components/trainer/mypage/TrainerInfo.vue";
 import BaseHeader from "@/components/common/BaseHeader.vue";
 
 const router = useRouter();
+const authStore = useAuthStore();
+
+const handleLogout = () => {
+  authStore.logout();
+  router.push("/login");
+};
 
 const handleAddCertification = () => {
   router.push("/trainer/mypage/verify");
@@ -31,6 +39,9 @@ const handleBack = () => {
     </div>
     <div>
       <TrainerInfo></TrainerInfo>
+    </div>
+    <div class="pt-5 text-center text-gray-600">
+      <button @click="handleLogout">로그아웃</button>
     </div>
   </div>
 </template>
