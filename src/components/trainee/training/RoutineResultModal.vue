@@ -8,7 +8,7 @@ const props = defineProps({
 const emit = defineEmits(["close", "retry"]);
 
 const handlePrimary = () => {
-  if (props.status === "success") emit("close");
+  if (props.status === "success") emit("close", "primary");
   else emit("retry");
 };
 </script>
@@ -16,9 +16,11 @@ const handlePrimary = () => {
 <template>
   <div
     v-if="isVisible"
-    class="fixed inset-0 z-[999] flex items-center justify-center bg-black/80"
+    class="fixed inset-0 z-[999] flex items-center justify-center bg-black/15 backdrop-blur-md backdrop-brightness-75 backdrop-saturate-150"
     role="dialog"
     aria-modal="true"
+    @click.self="$emit('close', 'dismiss')"
+    style="-webkit-backdrop-filter: blur(12px)"
   >
     <!-- 공통 카드 -->
     <div
@@ -28,7 +30,7 @@ const handlePrimary = () => {
       <button
         class="mb-1 ml-auto block rounded-full p-1 text-gray-400 hover:text-white"
         aria-label="닫기"
-        @click="$emit('close')"
+        @click="$emit('close', 'dismiss')"
       >
         <!-- X 아이콘 -->
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none">

@@ -202,11 +202,10 @@ const handlePayment = async (pg) => {
             impUid: rsp.imp_uid,
             merchantUid,
             trainingId: route.params.trainingId,
-            userId: resolvedUserId.value, // ✅ 0 방지
+            userId: resolvedUserId.value, // 0 방지
           };
           const res = await traineeTrainingPayment(payload);
           console.log("✅ 결제 응답:", res.data);
-          alert("✅ 결제 완료: " + res.data.data.message);
           router.replace(`/trainee/mypage/training/${route.params.trainingId}`);
         } catch (err) {
           console.error("❌ 백엔드 결제 API 오류:", err);

@@ -207,7 +207,7 @@ const handleCompletion = () => {
 </script>
 
 <template>
-  <div class="pb-20">
+  <div class="px-4 pb-20">
     <BaseHeader v-if="step < 4" title="트레이닝 등록" @back="handleGoBack" />
 
     <div class="flex-grow">

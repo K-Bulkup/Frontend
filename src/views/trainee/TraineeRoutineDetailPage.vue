@@ -300,8 +300,12 @@ const handleCertificationSubmit = async (submission) => {
 };
 
 const closeModal = () => router.back();
-const closeResult = () => {
+const closeResult = (reason) => {
   isResultModalVisible.value = false;
+  if (reason === "primary" && submissionStatus.value === "success") {
+    // 트레이닝 상세로 명시 이동 (history 쌓이지 않게 replace)
+    router.replace(`/trainee/mypage/training/${route.params.trainingId}`);
+  }
 };
 const retrySubmission = () => {
   isResultModalVisible.value = false;
