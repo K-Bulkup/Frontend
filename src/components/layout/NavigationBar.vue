@@ -1,7 +1,19 @@
 <script setup>
-import { computed } from "vue";
+import { computed, getCurrentInstance } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import { library } from "@fortawesome/fontawesome-svg-core";
+import {
+  faCoins,
+  faLayerGroup,
+  faBook,
+  faHome,
+  faComments,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+library.add(faCoins, faLayerGroup, faBook, faHome, faComments);
+const app = getCurrentInstance().appContext.app;
+app.component("font-awesome-icon", FontAwesomeIcon);
 
 const userStore = useAuthStore();
 const router = useRouter();
@@ -11,8 +23,10 @@ const userType = computed(() => userStore.role?.toLowerCase() || "trainee");
 
 const activeTab = computed(() => {
   const path = route.path;
+  // If path includes '/asset' (trainee) or '/mypage/report' (trainer), return "asset"
+  if (path.includes("/asset") || path.includes("/mypage/report"))
+    return "asset";
   if (path.includes("/training")) return "training";
-  if (path.includes("/asset")) return "asset";
   if (path.includes("/pt-history")) return "pt-history";
   return "home";
 });
@@ -29,14 +43,18 @@ const navItems = {
   trainee: [
     { id: "training", icon: "book", label: "트레이닝", path: "/training" },
     { id: "home", icon: "home", label: "홈", path: "/trainee/mypage" },
-    { id: "asset", icon: "layer-group", label: "자산", path: "/trainee/asset" },
+    {
+      id: "asset",
+      icon: "layer-group",
+      label: "수익 관리",
+      path: "/trainee/asset",
+    },
   ],
   trainer: [
-    // 수정 필요함 !
     {
-      id: "report",
+      id: "asset",
       icon: "coins",
-      label: "자산",
+      label: "수익 관리",
       path: "/trainer/mypage/report",
     },
     {
