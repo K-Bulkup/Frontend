@@ -123,6 +123,51 @@ const scopeCtx = (routineId) => ({
     Number(route.query.enrollmentId || enrollmentStore.enrollmentId) || null,
 });
 
+/* =======================
+   ✅ PASS 판정 & 스코프 정리 유틸
+   ======================= */
+// 서버 PASS 판정 (COMPLETED 류는 제외)
+const normalizePassResult = (apiRes) => {
+  const r = apiRes?.data ?? apiRes;
+  const s = String(r?.passFailResult ?? r?.result ?? "")
+    .trim()
+    .toUpperCase();
+
+  const trueish = new Set([
+    "PASS",
+    "PASSED",
+    "SUCCESS",
+    "CORRECT",
+    "TRUE",
+    "Y",
+    "T",
+    "1",
+  ]);
+  if (trueish.has(s)) return true;
+
+  const boolKeys = [
+    "isPassed",
+    "isPass",
+    "passed",
+    "pass",
+    "correct",
+    "isCorrect",
+    "success",
+  ];
+  if (boolKeys.some((k) => r?.[k] === true || r?.[k] === 1)) return true;
+
+  // 'COMPLETED' 같은 시도 상태는 PASS 아님
+  return false;
+};
+
+// 같은 루틴의 모든 스코프 잠금 정리 (과거 tr 스코프 잔여 제거)
+const clearAllScopesFor = (routineId) => {
+  const ctxE = scopeCtx(routineId); // enr:enrollmentId
+  const ctxT = { ...ctxE, enrollmentId: null }; // tr:trainingId
+  routineLock.unlock(ctxE);
+  routineLock.unlock(ctxT);
+};
+
 const loadRoutineDetail = async () => {
   try {
     const res = await getRoutineDetail(route.params.routineId);
@@ -165,6 +210,19 @@ onMounted(async () => {
   } else {
     await loadRoutineDetail();
   }
+
+  // 과거 tr 스코프만 잠겨있던 경우 enr 스코프로 이관
+  try {
+    const id = String(route.params.routineId);
+    const ctxE = scopeCtx(id);
+    const ctxT = { ...ctxE, enrollmentId: null };
+    if (!routineLock.isLocked(ctxE) && routineLock.isLocked(ctxT)) {
+      routineLock.unlock(ctxT);
+      routineLock.lock(ctxE);
+      isLocked.value = true;
+      currentRoutine.value && (currentRoutine.value.completed = true);
+    }
+  } catch {}
 });
 
 watch(
@@ -205,24 +263,28 @@ const handleCertificationSubmit = async (submission) => {
     };
 
     const res = await submitRoutineResult(id, payload, file);
-    const result = res.data.passFailResult;
 
-    submissionStatus.value = result === "PASS" ? "success" : "failure";
+    // ✅ 안전한 PASS 판정
+    const passed = normalizePassResult(res);
+    submissionStatus.value = passed ? "success" : "failure";
 
-    const ctx = scopeCtx(id);
+    // ✅ 스코프 정리: 과거 tr 스코프 잔여 제거
+    clearAllScopesFor(id);
 
-    if (result === "PASS") {
-      routineLock.lock(ctx); // v2 스코프 잠금
+    if (passed) {
+      // 성공: enr 스코프만 잠금
+      routineLock.lock(scopeCtx(id));
       isLocked.value = true;
       currentRoutine.value.completed = true;
       acquiredReward.value = currentRoutine.value.reward;
 
+      // 응시 모드 종료(쿼리 정리)
       if (route.query.enrollmentId) {
         const { enrollmentId, ...rest } = route.query;
         router.replace({ path: route.path, query: rest });
       }
     } else {
-      routineLock.unlock(ctx);
+      // 실패: 어떤 스코프에도 잠금 없도록 보장
       isLocked.value = false;
       currentRoutine.value.completed = false;
       acquiredReward.value = 0;
