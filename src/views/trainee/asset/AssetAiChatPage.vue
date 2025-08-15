@@ -180,7 +180,10 @@ const handleFetchAssetsAndSendMessage = async () => {
       @back="router.push('/trainee/asset')"
     />
 
-    <div ref="messageContainer" class="flex-1 overflow-y-auto p-4">
+    <div
+      ref="messageContainer"
+      class="flex-1 overflow-y-auto p-4 scrollbar-hide"
+    >
       <div v-for="(group, date) in groupedMessages" :key="date">
         <div class="my-4 text-center text-xs text-gray-400">{{ date }}</div>
         <ChatBubble
@@ -208,3 +211,13 @@ const handleFetchAssetsAndSendMessage = async () => {
     <LoadingOverlay :show="showOverlay" title="금육이가 답변 중입니다" />
   </div>
 </template>
+
+<style scoped>
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+</style>
