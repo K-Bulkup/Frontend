@@ -378,17 +378,15 @@ const toggleSection = (k) => {
         <ActionButton
           v-if="showReviewButton"
           :text="hasWrittenReview ? '리뷰 작성 완료' : '리뷰 작성하기'"
-          :variant="hasWrittenReview ? 'disabled' : 'secondary'"
+          :variant="hasWrittenReview ? 'disabled' : 'primary'"
           :disabled="hasWrittenReview"
-          class="w-full bg-gray-custom !text-body !font-medium !text-white"
           @click="!hasWrittenReview && goToReviewPage()"
         />
         <ActionButton
           v-if="showChatButton"
           :text="chatRoomCreated ? '1:1 PT 예약 완료' : '1:1 PT 예약하기'"
-          :variant="chatRoomCreated ? 'disabled' : 'secondary'"
+          :variant="chatRoomCreated ? 'disabled' : 'primary'"
           :disabled="chatRoomCreated"
-          class="w-full !bg-gray-custom !text-body !font-medium !text-white"
           @click="reservePt"
         />
       </div>

@@ -196,7 +196,7 @@ const getTimeSlotStatus = (time) => {
 </script>
 
 <template>
-  <div class="mb-6" :class="classCard">
+  <div :class="classCard">
     <VueDatePicker
       :model-value="innerDate"
       :dark="true"

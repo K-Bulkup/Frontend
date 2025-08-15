@@ -17,7 +17,7 @@ const emit = defineEmits(["click"]);
       // 내용 중앙 정렬
       'flex items-center justify-center gap-2 text-center',
       // 색/상태
-      'text-background bg-primary transition hover:opacity-90',
+      'bg-primary text-background transition hover:opacity-90',
       isDisabled ? 'cursor-not-allowed opacity-80' : '',
     ]"
   >
