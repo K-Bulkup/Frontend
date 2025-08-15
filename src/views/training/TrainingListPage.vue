@@ -354,13 +354,22 @@ onBeforeUnmount(() => {
 
       <!-- ✅ 카드 그리드와 센티널을 섹션 내부에 둡니다 -->
       <main class="grid grid-cols-3 gap-x-3 gap-y-6">
-        <TrainingCard
-          v-for="training in visibleTrainings"
-          :key="training.trainingId"
-          :training="training"
-          @click="goToDetail(training)"
-          class="cursor-pointer"
-        />
+        <template v-if="visibleTrainings.length > 0">
+          <TrainingCard
+            v-for="training in visibleTrainings"
+            :key="training.trainingId"
+            :training="training"
+            @click="goToDetail(training)"
+            class="cursor-pointer"
+          />
+        </template>
+
+        <!-- 검색/필터 후 데이터 없을 때 표시 -->
+        <template v-else>
+          <div class="col-span-3 py-10 text-center text-body2 text-gray-500">
+            트레이닝이 존재하지 않습니다
+          </div>
+        </template>
       </main>
 
       <!-- 센티널: 이게 화면에 들어오면 다음 배치 로드 -->
