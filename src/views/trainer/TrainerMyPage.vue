@@ -15,13 +15,13 @@ const handleBack = () => {
 </script>
 
 <template>
-  <div class="min-h-screen pb-20 text-white">
+  <div class="pb-20">
     <div class="">
       <BaseHeader @back="handleBack">
         <template #actions>
           <button
             @click="handleAddCertification"
-            class="text-body2 items-center rounded-full bg-gray-900 px-3 py-1.5 text-white transition-all hover:bg-gray-700"
+            class="items-center rounded-full bg-gray-900 px-3 py-1.5 text-body2 text-white transition-all hover:bg-gray-700"
           >
             <span class="pr-2 font-bold text-green-400">+</span>
             <span>자격 인증</span>

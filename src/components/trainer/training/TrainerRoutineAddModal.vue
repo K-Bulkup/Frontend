@@ -114,7 +114,7 @@ const modalTitle = computed(() => {
 
 <template>
   <div
-    class="absolute inset-0 z-50 flex h-full w-full flex-col justify-between overflow-y-auto bg-background px-6 pb-10 scrollbar-hide"
+    class="absolute inset-0 z-50 flex h-full w-full flex-col justify-between overflow-y-auto bg-background pb-10 scrollbar-hide"
   >
     <div>
       <BaseHeader :title="modalTitle" @back="handleClose" />

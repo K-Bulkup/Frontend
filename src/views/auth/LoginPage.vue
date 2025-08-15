@@ -6,15 +6,13 @@ import apiClient from "@/plugins/axios";
 import { useLogin } from "@/composables/user/useLogin";
 import { useAuthStore } from "@/stores/auth";
 
+import BaseHeader from "@/components/common/BaseHeader.vue";
 import BaseButton from "@/components/common/BaseButton.vue";
 import BaseInput from "@/components/common/BaseInput.vue";
 import BaseSelectRole from "@/components/common/BaseSelectRole.vue";
 import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
 import ConnectSuccessModal from "@/components/common/ActionStateModal.vue";
 import ConnectFailureModal from "@/components/common/ConnectFailureModal.vue";
-import BaseBottomIllustration from "@/components/common/BaseBottomIllustration.vue";
-
-import theme1 from "@/assets/images/background/theme1.png";
 
 const router = useRouter();
 const route = useRoute();
@@ -195,15 +193,6 @@ const handleKakaoLogin = () => {
         : 'justify-center py-12'
     "
   >
-    <!-- theme1: 하단 고정 이미지 (컴포넌트로 교체) -->
-    <BaseBottomIllustration
-      v-if="step === 2"
-      :src="theme1"
-      :bottom="-140"
-      :width="460"
-      :mdWidth="520"
-    />
-
     <div class="relative z-10 mx-auto w-full max-w-md">
       <!-- 로그인 입력 화면 -->
       <div v-if="step === 1">
@@ -262,20 +251,27 @@ const handleKakaoLogin = () => {
 
       <!-- 역할 선택 화면 -->
       <div v-if="step === 2">
-        <div class="mx-auto w-[332px] pt-14">
+        <div class="flex justify-center">
+          <img
+            src="@/assets/images/kbulkup-logo.png"
+            alt="K-Bulkup"
+            class="h-30 mx-auto mt-10 w-auto"
+          />
+        </div>
+        <div class="mx-auto w-[332px]">
           <BaseStatusMessage
             title="어떤 유형으로 로그인하시겠어요?"
+            subtitle="트레이너 또는 회원 중 선택해주세요"
             variant="guide"
           />
 
-          <div class="space-y-3">
+          <div>
             <BaseSelectRole
               :selected="selectedRole"
               @select="handleRoleSelection"
             />
           </div>
 
-          <!-- (기존 유지) 하단 고정 버튼은 바깥에 있음 -->
           <div
             v-if="step === 2"
             class="fixed inset-x-0 bottom-16 z-20 flex justify-center"

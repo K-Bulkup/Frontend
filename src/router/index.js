@@ -36,12 +36,8 @@ import TrainingInputPage from "@/views/trainer/TrainerTrainingInputPage.vue";
 
 //chat
 import PtChatPage from "@/views/chat/PtChatPage.vue";
-import TrainerPtPage from "@/views/chat/PtPage.vue";
 import PtPage from "@/views/chat/PtPage.vue";
-import TrainerPtReservationPage from "@/views/chat/TrainerPtReservationPage.vue";
-import TrainerPtSchedulePage from "@/views/chat/TrainerPtSchedulePage.vue";
 import TraineePtReservationPage from "@/views/chat/TraineePtReservationPage.vue";
-import TraineePtSchedulePage from "@/views/chat/TraineePtSchedulePage.vue";
 
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
@@ -203,7 +199,7 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/trainee/pt/reservation",
+    path: "/trainee/pt/reservation/:trainerId/:trainingId",
     component: TraineePtReservationPage,
     meta: { requiresAuth: true },
   },
