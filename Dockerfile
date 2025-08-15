@@ -8,6 +8,7 @@ RUN npm ci
 
 # 소스 코드 복사 및 빌드
 COPY . .
+ENV NODE_ENV=production
 RUN npm run build
 
 # http-server 글로벌 설치
