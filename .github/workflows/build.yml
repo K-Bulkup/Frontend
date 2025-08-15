@@ -38,6 +38,16 @@ jobs:
           script: |
             cd /home/ec2-user/frontend
 
+            echo "📊 Before deployment - System status..."
+            echo "Memory usage:"
+            free -h
+            echo "Disk usage:"
+            df -h
+            echo "Running containers:"
+            sudo docker ps
+            echo "Port 80 usage:"
+            sudo netstat -tlnp | grep :80 || echo "Port 80 is free"
+
             echo "🔄 Stopping existing services..."
             if ! sudo docker-compose down --remove-orphans; then
               echo "⚠️ Warning: Failed to stop existing services, continuing..."
@@ -98,6 +108,14 @@ jobs:
 
             echo "🎉 Frontend deployed successfully!"
 
+            echo "📊 After deployment - System status..."
+            echo "Memory usage:"
+            free -h
+            echo "Running containers:"
+            sudo docker ps
+            echo "Container resource usage:"
+            sudo docker stats --no-stream
+
       - name: Verify deployment
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -105,9 +123,32 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_KEY }}
           script: |
+            echo "🔍 Debugging network connectivity..."
+
+            # 포트 리스닝 상태 확인
+            echo "Ports listening on 3000:"
+            sudo netstat -tlnp | grep :3000
+
+            # 컨테이너 상세 정보
+            echo "Container details:"
+            sudo docker inspect kbulkup-vue | grep -A5 -B5 "PortBindings\|NetworkMode\|IPAddress"
+
+            # 컨테이너 로그 확인
+            echo "Container logs:"
+            sudo docker logs --tail=30 kbulkup-vue
+
+            # 로컬 접근 테스트
+            echo "Testing local access on port 80 (mapped port):"
+            curl -v -m 10 http://localhost:80 || echo "Port 80 access failed"
+
+            echo "Testing local access on port 8080 (container internal port):"
+            sudo docker exec -it kbulkup-vue curl -m 5 http://localhost:8080 2>/dev/null || echo "Container internal port 8080 test failed"
+
             # 실제 애플리케이션 응답 확인
-            if curl -f http://localhost:3000 > /dev/null 2>&1; then
-              echo "✅ Application is responding"
+            if curl -f http://localhost:80 > /dev/null 2>&1; then
+              echo "✅ Application is responding on port 80"
             else
-              echo "⚠️ Application may not be responding on expected port"
+              echo "❌ Application is not responding on port 80"
+              echo "Checking if container is actually running..."
+              sudo docker ps | grep kbulkup-vue
             fi
