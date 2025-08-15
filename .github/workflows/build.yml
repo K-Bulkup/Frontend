@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Build and save image
         run: |
@@ -37,14 +37,26 @@ jobs:
           script: |
             cd /home/ec2-user/frontend
 
-            # 기존 서비스 정지
-            sudo docker-compose down || true
+            echo "🔄 Stopping existing services..."
+            sudo docker-compose down --remove-orphans || true
 
-            # 이미지 로드
+            echo "🧹 Cleaning up old images..."
+            # 사용하지 않는 이미지 정리 (dangling images)
+            sudo docker image prune -f || true
+
+            echo "📦 Loading new Docker image..."
             sudo docker load -i kbulkup-vue.tar
 
-            # 서비스 시작
+            echo "🚀 Starting services..."
             sudo docker-compose up -d
 
-            echo "✅ Frontend deployed with docker-compose!"
+            echo "✅ Checking deployment status..."
+            sudo docker-compose ps
+
+            echo "📊 Container logs (last 10 lines)..."
+            sudo docker-compose logs --tail=10 vue-app || true
+
+            echo "🗑️ Cleaning up..."
             rm -f kbulkup-vue.tar
+
+            echo "🎉 Frontend deployed successfully!"
