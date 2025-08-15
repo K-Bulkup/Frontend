@@ -9,6 +9,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,25 +39,75 @@ jobs:
             cd /home/ec2-user/frontend
 
             echo "🔄 Stopping existing services..."
-            sudo docker-compose down --remove-orphans || true
+            if ! sudo docker-compose down --remove-orphans; then
+              echo "⚠️ Warning: Failed to stop existing services, continuing..."
+            fi
 
-            echo "🧹 Cleaning up old images..."
-            # 사용하지 않는 이미지 정리 (dangling images)
-            sudo docker image prune -f || true
+            echo "🧹 Cleaning up old images and containers..."
+            # 중지된 컨테이너 제거
+            sudo docker container prune -f
+            # dangling 이미지 제거
+            sudo docker image prune -f
+            # 사용하지 않는 볼륨 제거
+            sudo docker volume prune -f
+            # 사용하지 않는 네트워크 제거
+            sudo docker network prune -f
+
+            echo "💾 Checking disk space..."
+            df -h /
 
             echo "📦 Loading new Docker image..."
-            sudo docker load -i kbulkup-vue.tar
+            if sudo docker load -i kbulkup-vue.tar; then
+              echo "✅ Image loaded successfully"
+            else
+              echo "❌ Failed to load Docker image"
+              exit 1
+            fi
 
             echo "🚀 Starting services..."
-            sudo docker-compose up -d
+            if sudo docker-compose up -d; then
+              echo "✅ Services started successfully"
+            else
+              echo "❌ Failed to start services"
+              exit 1
+            fi
 
-            echo "✅ Checking deployment status..."
+            echo "⏳ Waiting for services to be ready..."
+            sleep 10
+
+            echo "📊 Checking deployment status..."
             sudo docker-compose ps
 
-            echo "📊 Container logs (last 10 lines)..."
-            sudo docker-compose logs --tail=10 vue-app || true
+            # 서비스 헬스체크
+            if sudo docker-compose ps | grep -q "Up"; then
+              echo "✅ Services are running"
+            else
+              echo "❌ Services are not running properly"
+              sudo docker-compose logs
+              exit 1
+            fi
 
-            echo "🗑️ Cleaning up..."
+            echo "📋 Container logs (last 20 lines)..."
+            sudo docker-compose logs --tail=20 vue-app
+
+            echo "🗑️ Cleaning up temporary files..."
             rm -f kbulkup-vue.tar
 
+            echo "💾 Final disk space check..."
+            df -h /
+
             echo "🎉 Frontend deployed successfully!"
+
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 43.201.172.152
+          username: ec2-user
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            # 실제 애플리케이션 응답 확인
+            if curl -f http://localhost:3000 > /dev/null 2>&1; then
+              echo "✅ Application is responding"
+            else
+              echo "⚠️ Application may not be responding on expected port"
+            fi
