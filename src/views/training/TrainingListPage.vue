@@ -367,7 +367,7 @@ onBeforeUnmount(() => {
         <!-- 검색/필터 후 데이터 없을 때 표시 -->
         <template v-else>
           <div class="col-span-3 py-10 text-center text-body2 text-gray-500">
-            트레이닝이 존재하지 않습니다
+            트레이닝이 존재하지 않습니다.
           </div>
         </template>
       </main>
