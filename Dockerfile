@@ -5,7 +5,6 @@ WORKDIR /app
 # 의존성 설치
 COPY package*.json ./
 RUN npm ci
-RUN npm install -g http-server@latest
 
 # 소스 코드 복사 및 빌드
 COPY . .
@@ -13,7 +12,7 @@ ENV NODE_ENV=production
 RUN npm run build
 
 # http-server 글로벌 설치
-RUN npm install -g http-server
+RUN npm install -g serve
 
 # 올바른 포트 노출
 EXPOSE 80
