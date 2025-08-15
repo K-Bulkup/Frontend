@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from "vue";
-import { ChevronLeftIcon, UserIcon } from "lucide-vue-next";
+import { UserIcon } from "lucide-vue-next";
 import { useAuthStore } from "@/stores/auth";
 
 const authStore = useAuthStore();
@@ -68,10 +68,12 @@ const badgeClass = computed(() => {
 </script>
 
 <template>
-  <div class="flex items-center justify-between border-b border-gray-800 py-4">
+  <div
+    class="flex items-center justify-between border-b border-gray-800 px-5 pb-6 pt-6"
+  >
     <div class="flex items-center space-x-3">
-      <button @click="$emit('back')" class="p-1">
-        <ChevronLeftIcon class="h-6 w-6" />
+      <button @click="$emit('back')">
+        <img src="@/assets/images/arrow-back.png" class="pr-3" alt="뒤로가기" />
       </button>
       <div
         class="flex h-10 w-10 items-center justify-center rounded-full bg-white"
