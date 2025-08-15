@@ -12,4 +12,4 @@ RUN npm install -g http-server
 
 EXPOSE 8080
 
-CMD [ "http-server" , "dist",  "-p", "8080"]
+CMD ["npx", "http-server", "dist", "-p", "3000", "-a", "0.0.0.0"]
