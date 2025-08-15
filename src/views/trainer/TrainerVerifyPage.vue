@@ -17,7 +17,7 @@ const handleBack = () => {
   </div>
 
   <!-- 페이지 설명 -->
-  <div class="pb-10">
+  <div class="p-5">
     <BaseStatusMessage
       title="자격 정보를 입력해주세요"
       subtitle="합격증 번호와 발급 번호를 입력해주세요."
