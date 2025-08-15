@@ -1,11 +1,14 @@
 <template>
-
-  <div class="min-h-screen p-4">
-    <BaseHeaderWithoutBack title="수익 관리" />
+  <div class="mx-auto w-full max-w-[420px] overflow-y-auto px-4 pb-24 pt-2">
+    <div
+      class="relative mb-4 flex h-[101px] w-full items-center justify-between"
+    >
+      <img :src="logo" alt="KBULKUP" class="h-[87px] w-[87px]" />
+    </div>
     <!-- 트레이닝 선택 -->
-    <div class="relative mt-6 w-full pt-2">
+    <div class="relative w-full">
       <div class="mb-4 flex items-center justify-between">
-        <label class="pl-5 text-input text-gray-300"> 트레이닝 선택 </label>
+        <label class="text-input"> 트레이너 수익 관리 </label>
         <div class="flex space-x-2">
           <input
             type="radio"
@@ -45,7 +48,7 @@
           </label>
         </div>
       </div>
-      
+
       <!-- 현재 선택된 항목 표시 (항상 표시) -->
       <div class="rounded-xl bg-gray-900 p-4 shadow-lg">
         <button
@@ -190,7 +193,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
-import BaseHeaderWithoutBack from "@/components/common/BaseHeaderWithoutBack.vue";
+import logo from "@/assets/images/mascot/logo.png";
 import LineChart from "@/components/common/LineChart.vue";
 import {
   getRevenueReport,
@@ -227,7 +230,7 @@ const selectedOptionDisplay = computed(() => {
 });
 
 const dropdownOptions = computed(() => {
-  const options = [{ value: "overall", display: "전체" }];
+  const options = [{ value: "overall", display: "전체 트레이닝" }];
   if (summaryData.value && summaryData.value.trainingRevenues) {
     summaryData.value.trainingRevenues.forEach((training) => {
       options.push({

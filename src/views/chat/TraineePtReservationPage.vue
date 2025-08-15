@@ -24,6 +24,7 @@ const existingSchedules = ref([]);
 
 // 모달 상태 관리
 const showModal = ref(false);
+const isSuccessModal = ref(false); // 성공 모달인지 확인용
 const modalConfig = ref({
   title: "",
   subtitle: "",
@@ -37,6 +38,13 @@ const fetchExistingSchedules = async () => {
   } catch (e) {
     console.error("스케줄 조회 실패:", e);
   }
+};
+
+const handleConfirm = () => {
+  if (modalConfig.value.onConfirm) {
+    modalConfig.value.onConfirm();
+  }
+  showModal.value = false;
 };
 
 onMounted(async () => {
@@ -85,6 +93,7 @@ const submitReservation = async () => {
         subtitle: "예약이 성공적으로 생성되었습니다.",
         confirmButtonText: "확인",
       };
+      isSuccessModal.value = true; // 성공 모달임을 표시
       showModal.value = true;
 
       selectedTimes.value = [];
@@ -112,7 +121,12 @@ const submitReservation = async () => {
 };
 
 const handleModalClose = () => {
+  // 성공 모달인 경우에만 라우팅
+  if (isSuccessModal.value) {
+    router.push("/trainee/pt/schedule");
+  }
   showModal.value = false;
+  isSuccessModal.value = false;
 };
 
 const handleBack = () => {

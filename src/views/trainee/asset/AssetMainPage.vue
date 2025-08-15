@@ -6,9 +6,9 @@ import { awaitUserReady } from "@/composables/user/awaitUserReady";
 import BalanceLineChart from "@/components/assetCharts/BalanceLineChart.vue";
 import CompositionDonutChart from "@/components/assetCharts/CompositionDonutChart.vue";
 import WithdrawalDonutChart from "@/components/assetCharts/WithdrawalDonutChart.vue";
-import BaseHeaderWithoutBack from "@/components/common/BaseHeaderWithoutBack.vue";
 import { updateAndGetTraineeAsset } from "@/composables/api/useAssetApi";
 import plusGreen from "@/assets/images/plus_green.svg";
+import logo from "@/assets/images/mascot/logo.png";
 
 // Initialize composables at the very top
 const router = useRouter();
@@ -150,11 +150,32 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div>
-    <BaseHeaderWithoutBack title="자산 관리" />
+  <div class="mx-auto w-full max-w-[420px] overflow-y-auto px-4 pb-24 pt-2">
+    <div
+      class="relative mb-4 flex h-[101px] w-full items-center justify-between"
+    >
+      <img :src="logo" alt="KBULKUP" class="h-[87px] w-[87px]" />
+      <button
+        type="button"
+        @click="goToAiChat"
+        aria-label="채팅"
+        class="flex h-10 w-10 items-center justify-center rounded-full border border-gray-800 text-primary shadow-md hover:bg-gray-900/40"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          class="h-6 w-6"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            d="M12 3.5c-4.97 0-9 3.58-9 8 0 1.95.78 3.74 2.09 5.16a1 1 0 0 1 .24.67l-.08 1.84a.75.75 0 0 0 1.03.74l1.98-.79c.2-.08.43-.1.64-.06 1.01.22 2.07.34 3.1.34 4.97 0 9-3.58 9-8s-4.03-8-9-8Zm-6.5 8c0-3.31 3.14-6 7-6s7 2.69 7 6-3.14 6-7 6c-1 0-2.05-.12-3.06-.37-.46-.1-.95-.07-1.39.11l-1.06.43.04-.93c.02-.48-.16-.95-.5-1.31C6.78 13.5 5.5 11.83 5.5 11.5Z"
+          />
+        </svg>
+      </button>
+    </div>
 
-    <div class="flex-1 overflow-y-auto px-4 pb-32 pt-6">
-      <!-- 데이터가 있을 때 -->
+    <!-- 자산 관리 섹션 -->
+    <section class="mb-6">
       <div v-if="hasAsset" class="space-y-4">
         <!-- Total Assets Section -->
         <div class="rounded-xl bg-gray-900 p-4 shadow-lg">
@@ -212,7 +233,7 @@ onMounted(async () => {
               <span class="text-input text-white">{{
                 viewOptions.find((v) => v.id === selectedView)?.title
               }}</span>
-              <button @click="toggleExpanded" class="text-primary">
+              <button @click="toggleExpanded" class="text-gray-300">
                 <svg
                   class="h-6 w-6 transition-transform duration-200"
                   :class="{ '-rotate-90': isExpanded }"
@@ -406,37 +427,6 @@ onMounted(async () => {
           <p class="text-body text-gray-300">자산 데이터를 연동해주세요.</p>
         </div>
       </div>
-
-      <!-- AI 채팅 버튼 -->
-      <div
-        class="fixed bottom-[120px] z-50"
-        style="right: max(1rem, calc(50vw - 180px))"
-      >
-        <button
-          @click="goToAiChat"
-          class="flex h-14 w-14 items-center justify-center rounded-full bg-gray-800 shadow-lg ring-1 ring-black/20 transition-transform hover:scale-105 active:scale-95"
-          aria-label="AI 채팅 열기"
-        >
-          <!-- 말풍선 아이콘: 선색을 primary로 -->
-          <svg
-            width="30"
-            height="24"
-            viewBox="0 0 32 26"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            class="text-primary"
-          >
-            <path
-              d="M31 13C31 19.6274 24.2843 25 16 25C13.0482 25 10.2956 24.3179 7.97495 23.14L1 25L3.32498 19.42C1.85261 17.5635 1 15.3614 1 13C1 6.37258 7.71573 1 16 1C24.2843 1 31 6.37258 31 13Z"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-            />
-          </svg>
-          <!-- 가운데 텍스트는 제거 -->
-        </button>
-      </div>
-    </div>
+    </section>
   </div>
 </template>

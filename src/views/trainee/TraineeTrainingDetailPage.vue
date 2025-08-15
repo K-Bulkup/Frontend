@@ -350,16 +350,16 @@ const showChatButton = computed(() => areAllQuestsDoneForUI.value);
       <div class="mt-10 space-y-3">
         <ActionButton
           v-if="showReviewButton"
-          text="리뷰 작성하기"
-          :variant="'secondary'"
-          class="w-full bg-gray-custom !text-body !font-medium !text-white"
-          @click="goToReviewPage"
+          :text="hasWrittenReview ? '리뷰 작성 완료' : '리뷰 작성하기'"
+          :variant="hasWrittenReview ? 'disabled' : 'primary'"
+          :disabled="hasWrittenReview"
+          @click="!hasWrittenReview && goToReviewPage()"
         />
         <ActionButton
           v-if="showChatButton"
-          text="1:1 PT 예약하기"
-          :variant="'secondary'"
-          class="w-full !bg-gray-custom !text-body !font-medium !text-white"
+          :text="chatRoomCreated ? '1:1 PT 예약 완료' : '1:1 PT 예약하기'"
+          :variant="chatRoomCreated ? 'disabled' : 'primary'"
+          :disabled="chatRoomCreated"
           @click="
             () =>
               router.push(

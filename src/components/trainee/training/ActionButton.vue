@@ -12,13 +12,13 @@ defineProps({
 <template>
   <button
     :disabled="disabled"
-    class="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-body font-bold transition-colors"
+    class="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-body transition-colors"
     :class="[
       disabled
-        ? 'bg-gray-800 text-gray-700'
+        ? 'bg-gray-custom font-medium text-gray-500'
         : variant === 'primary'
-          ? 'bg-primary text-black'
-          : 'bg-gray-100 text-black',
+          ? 'bg-primary font-bold text-black transition hover:opacity-90'
+          : 'bg-gray-100 font-bold text-black',
     ]"
   >
     <slot name="icon"></slot>
