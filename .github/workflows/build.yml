@@ -16,7 +16,7 @@ jobs:
 
       - name: Build and save image
         run: |
-          docker build -t kbulkup-vue:latest .
+          docker build --no-cache -t kbulkup-vue:latest .
           docker save -o kbulkup-vue.tar kbulkup-vue:latest
           chmod 644 kbulkup-vue.tar
 
