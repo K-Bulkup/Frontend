@@ -150,9 +150,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div
-    class="mx-auto min-h-screen w-full max-w-[420px] overflow-y-auto px-4 pb-24 pt-2 font-sans text-white"
-  >
+  <div class="mx-auto w-full max-w-[420px] overflow-y-auto px-4 pb-24 pt-2">
     <div
       class="relative mb-4 flex h-[101px] w-full items-center justify-between"
     >
@@ -235,7 +233,7 @@ onMounted(async () => {
               <span class="text-input text-white">{{
                 viewOptions.find((v) => v.id === selectedView)?.title
               }}</span>
-              <button @click="toggleExpanded" class="text-primary">
+              <button @click="toggleExpanded" class="text-gray-300">
                 <svg
                   class="h-6 w-6 transition-transform duration-200"
                   :class="{ '-rotate-90': isExpanded }"
