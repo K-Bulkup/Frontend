@@ -17,6 +17,7 @@ jobs:
         run: |
           docker build -t kbulkup-vue:latest .
           docker save -o kbulkup-vue.tar kbulkup-vue:latest
+          chmod 644 kbulkup-vue.tar
 
       - name: Copy files to EC2
         uses: appleboy/scp-action@v0.1.7
