@@ -18,4 +18,4 @@ RUN npm install -g serve
 EXPOSE 80
 
 # SPA 지원으로 실행
-CMD ["npx", "http-server", "dist", "-p", "80", "-a", "0.0.0.0", "--spa"]
+CMD ["serve", "-s", "dist", "-l", "80"]
