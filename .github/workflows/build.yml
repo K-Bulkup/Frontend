@@ -2,10 +2,8 @@ name: Frontend CI/CD with Vue # 워크플로우명 (GitHub Actions UI에서 이 
 
 # 해당 워크플로우를 언제 실행할지 결정하는 조건
 on:
-  push:
-    branches: ["develop"]
   pull_request:
-    branches: ["develop"]
+    branches: ["main"]
 
 # 실행할 작업
 jobs:
