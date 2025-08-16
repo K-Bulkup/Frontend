@@ -16,6 +16,11 @@ import ActionButton from "@/components/trainee/training/ActionButton.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import StarIcon from "@/assets/images/star.svg";
 
+/* ✅ 탭 & 리뷰 컴포넌트 추가 */
+import BaseTabNavigation from "@/components/common/BaseTabNavigation.vue";
+import ReviewList from "@/components/common/ReviewList.vue";
+import { getReviews } from "@/composables/api/useReviewApi";
+
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
@@ -26,6 +31,16 @@ const trainingData = ref(null);
 const hasWrittenReview = ref(false);
 const chatRoomCreated = ref(false);
 const trainingId = ref(route.params.trainingId);
+
+/* ✅ 리뷰 상태 */
+const averageRating = ref(0);
+const totalReviews = ref(0);
+const reviewList = ref([]);
+const tabs = [
+  { id: "routines", label: "루틴" },
+  { id: "reviews", label: "리뷰" },
+];
+const handleTabChange = () => {};
 
 const userKey = computed(() =>
   String(authStore.userId ?? authStore.user?.userId ?? "anon"),
@@ -107,16 +122,43 @@ const checkTrainingStatus = async () => {
     chatRoomCreated.value = !!res.data.data.chatRoomCreated;
   } catch (err) {
     // 상태 조회 실패는 UI 핵심과 무관 → 조용히 패스
-    // console.debug("상태 조회 실패(무시):", err);
+  }
+};
+
+/* ✅ 리뷰 로드 */
+const loadReviews = async () => {
+  try {
+    const response = await getReviews(route.params.trainingId);
+    if (response?.success && response?.data) {
+      averageRating.value = response.data.averageRating || 0;
+      totalReviews.value = response.data.totalReviewCount || 0;
+      reviewList.value = (response.data.reviews || []).map((r, i) => ({
+        id: r.id || i,
+        author: r.username,
+        rating: r.rating,
+        content: r.content,
+      }));
+    } else {
+      averageRating.value = 0;
+      totalReviews.value = 0;
+      reviewList.value = [];
+    }
+  } catch (e) {
+    console.error("리뷰 불러오기 실패:", e);
+    averageRating.value = 0;
+    totalReviews.value = 0;
+    reviewList.value = [];
   }
 };
 
 onMounted(() => {
   loadTrainingData();
   checkTrainingStatus();
+  loadReviews();
 });
 onActivated(() => {
   loadTrainingData();
+  loadReviews();
 });
 
 // 루틴 상세에서 PASS → routineLock 기록 → 여기서 서버 재조회
@@ -267,7 +309,10 @@ const toggleSection = (k) => {
   <div class="flex min-h-[100dvh] flex-col">
     <BaseHeader title="트레이닝 상세" @back="goBack" />
 
-    <main v-if="trainingData" class="mx-5 flex-1">
+    <main
+      v-if="trainingData"
+      class="mx-5 flex-1 overflow-y-auto pb-[calc(env(safe-area-inset-bottom)+88px)]"
+    >
       <div class="mb-8 mt-7 flex items-end justify-between">
         <h1 class="text-subTitle font-semibold leading-tight text-white">
           {{ trainingData.title }}
@@ -277,9 +322,11 @@ const toggleSection = (k) => {
         </span>
       </div>
 
-      <div class="mb-4"><ProgressBar :value="trainingData.progress" /></div>
+      <div class="mb-4">
+        <ProgressBar :value="trainingData.progress" />
+      </div>
 
-      <div class="mb-12 rounded-xl bg-gray-900 p-4">
+      <div class="mb-2 rounded-xl bg-gray-900 p-3">
         <div class="flex items-center gap-3">
           <button @click="goToTrainerPage" class="flex items-center gap-3">
             <div class="h-10 w-10 overflow-hidden rounded-full bg-gray-700">
@@ -314,72 +361,91 @@ const toggleSection = (k) => {
         </div>
       </div>
 
-      <TraineeRoutineSection
-        title="스트레칭"
-        subtitle="준비와 기초 다지기"
-        :quests="trainingData.routines['스트레칭']"
-        :is-locked="isSectionLocked('stretching')"
-        :is-expanded="expandedSections.stretching"
-        :lock-message="'이전 섹션 완료 후 잠금 해제'"
-        @toggle="expandedSections.stretching = !expandedSections.stretching"
-        @routine-click="
-          (q) => {
-            if (!isSectionLocked('stretching')) goToRoutineDetail(q);
-          }
-        "
-      />
+      <!-- ✅ 트레이너 카드 아래 탭 -->
+      <BaseTabNavigation
+        :tabs="tabs"
+        :default-tab="'routines'"
+        @tab-change="handleTabChange"
+      >
+        <!-- 루틴 탭 -->
+        <template #routines>
+          <TraineeRoutineSection
+            title="스트레칭"
+            subtitle="준비와 기초 다지기"
+            :quests="trainingData.routines['스트레칭']"
+            :is-locked="isSectionLocked('stretching')"
+            :is-expanded="expandedSections.stretching"
+            :lock-message="'이전 섹션 완료 후 잠금 해제'"
+            @toggle="expandedSections.stretching = !expandedSections.stretching"
+            @routine-click="
+              (q) => {
+                if (!isSectionLocked('stretching')) goToRoutineDetail(q);
+              }
+            "
+          />
 
-      <TraineeRoutineSection
-        title="근력"
-        subtitle="성장을 위한 역량 축적"
-        :quests="trainingData.routines['근력']"
-        :is-locked="isSectionLocked('strength')"
-        :is-expanded="expandedSections.strength"
-        :lock-message="'스트레칭 완료 후 잠금 해제'"
-        @toggle="expandedSections.strength = !expandedSections.strength"
-        @routine-click="
-          (q) => {
-            if (!isSectionLocked('strength')) goToRoutineDetail(q);
-          }
-        "
-      />
+          <TraineeRoutineSection
+            title="근력"
+            subtitle="성장을 위한 역량 축적"
+            :quests="trainingData.routines['근력']"
+            :is-locked="isSectionLocked('strength')"
+            :is-expanded="expandedSections.strength"
+            :lock-message="'스트레칭 완료 후 잠금 해제'"
+            @toggle="expandedSections.strength = !expandedSections.strength"
+            @routine-click="
+              (q) => {
+                if (!isSectionLocked('strength')) goToRoutineDetail(q);
+              }
+            "
+          />
 
-      <TraineeRoutineSection
-        title="유산소"
-        subtitle="꾸준한 관리 습관 형성"
-        :quests="trainingData.routines['유산소']"
-        :is-locked="isSectionLocked('cardio')"
-        :is-expanded="expandedSections.cardio"
-        :lock-message="'근력 완료 후 잠금 해제'"
-        @toggle="expandedSections.cardio = !expandedSections.cardio"
-        @routine-click="
-          (q) => {
-            if (!isSectionLocked('cardio')) goToRoutineDetail(q);
-          }
-        "
-      />
+          <TraineeRoutineSection
+            title="유산소"
+            subtitle="꾸준한 관리 습관 형성"
+            :quests="trainingData.routines['유산소']"
+            :is-locked="isSectionLocked('cardio')"
+            :is-expanded="expandedSections.cardio"
+            :lock-message="'근력 완료 후 잠금 해제'"
+            @toggle="expandedSections.cardio = !expandedSections.cardio"
+            @routine-click="
+              (q) => {
+                if (!isSectionLocked('cardio')) goToRoutineDetail(q);
+              }
+            "
+          />
 
-      <div class="mt-10 space-y-3">
-        <ActionButton
-          v-if="showReviewButton"
-          :text="hasWrittenReview ? '리뷰 작성 완료' : '리뷰 작성하기'"
-          :variant="hasWrittenReview ? 'disabled' : 'primary'"
-          :disabled="hasWrittenReview"
-          @click="!hasWrittenReview && goToReviewPage()"
-        />
-        <ActionButton
-          v-if="showChatButton"
-          :text="chatRoomCreated ? '1:1 PT 예약 완료' : '1:1 PT 예약하기'"
-          :variant="chatRoomCreated ? 'disabled' : 'primary'"
-          :disabled="chatRoomCreated"
-          @click="
-            () =>
-              router.push(
-                `/trainee/pt/reservation/${trainingData.trainerId}/${route.params.trainingId}`,
-              )
-          "
-        />
-      </div>
+          <div class="mt-10 space-y-3">
+            <ActionButton
+              v-if="showReviewButton"
+              :text="hasWrittenReview ? '리뷰 작성 완료' : '리뷰 작성하기'"
+              :variant="hasWrittenReview ? 'disabled' : 'primary'"
+              :disabled="hasWrittenReview"
+              @click="!hasWrittenReview && goToReviewPage()"
+            />
+            <ActionButton
+              v-if="showChatButton"
+              :text="chatRoomCreated ? '1:1 PT 예약 완료' : '1:1 PT 예약하기'"
+              :variant="chatRoomCreated ? 'disabled' : 'primary'"
+              :disabled="chatRoomCreated"
+              @click="
+                () =>
+                  router.push(
+                    `/trainee/pt/reservation/${trainingData.trainerId}/${route.params.trainingId}`,
+                  )
+              "
+            />
+          </div>
+        </template>
+
+        <!-- 리뷰 탭 -->
+        <template #reviews>
+          <ReviewList
+            :average-rating="averageRating"
+            :total-reviews="totalReviews"
+            :reviews="reviewList"
+          />
+        </template>
+      </BaseTabNavigation>
     </main>
   </div>
 </template>
