@@ -4,8 +4,6 @@ name: Frontend CI/CD with Vue
 on:
   pull_request:
     branches: ["main"]
-  push:
-    branches: ["develop"] # 🆕 추가
 
 # 실행할 작업
 jobs:
