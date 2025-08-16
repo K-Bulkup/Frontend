@@ -47,7 +47,7 @@ const inputClasses = computed(() => [
   "outline-none",
   "placeholder:text-gray-300",
   "rounded-r15",
-  props.isTextarea ? "text-left placeholder:text-center" : "text-center",
+  props.isTextarea ? "text-left placeholder:text-left" : "text-left",
 ]);
 
 const textareaRef = ref(null);
