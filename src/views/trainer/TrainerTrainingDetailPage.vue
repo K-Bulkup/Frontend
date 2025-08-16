@@ -119,8 +119,12 @@ onMounted(async () => {
       cardio: [],
     };
 
-    routines.forEach(({ category, routineTitle }) => {
-      const routine = { title: routineTitle, routineType: category };
+    routines.forEach(({ category, routineTitle, quizType }) => {
+      const routine = {
+        title: routineTitle,
+        routineType: category,
+        quizType: quizType,
+      };
 
       if (category === "스트레칭") {
         categorizedRoutines.value.stretching.push(routine);
