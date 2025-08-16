@@ -1,4 +1,4 @@
-name: Frontend CI/CD with Vue
+name: Frontend CI/CD with Vue # 워크플로우명 (GitHub Actions UI에서 이 이름으로 워크플로우를 식별함)
 
 # 해당 워크플로우를 언제 실행할지 결정하는 조건
 on:
@@ -21,20 +21,16 @@ jobs:
 
       - name: Build Docker image
         run: |
-          echo "🧹 Cleaning Docker system..."
-          docker system prune -af  # 🆕 추가
-          echo "🏗️ Building optimized image..."
           docker build --no-cache -t kbulkup-vue:latest --platform linux/amd64 .
           echo "Docker image built successfully"
           docker images | grep kbulkup-vue
 
       - name: Save Docker image to tar
         run: |
-          echo "📦 Saving and compressing Docker image..."
-          docker save kbulkup-vue:latest | gzip > kbulkup-vue.tar.gz  # 🆕 압축
-          echo "Docker image saved and compressed"
-          chmod 644 kbulkup-vue.tar.gz  # 🆕 파일명 변경
-          ls -lh kbulkup-vue.tar.gz  # 🆕 파일명 변경
+          docker save -o kbulkup-vue.tar kbulkup-vue:latest
+          echo "Docker image saved to tar file"
+          chmod 644 kbulkup-vue.tar  # 읽기 권한 부여
+          ls -lh kbulkup-vue.tar
 
       - name: Prepare deployment on EC2
         uses: appleboy/ssh-action@v1.0.3
@@ -46,7 +42,7 @@ jobs:
           script: |
             cd /home/ec2-user/frontend
             sudo docker-compose down || true
-            rm -f /home/ec2-user/frontend/kbulkup-vue.tar*  # 🆕 패턴 변경
+            rm -f /home/ec2-user/frontend/kbulkup-vue.tar
             sudo docker image prune -f
 
       - name: Copy docker-compose.yml to EC2
@@ -66,7 +62,7 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_KEY }}
           port: 22
-          source: "kbulkup-vue.tar.gz" # 🆕 파일명 변경
+          source: "kbulkup-vue.tar"
           target: "/home/ec2-user/frontend/"
 
       - name: Load image and start with docker-compose
@@ -77,8 +73,8 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           port: 22
           script: |
-            echo "Loading compressed Docker image..."
-            sudo docker load < /home/ec2-user/frontend/kbulkup-vue.tar.gz  # 🆕 압축 로드
+            echo "Loading Docker image..."
+            sudo docker load -i /home/ec2-user/frontend/kbulkup-vue.tar
 
             echo "Loaded images:"
             sudo docker images | grep kbulkup-vue
@@ -112,7 +108,7 @@ jobs:
               sudo docker logs --tail=10 kbulkup-vue
             fi
 
-            rm -f /home/ec2-user/frontend/kbulkup-vue.tar.gz  # 🆕 파일명 변경
+            rm -f /home/ec2-user/frontend/kbulkup-vue.tar
             echo "Frontend deployment completed successfully!"
 
       - name: Final verification
