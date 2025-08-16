@@ -16,7 +16,7 @@ import ActionButton from "@/components/trainee/training/ActionButton.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import StarIcon from "@/assets/images/star.svg";
 
-/* ✅ 탭 & 리뷰 컴포넌트 추가 */
+/* 탭 & 리뷰 컴포넌트 추가 */
 import BaseTabNavigation from "@/components/common/BaseTabNavigation.vue";
 import ReviewList from "@/components/common/ReviewList.vue";
 import { getReviews } from "@/composables/api/useReviewApi";
@@ -32,7 +32,7 @@ const hasWrittenReview = ref(false);
 const chatRoomCreated = ref(false);
 const trainingId = ref(route.params.trainingId);
 
-/* ✅ 리뷰 상태 */
+/* 리뷰 상태 */
 const averageRating = ref(0);
 const totalReviews = ref(0);
 const reviewList = ref([]);
@@ -125,7 +125,7 @@ const checkTrainingStatus = async () => {
   }
 };
 
-/* ✅ 리뷰 로드 */
+/* 리뷰 로드 */
 const loadReviews = async () => {
   try {
     const response = await getReviews(route.params.trainingId);
@@ -361,7 +361,7 @@ const toggleSection = (k) => {
         </div>
       </div>
 
-      <!-- ✅ 트레이너 카드 아래 탭 -->
+      <!-- 트레이너 카드 아래 탭 -->
       <BaseTabNavigation
         :tabs="tabs"
         :default-tab="'routines'"
