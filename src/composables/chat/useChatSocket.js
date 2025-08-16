@@ -5,6 +5,22 @@ const stompClient = ref(null);
 const isConnected = ref(false);
 const subscriptions = new Map();
 
+// 환경별 WebSocket URL 설정
+const getWebSocketURL = () => {
+  // VITE_API_BASE_URL이 설정되어 있으면 그것을 우선 사용
+  const baseURL =
+    import.meta.env.VITE_API_BASE_URL ||
+    (import.meta.env.PROD
+      ? "http://43.201.172.152:8080"
+      : "http://localhost:8080");
+
+  // HTTP/HTTPS를 WS/WSS로 변환
+  return (
+    baseURL.replace(/^https?/, baseURL.startsWith("https") ? "wss" : "ws") +
+    "/ws"
+  );
+};
+
 export const useChatSocket = () => {
   const connectSocket = () => {
     return new Promise((resolve, reject) => {
@@ -13,10 +29,13 @@ export const useChatSocket = () => {
         return;
       }
 
+      const wsURL = getWebSocketURL();
+      console.log("🔗 WebSocket URL:", wsURL);
+
       const client = new Client({
         webSocketFactory: () => {
           console.log("🔥 WebSocket 생성 시작");
-          return new WebSocket("ws://localhost:8080/ws");
+          return new WebSocket(wsURL);
         },
         debug: (msg) => console.log("📋 STOMP DEBUG:", msg),
         onConnect: () => {
