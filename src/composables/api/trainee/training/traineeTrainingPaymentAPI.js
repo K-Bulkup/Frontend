@@ -1,4 +1,4 @@
-// 📌 결제 요청 API
+// 결제 요청 API
 import apiClient from "@/plugins/axios";
 
 export const traineeTrainingPayment = async (paymentData) => {

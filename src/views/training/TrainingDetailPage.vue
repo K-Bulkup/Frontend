@@ -40,7 +40,7 @@ const tabs = [
   { id: "reviews", label: "리뷰" },
 ];
 
-// ✅ 여러 형태 대비: user?.userId | user?.id | store.userId | localStorage
+// 여러 형태 대비: user?.userId | user?.id | store.userId | localStorage
 const resolvedUserId = computed(() => {
   const c =
     authStore?.user?.userId ??
@@ -103,7 +103,7 @@ const loadTrainingDetail = async () => {
   }
 };
 
-// ✅ m_redirect_url 복귀 처리
+// m_redirect_url 복귀 처리
 const finalizeIfRedirected = async () => {
   const { imp_uid, merchant_uid, imp_success } = route.query;
   if (!imp_uid || !merchant_uid) return;
@@ -127,7 +127,7 @@ const finalizeIfRedirected = async () => {
       impUid: String(imp_uid),
       merchantUid: String(merchant_uid),
       trainingId: route.params.trainingId,
-      userId: resolvedUserId.value, // ✅ 0 방지
+      userId: resolvedUserId.value, // 0 방지
     };
     const res = await traineeTrainingPayment(payload);
     alert("✅ 결제 완료: " + (res?.data?.data?.message || "성공"));
@@ -149,7 +149,7 @@ const proceedToPayment = () => {
   modalVisible.value = true;
 };
 
-// 🔁 PG→결제수단 매핑
+// PG→결제수단 매핑
 const resolvePayMethod = (pg) => {
   if (pg?.startsWith("kakaopay")) return "kakaopay";
   if (pg?.startsWith("tosspayments")) return "tosspay";
