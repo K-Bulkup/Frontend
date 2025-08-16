@@ -110,7 +110,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col px-2 pb-24 pt-4">
+  <div class="flex min-h-screen flex-col px-2 pb-24">
     <div class="flex-1 overflow-y-auto">
       <ChatListItem
         v-for="chat in chatList"
