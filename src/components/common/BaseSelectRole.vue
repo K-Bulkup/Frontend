@@ -15,12 +15,12 @@
     >
       <div>
         <p class="text-body6">
-          {{ role === "TRAINER" ? "트레이너" : "회원" }}
+          {{ role === "TRAINER" ? "트레이너" : "트레이니" }}
         </p>
         <p class="text-subtext mt-1 text-input text-gray-300">
           {{
             role === "TRAINER"
-              ? "회원을 찾고 있어요."
+              ? "트레이니을 찾고 있어요."
               : "트레이너를 찾고 있어요."
           }}
         </p>
