@@ -1,5 +1,4 @@
 import { fileURLToPath, URL } from "node:url";
-
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vueDevTools from "vite-plugin-vue-devtools";
@@ -37,7 +36,11 @@ export default defineConfig({
     rollupOptions: {
       output: {
         format: "es",
+        manualChunks: undefined, // 청크 분할 비활성화
       },
+    },
+    commonjsOptions: {
+      transformMixedEsModules: true,
     },
   },
   optimizeDeps: {
