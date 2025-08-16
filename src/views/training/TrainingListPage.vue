@@ -1,4 +1,3 @@
-<!-- src/views/training/TrainingListPage.vue -->
 <script setup>
 import {
   ref,
@@ -315,67 +314,6 @@ onBeforeUnmount(() => {
       </button>
     </div>
 
-    <!-- 트레이닝 목록 -->
-    <section class="mb-6">
-      <h2 class="mb-3 text-input">트레이닝 목록</h2>
-
-      <!-- 검색 -->
-      <div class="relative mb-4">
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="강의를 검색해보세요"
-          class="h-10 w-full rounded-pill bg-gray-900 px-4 text-body2 text-gray-300 placeholder-gray-200 focus:outline-none"
-        />
-        <img
-          src="@/assets/images/search.svg"
-          alt=""
-          class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2"
-        />
-      </div>
-
-      <!-- 카테고리 -->
-      <div class="mb-4 flex gap-2 overflow-x-auto scrollbar-hide">
-        <button
-          v-for="c in categories"
-          :key="c"
-          class="whitespace-nowrap rounded-pill border px-3 py-1 text-body3"
-          :class="
-            selectedCategory === c
-              ? 'border-transparent bg-primary text-black'
-              : 'border-gray-700 text-gray-200'
-          "
-          @click="selectedCategory = c"
-          type="button"
-        >
-          {{ c }}
-        </button>
-      </div>
-
-      <!-- ✅ 카드 그리드와 센티널을 섹션 내부에 둡니다 -->
-      <main class="grid grid-cols-3 gap-x-3 gap-y-6">
-        <template v-if="visibleTrainings.length > 0">
-          <TrainingCard
-            v-for="training in visibleTrainings"
-            :key="training.trainingId"
-            :training="training"
-            @click="goToDetail(training)"
-            class="cursor-pointer"
-          />
-        </template>
-
-        <!-- 검색/필터 후 데이터 없을 때 표시 -->
-        <template v-else>
-          <div class="col-span-3 py-10 text-center text-body2 text-gray-500">
-            트레이닝이 존재하지 않습니다.
-          </div>
-        </template>
-      </main>
-
-      <!-- 센티널: 이게 화면에 들어오면 다음 배치 로드 -->
-      <div ref="sentinelRef" class="h-8"></div>
-    </section>
-
     <!-- 수강중인 트레이닝 -->
     <section class="mb-5">
       <div class="mb-3 flex items-center justify-between">
@@ -481,5 +419,66 @@ onBeforeUnmount(() => {
         ›
       </button>
     </div>
+
+    <!-- 트레이닝 목록 -->
+    <section class="mb-6">
+      <h2 class="mb-3 text-input">트레이닝 목록</h2>
+
+      <!-- 검색 -->
+      <div class="relative mb-4">
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="강의를 검색해보세요"
+          class="h-10 w-full rounded-pill bg-gray-900 px-4 text-body2 text-gray-300 placeholder-gray-200 focus:outline-none"
+        />
+        <img
+          src="@/assets/images/search.svg"
+          alt=""
+          class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2"
+        />
+      </div>
+
+      <!-- 카테고리 -->
+      <div class="mb-4 flex gap-2 overflow-x-auto scrollbar-hide">
+        <button
+          v-for="c in categories"
+          :key="c"
+          class="whitespace-nowrap rounded-pill border px-3 py-1 text-body3"
+          :class="
+            selectedCategory === c
+              ? 'border-primary bg-primary/20 text-white'
+              : 'border-gray-700 text-gray-200'
+          "
+          @click="selectedCategory = c"
+          type="button"
+        >
+          {{ c }}
+        </button>
+      </div>
+
+      <!-- ✅ 카드 그리드와 센티널을 섹션 내부에 둡니다 -->
+      <main class="grid grid-cols-3 gap-x-3 gap-y-6">
+        <template v-if="visibleTrainings.length > 0">
+          <TrainingCard
+            v-for="training in visibleTrainings"
+            :key="training.trainingId"
+            :training="training"
+            @click="goToDetail(training)"
+            class="cursor-pointer"
+          />
+        </template>
+
+        <!-- 검색/필터 후 데이터 없을 때 표시 -->
+        <template v-else>
+          <div class="col-span-3 py-10 text-center text-body2 text-gray-500">
+            트레이닝이 존재하지 않습니다.
+          </div>
+        </template>
+      </main>
+
+      <!-- 센티널: 이게 화면에 들어오면 다음 배치 로드 -->
+      <div ref="sentinelRef" class="h-8"></div>
+    </section>
   </div>
 </template>

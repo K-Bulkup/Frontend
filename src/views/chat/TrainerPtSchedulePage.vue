@@ -46,7 +46,7 @@ onMounted(fetchReservations);
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col px-2 pb-24 pt-4">
+  <div class="flex min-h-screen flex-col px-2 pb-24">
     <div class="flex-1 overflow-y-auto">
       <ScheduleListItem
         v-for="item in schedules"
