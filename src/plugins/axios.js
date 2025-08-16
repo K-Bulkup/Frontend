@@ -3,7 +3,11 @@ import router from "@/router";
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:8080", // 백엔드 서버의 실제 주소로 변경하세요 // .env 파일에 정의된 API 서버 주소
+  baseURL:
+    import.meta.env.VITE_API_BASE_URL ||
+    (import.meta.env.PROD
+      ? "http://43.201.172.152:8080"
+      : "http://localhost:8080"),
   headers: {
     "Content-Type": "application/json",
   },
