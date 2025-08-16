@@ -210,7 +210,7 @@ const handleCompletion = () => {
   <div class="px-4 pb-20">
     <BaseHeader v-if="step < 4" title="트레이닝 등록" @back="handleGoBack" />
 
-    <div class="flex-grow">
+    <div class="flex-grow p-5">
       <TrainingStep1Category v-if="step === 1" v-model="selectedCategory" />
 
       <TrainingStep2Curriculum
