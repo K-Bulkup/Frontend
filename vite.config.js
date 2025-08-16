@@ -1,10 +1,8 @@
 import { fileURLToPath, URL } from "node:url";
-
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vueDevTools from "vite-plugin-vue-devtools";
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [vue(), vueDevTools()],
   resolve: {
@@ -28,6 +26,24 @@ export default defineConfig({
     },
   },
   define: {
-    global: {},
+    global: "globalThis",
+    "process.env": {},
+    __VUE_PROD_DEVTOOLS__: false,
+    __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false,
+  },
+  build: {
+    target: "es2015",
+    rollupOptions: {
+      output: {
+        format: "es",
+        manualChunks: undefined, // 청크 분할 비활성화
+      },
+    },
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
+  },
+  optimizeDeps: {
+    include: ["@stomp/stompjs", "chart.js", "chartjs-plugin-datalabels"],
   },
 });

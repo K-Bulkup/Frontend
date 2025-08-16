@@ -14,7 +14,6 @@ import { getTraineeAsset } from "@/composables/api/useAssetApi";
 import ChatHeader from "@/components/chat/ChatHeader.vue";
 import ChatBubble from "@/components/chat/ChatBubble.vue";
 import ChatInput from "@/components/chat/ChatInput.vue";
-import LoadingOverlay from "@/components/common/LoadingOverlay.vue"; // ← 추가
 
 import profileImg from "@/assets/images/mascot/profile.png";
 
@@ -38,7 +37,7 @@ const messages = ref([]);
 const messageContainer = ref(null);
 const isButtonDisabled = computed(() => remainingChats.value <= 0);
 
-const showOverlay = ref(false);
+const isWaitingForResponse = ref(false);
 
 const fetchAssets = async () => {
   try {
@@ -77,7 +76,19 @@ const handleSendMessage = async (
   messages.value.push(userMsg);
   scrollToBottom();
 
-  showOverlay.value = true;
+  // 답변 대기 메시지 추가
+  isWaitingForResponse.value = true;
+  const waitingMsg = {
+    id: Date.now() + 0.5,
+    text: "금육이가 답변 중입니다...",
+    isOwn: false,
+    sendAt: new Date(),
+    isAiChat,
+    profileUrl: profileImg,
+    isWaiting: true, // 대기 메시지임을 표시
+  };
+  messages.value.push(waitingMsg);
+  scrollToBottom();
 
   try {
     const aiText = await requestAiConsulting(messageToSend, isAsset);
@@ -86,6 +97,13 @@ const handleSendMessage = async (
     const raw = aiText.choices[0].message.content;
     const formatted = formatAiSections(raw);
 
+    // 대기 메시지 제거
+    const waitingIndex = messages.value.findIndex((msg) => msg.isWaiting);
+    if (waitingIndex > -1) {
+      messages.value.splice(waitingIndex, 1);
+    }
+
+    // 실제 답변 추가
     messages.value.push({
       id: Date.now() + 1,
       text: formatted,
@@ -97,6 +115,13 @@ const handleSendMessage = async (
 
     scrollToBottom();
   } catch (err) {
+    // 대기 메시지 제거
+    const waitingIndex = messages.value.findIndex((msg) => msg.isWaiting);
+    if (waitingIndex > -1) {
+      messages.value.splice(waitingIndex, 1);
+    }
+
+    // 에러 메시지 추가
     messages.value.push({
       id: Date.now() + 2,
       text: "[금육이 응답 실패]",
@@ -107,7 +132,7 @@ const handleSendMessage = async (
     });
     scrollToBottom();
   } finally {
-    showOverlay.value = false;
+    isWaitingForResponse.value = false;
   }
 };
 
@@ -180,7 +205,10 @@ const handleFetchAssetsAndSendMessage = async () => {
       @back="router.push('/trainee/asset')"
     />
 
-    <div ref="messageContainer" class="flex-1 overflow-y-auto p-4">
+    <div
+      ref="messageContainer"
+      class="flex-1 overflow-y-auto p-4 scrollbar-hide"
+    >
       <div v-for="(group, date) in groupedMessages" :key="date">
         <div class="my-4 text-center text-xs text-gray-400">{{ date }}</div>
         <ChatBubble
@@ -196,15 +224,22 @@ const handleFetchAssetsAndSendMessage = async () => {
 
     <div class="border-t border-gray-700">
       <ChatInput
-        :disabled="disabled"
+        :disabled="disabled || isWaitingForResponse"
         :placeholder="placeholder"
         :remaining-chats="remainingChats"
         :isAiChat="true"
         @send="handleSendMessage"
       />
     </div>
-
-    <!-- 중앙 로딩 오버레이 -->
-    <LoadingOverlay :show="showOverlay" title="금육이가 답변 중입니다" />
   </div>
 </template>
+
+<style scoped>
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+</style>

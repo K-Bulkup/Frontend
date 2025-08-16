@@ -38,7 +38,7 @@ const profileImage = computed(() => {
         <img
           :src="profileImage"
           alt="프로필 이미지"
-          class="h-5 w-5 rounded-full"
+          class="h-8 w-8 rounded-full"
         />
       </template>
       <template v-else>
@@ -59,22 +59,6 @@ const profileImage = computed(() => {
       >
         {{ timestamp }}
       </div>
-    </div>
-
-    <div
-      v-if="isOwn"
-      class="ml-2 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-white"
-    >
-      <template v-if="profileImage">
-        <img
-          :src="profileImage"
-          alt="내 프로필 이미지"
-          class="h-5 w-5 rounded-full"
-        />
-      </template>
-      <template v-else>
-        <UserIcon class="h-5 w-5 text-gray-600" />
-      </template>
     </div>
   </div>
 </template>

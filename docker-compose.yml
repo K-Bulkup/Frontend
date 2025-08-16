@@ -5,6 +5,6 @@ services:
   vue-app:
     image: kbulkup-vue:latest
     container_name: kbulkup-vue
+    restart: always
     ports:
-      - "3000:8080"
-    restart: unless-stopped
+      - "80:80"

@@ -104,7 +104,6 @@ const handleLogin = async () => {
       success = true;
     } catch (error) {
       console.error("소셜 회원가입 완료 중 오류 발생:", error);
-      alert("회원가입 중 오류가 발생했습니다.");
       success = false;
     }
   } else {
@@ -169,18 +168,13 @@ const handleKakaoLogin = () => {
     v-else-if="result === 'fail'"
     class="flex min-h-screen flex-col justify-between px-1 py-20"
   >
-    <ConnectFailureModal />
-    <div class="mt-10 flex w-full justify-center">
-      <BaseButton
-        @click="
-          result = null;
-          step = 1;
-          router.push('login');
-        "
-      >
-        다시 시도
-      </BaseButton>
-    </div>
+    <ConnectFailureModal
+      @close="
+        result = null;
+        step = 1;
+        router.push('login');
+      "
+    />
   </div>
 
   <!-- 로그인 입력 / 역할 선택 공용 래퍼 -->
@@ -261,7 +255,7 @@ const handleKakaoLogin = () => {
         <div class="mx-auto w-[332px]">
           <BaseStatusMessage
             title="어떤 유형으로 로그인하시겠어요?"
-            subtitle="트레이너 또는 회원 중 선택해주세요"
+            subtitle="트레이너 또는 트레이니 중 선택해주세요"
             variant="guide"
           />
 

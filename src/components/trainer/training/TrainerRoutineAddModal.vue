@@ -188,6 +188,16 @@ const modalTitle = computed(() => {
               />
             </div>
 
+            <div v-if="form.quizType === 'SHORT_ANSWER'">
+              <BaseFormField
+                variant="dark"
+                label="루틴 답안"
+                placeholder="루틴 정답을 입력해주세요"
+                v-model="form.routineAnswer"
+                :isTextarea="true"
+              />
+            </div>
+
             <div>
               <div v-if="!isUrlInputVisible" class="flex items-center gap-2">
                 <label class="text-input text-gray-50">영상 URL</label>
