@@ -54,18 +54,17 @@ const isTrueLike = (v) =>
   v === "1" ||
   (typeof v === "string" && v.toUpperCase() === "TRUE");
 
-/** 체크표시 기준: 서버의 completed(Boolean) **만** 신뢰 */
+/** 체크표시 기준: 서버의 completed(Boolean)만 신뢰 */
 const convertRoutines = (routineList) =>
   routineList?.map((r, i) => {
     const serverCompleted = isTrueLike(r?.completed);
     return {
       id: String(r?.routineId ?? r?.id ?? i),
       name: r?.title ?? r?.name ?? `루틴 ${i + 1}`,
-      completed: serverCompleted, // ← 체크 표시는 서버만
+      completed: serverCompleted,
       routineType: r?.routineType,
       quizType: r?.quizType,
       rewardPoint: r?.rewardPoint ?? 0,
-      // PASS가 아닐 땐 completedAt을 비워서 자식이 시간을 기준으로 체크하지 않게
       completedAt: serverCompleted ? (r?.completedAt ?? null) : null,
     };
   }) || [];
@@ -114,7 +113,6 @@ const loadTrainingData = async () => {
   }
 };
 
-// (우리 기능과 직접 관련 없는 500은 콘솔만 찍고 무시)
 const checkTrainingStatus = async () => {
   try {
     const res = await getTraineeTrainingStatus(trainingId.value);
@@ -170,8 +168,7 @@ watch(
   { deep: true },
 );
 
-// ----------------- 섹션 잠금/완료 판정 -----------------
-
+// 섹션 잠금/완료 판정
 // v2 스코프 컨텍스트(로컬락 조회용)
 const ctxBase = computed(() => ({
   userId: userKey.value,

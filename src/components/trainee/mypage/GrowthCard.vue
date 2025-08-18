@@ -12,7 +12,6 @@ const LEVEL_UP_THRESHOLD = 20;
 
 // 진행 바의 퍼센티지 계산 로직 수정
 const progressPercentage = computed(() => {
-  // growthScore가 0이면 0%를 반환합니다.
   if (props.growthScore === 0) {
     return 0;
   }
@@ -20,13 +19,10 @@ const progressPercentage = computed(() => {
   // 현재 레벨에서의 진행도 (나머지 값)
   const currentProgress = props.growthScore % LEVEL_UP_THRESHOLD;
 
-  // 점수가 20, 40처럼 딱 나누어 떨어지면 나머지가 0이 되므로,
-  // 이 경우엔 100%로 꽉 찬 상태를 보여줍니다.
   if (currentProgress === 0) {
     return 100;
   }
 
-  // 그 외의 경우에는 현재 진행도를 기준으로 퍼센티지를 계산합니다.
   return (currentProgress / LEVEL_UP_THRESHOLD) * 100;
 });
 

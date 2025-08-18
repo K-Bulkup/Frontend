@@ -58,8 +58,8 @@ const onSubmit = () => {
   if (!hasEvidence.value || props.loading) return;
   const joinedText = [memo.value, url.value].filter(Boolean).join("\n");
   emit("submit", {
-    text: joinedText, // 서버는 answerText만 받음(메모+URL 합쳐서 전달)
-    imageFile: file.value || null, // 파일 있으면 전달
+    text: joinedText,
+    imageFile: file.value || null,
   });
 };
 

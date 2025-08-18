@@ -20,7 +20,7 @@ import {
 // Router
 const router = useRouter();
 
-// ───────────────── state
+// state
 const searchQuery = ref("");
 const selectedCategory = ref("전체");
 const categories = ref(["전체"]);
@@ -56,7 +56,7 @@ const ipPages = computed(() => {
 });
 const totalPages = computed(() => ipPages.value.length);
 
-// ───────────────── helpers
+// helpers
 const normalizeLevel = (val) => {
   if (val == null) return null;
   const s = String(val).trim();
@@ -100,7 +100,7 @@ const mapInProgressItem = (e) => ({
   isPurchased: true,
 });
 
-// ───────────────── API
+// API
 const fetchInProgress = async () => {
   try {
     const raw = await getTraineeTraining();
@@ -149,7 +149,7 @@ const fetchSearchResults = async (keyword) => {
   }
 };
 
-// ───────────────── filter + reset
+// filter + reset
 const applyFilter = (shouldReset = false) => {
   trainings.value =
     selectedCategory.value === "전체"
@@ -163,7 +163,7 @@ const applyFilter = (shouldReset = false) => {
   }
 };
 
-// ───────────────── watchers
+// watchers
 let debounceTimer;
 watch(
   () => searchQuery.value,
@@ -184,7 +184,7 @@ watch(
   () => applyFilter(true),
 );
 
-// ───────────────── 캐러셀 컨트롤
+// 캐러셀 컨트롤
 const handleScrollCarousel = () => {
   const el = ipContainer.value;
   if (!el) return;
@@ -201,7 +201,7 @@ const scrollToPage = (idx) => {
 const goPrev = () => scrollToPage(activePage.value - 1);
 const goNext = () => scrollToPage(activePage.value + 1);
 
-// ───────────────── 무한스크롤(페이지 스크롤 + 센티널)
+// 무한스크롤(페이지 스크롤 + 센티널)
 const sentinelRef = ref(null);
 let io = null;
 
@@ -240,7 +240,7 @@ const resetInfinite = () => {
   });
 };
 
-// ───────────────── nav
+// nav
 const goToDetail = (training) => {
   const purchased =
     training.isPurchased ||
@@ -457,7 +457,7 @@ onBeforeUnmount(() => {
         </button>
       </div>
 
-      <!-- ✅ 카드 그리드와 센티널을 섹션 내부에 둡니다 -->
+      <!-- 카드 그리드와 센티널을 섹션 내부에 둡니다 -->
       <main class="grid grid-cols-3 gap-x-3 gap-y-6">
         <template v-if="visibleTrainings.length > 0">
           <TrainingCard

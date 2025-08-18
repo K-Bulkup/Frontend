@@ -65,7 +65,7 @@ const tabs = [
   { id: "qna", label: "QnA" },
 ];
 
-// ✅ QnA 불러오기 함수
+// QnA 불러오기 함수
 const loadQnA = async () => {
   try {
     const { data } = await getTrainingQnAListDetail(trainingId);
@@ -79,7 +79,7 @@ const loadQnA = async () => {
       answer: q.answer,
       hasAnswer: !!q.answer,
       isExpanded: false,
-      questionDate: formatDate(q.createAt), // ✅ formatDate 사용
+      questionDate: formatDate(q.createAt), // formatDate 사용
       answerDate: formatDate(q.answeredAt),
     }));
   } catch (e) {
@@ -91,7 +91,7 @@ onMounted(async () => {
   const trainingId = route.params.trainingId;
 
   try {
-    // ✅ 트레이닝 상세
+    // 트레이닝 상세
     const { data: res } = await getTrainerTrainingDetail(trainingId);
     const detail = res.data;
 
@@ -109,7 +109,7 @@ onMounted(async () => {
       totalWeeks: 4,
     };
 
-    // ✅ 루틴 목록 조회 및 분류
+    // 루틴 목록 조회 및 분류
     const { data: routineRes } = await getTrainerTrainingRoutines(trainingId);
     const routines = routineRes.data;
 

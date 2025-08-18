@@ -10,7 +10,7 @@ import DateTimeSlotsPicker from "@/components/chat/DateTimeSlotsPicker.vue";
 
 import {
   getTrainerSchedulesByTrainerId,
-  createTraineeReservation, // ✅ 추가 API 사용
+  createTraineeReservation, // 추가 API 사용
 } from "@/composables/api/usePtApi";
 
 const route = useRoute();
@@ -54,7 +54,7 @@ onMounted(async () => {
   await fetchExistingSchedules();
 });
 
-// ✅ 단일 선택 강제: 새로 선택하면 마지막 선택만 유지
+// 단일 선택 강제: 새로 선택하면 마지막 선택만 유지
 watch(selectedTimes, (val) => {
   if (val.length > 1) selectedTimes.value = [val[val.length - 1]];
 });

@@ -10,7 +10,6 @@ const description = defineModel("description");
 const difficulty = defineModel("difficulty");
 const routines = defineModel("routines");
 
-// [수정됨] 이제 부모에게 카테고리 키 없이 모달을 열어달라는 신호만 보냄
 const emit = defineEmits(["open-routine-modal", "edit-routine"]);
 
 const DIFFICULTY_LEVELS = ["초급", "중급", "고급"];

@@ -62,7 +62,7 @@ const chartOptions = {
     legend: {
       position: "bottom",
       labels: {
-        color: "#FFFFFF", // ✅ 범례(카테고리) 글자색 흰색
+        color: "#FFFFFF", // 범례(카테고리) 글자색 흰색
       },
     },
     tooltip: {

@@ -17,7 +17,7 @@ const isLoading = ref(false);
 const showSuccessModal = ref(false);
 const showFailureModal = ref(false);
 
-// ✅ userId 비동기로 가져오기
+// userId 비동기로 가져오기
 const userId = ref(null);
 onMounted(async () => {
   userId.value = await awaitUserReady();
@@ -65,7 +65,7 @@ const selectBank = (bank) => {
     selectedBanks.value.push(bank); // 없으면 추가
   }
 
-  // ✅ 선택된 은행이 없으면 null 처리
+  // 선택된 은행이 없으면 null 처리
   if (selectedBanks.value.length === 0) {
     selectedBank.value = null;
   } else {

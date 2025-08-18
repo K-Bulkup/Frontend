@@ -1,10 +1,8 @@
-// src/composables/api/trainee/trainer/traineeTrainerApi.js
 import apiClient from "@/plugins/axios";
 
 export const traineeTrainerApi = {
   // 트레이너 상세(프로필 + 운영 중 트레이닝)
   async getTrainerInfo(trainerId) {
-    // 통합 응답: { profile: {...}, trainings: [...] }
     return await apiClient.get(`/api/trainee/trainers/${trainerId}`);
   },
 

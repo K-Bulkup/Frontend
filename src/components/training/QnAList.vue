@@ -2,12 +2,7 @@
 import { ref, computed, nextTick } from "vue";
 import { postQnAAnswer } from "@/composables/api/useQnAAnswer";
 import editIcon from "@/assets/images/trainer/mypage/edit.png";
-/** 공통 Q&A 리스트 컴포넌트
- * props:
- *  - items: [{ id, title, content, answer, hasAnswer, questionDate, answerDate, ... }]
- *  - initialTab: 'completed' | 'pending' (기본: 'completed')
- *  - accordion: true면 한 번에 하나만 펼침
- */
+
 const props = defineProps({
   items: { type: Array, default: () => [] },
   initialTab: { type: String, default: "completed" },
@@ -28,7 +23,7 @@ const emit = defineEmits([
 const selectedTab = ref(props.initialTab);
 const openIds = ref(new Set());
 // textarea ref들 저장
-const textareaRefs = ref({}); // { [qnaId]: HTMLTextAreaElement | undefined }
+const textareaRefs = ref({});
 
 // 아이콘 클릭 시 동작
 const tryPencilSubmit = async (it) => {
@@ -71,9 +66,9 @@ const filtered = computed(() =>
   ),
 );
 
-// ✅ 트레이너 답변 폼 상태
-const answers = ref({}); // { [qnaId]: string }
-const submitting = ref(new Set()); // 로딩 중인 qnaId 모음
+// 트레이너 답변 폼 상태
+const answers = ref({});
+const submitting = ref(new Set());
 const isSubmitting = (id) => submitting.value.has(id);
 
 const cancelAnswer = (id) => {
@@ -225,7 +220,7 @@ const submitAnswer = async (it) => {
                 </div>
               </div>
 
-              <!-- ✅ 트레이너 전용: 미완료 탭에서 미답변 항목이면 답변 입력 폼 노출 -->
+              <!-- 트레이너 전용: 미완료 탭에서 미답변 항목이면 답변 입력 폼 노출 -->
               <div
                 v-if="isTrainer && selectedTab === 'pending' && !it.hasAnswer"
                 class="w-full rounded-xl bg-[#2C2C2C] p-4"
