@@ -33,6 +33,7 @@ const isLoading = ref(false);
 const isResultModalVisible = ref(false);
 const submissionStatus = ref("success");
 const acquiredReward = ref(0);
+const failCommentary = ref("");
 
 const isLocked = ref(false);
 const isEntryMode = computed(
@@ -263,10 +264,14 @@ const handleCertificationSubmit = async (submission) => {
     };
 
     const res = await submitRoutineResult(id, payload, file);
+    console.log("res : ", res);
 
     // ✅ 안전한 PASS 판정
     const passed = normalizePassResult(res);
     submissionStatus.value = passed ? "success" : "failure";
+
+    const serverComment = res?.data?.commentary ?? res?.data?.comment ?? "";
+    failCommentary.value = passed ? "" : String(serverComment).trim();
 
     // ✅ 스코프 정리: 과거 tr 스코프 잔여 제거
     clearAllScopesFor(id);
@@ -475,6 +480,7 @@ const retrySubmission = () => {
       :is-visible="isResultModalVisible"
       :status="submissionStatus"
       :reward="acquiredReward"
+      :commentary="failCommentary"
       @close="closeResult"
       @retry="retrySubmission"
     />

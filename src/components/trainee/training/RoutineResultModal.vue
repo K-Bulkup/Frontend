@@ -1,8 +1,11 @@
 <script setup>
+import { computed } from "vue"; // ✅ 추가
+
 const props = defineProps({
   isVisible: { type: Boolean, required: true },
   status: { type: String, default: "success" }, // 'success' | 'failure'
   reward: { type: Number, default: 1 },
+  commentary: { type: String, default: "" }, // ✅ 추가
 });
 
 const emit = defineEmits(["close", "retry"]);
@@ -11,6 +14,22 @@ const handlePrimary = () => {
   if (props.status === "success") emit("close", "primary");
   else emit("retry");
 };
+
+// ✅ commentary를 줄 단위로 파싱(빈 줄/공백 제거). 비어있으면 기본 메시지 사용
+const parsedCommentary = computed(() => {
+  const lines = String(props.commentary ?? "")
+    .replace(/\r/g, "")
+    .split(/\n+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  return lines.length
+    ? lines
+    : [
+        "정답이 일치하지 않았습니다",
+        "사진이 명확하지 않거나 판독이 어려웠습니다",
+      ];
+});
 </script>
 
 <template>
@@ -106,10 +125,11 @@ const handlePrimary = () => {
         <div
           class="mt-5 space-y-2 rounded-xl border border-[#2A2A2A] bg-[#141414] p-4 text-left"
         >
-          <p class="text-body3 text-gray-300">실패 사유</p>
-          <ul class="list-disc space-y-1 pl-5 text-body3 text-gray-400">
-            <li>정답이 일치하지 않았습니다</li>
-            <li>사진이 명확하지 않거나 판독이 어려웠습니다</li>
+          <p class="text-body2 text-gray-300">해설</p>
+          <ul class="list-disc space-y-1 pl-5 text-body2 text-gray-400">
+            <li v-for="(line, idx) in parsedCommentary" :key="idx">
+              {{ line }}
+            </li>
           </ul>
         </div>
 
