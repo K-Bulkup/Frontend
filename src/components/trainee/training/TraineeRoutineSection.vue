@@ -9,9 +9,8 @@ import strengthIcon from "@/assets/images/mascot/routine/Geumyuk_strength.png";
 import cardioIcon from "@/assets/images/mascot/routine/Geumyuk_cardio.png";
 
 const props = defineProps({
-  title: String, // 스트레칭 / 근력 / 유산소
-  subtitle: String, // 금융 익히기 ...
-  // [{ id, name, completed, rewardPoint, type, typeLabel }]  (type/label 없을 수 있음)
+  title: String,
+  subtitle: String,
   quests: { type: Array, default: () => [] },
   isLocked: Boolean,
   isExpanded: Boolean,
@@ -36,7 +35,7 @@ const iconSrc = computed(() => {
 const TYPE_LABELS = { SHORT_ANSWER: "주관식", OX: "OX", PHOTO: "실천형" };
 const toTypeCode = (v) => String(v ?? "").toUpperCase();
 
-// (진짜 데이터가 전혀 없을 때만) 데모 폴백
+// 데모 폴백
 const fallbackNames = [
   "주식 계좌 개설하기",
   "주식 계좌 개설하기가?",
@@ -45,14 +44,11 @@ const fallbackNames = [
 const fallbackTags = ["주관식", "OX", "실천형"];
 const fallbackPts = [2, 1, 1];
 
-// ✅ 루틴 상세에서 가져온 타입 라벨 캐시 (id → "주관식"/"OX"/"실천형")
-const fetchedTypeLabelById = reactive({}); // ex) { "123": "주관식" }
+// 루틴 상세에서 가져온 타입 라벨 캐시
+const fetchedTypeLabelById = reactive({});
 // 중복 호출 방지용 프라미스 캐시
 const inflight = new Map();
 
-/**
- * 루틴 상세를 불러서 타입 라벨을 도출
- */
 async function fetchTypeLabel(routineId) {
   if (!routineId) return undefined;
   if (fetchedTypeLabelById[routineId]) return fetchedTypeLabelById[routineId];
@@ -61,14 +57,12 @@ async function fetchTypeLabel(routineId) {
   const p = (async () => {
     try {
       const res = await getRoutineDetail(routineId);
-      // 루틴 상세 쪽은 기존 코드상 res.data에 본문이 있었음
       const raw = res?.data;
       const code = toTypeCode(raw?.quizType);
-      const label = TYPE_LABELS[code] ?? "주관식"; // 최종 기본값은 주관식
+      const label = TYPE_LABELS[code] ?? "주관식";
       fetchedTypeLabelById[routineId] = label;
       return label;
     } catch (e) {
-      // 실패 시에도 폴백(주관식)으로 통일
       fetchedTypeLabelById[routineId] = "주관식";
       return "주관식";
     } finally {
@@ -80,10 +74,6 @@ async function fetchTypeLabel(routineId) {
   return p;
 }
 
-/**
- * 섹션이 펼쳐졌고(isExpanded), 실제 퀘스트가 있을 때
- * type/typeLabel이 비어있는 항목만 골라서 미리 타입 라벨을 채운다.
- */
 async function prefetchMissingTypes() {
   if (!props.isExpanded || props.isLocked) return;
   if (!Array.isArray(props.quests) || props.quests.length === 0) return;
@@ -94,7 +84,6 @@ async function prefetchMissingTypes() {
       q &&
       q.id &&
       !q.typeLabel &&
-      // 👇 이 조건을 수정하여, quizType이 있지만 LABEL 맵에 없는 경우도 감지하도록 합니다.
       !TYPE_LABELS[toTypeCode(q.quizType)] &&
       !fetchedTypeLabelById[q.id],
   );
@@ -113,7 +102,6 @@ watch(
 );
 onMounted(() => prefetchMissingTypes());
 
-// 실제 데이터가 있으면 절대 인덱스 폴백을 쓰지 않는다
 const hasRealQuests = computed(
   () => Array.isArray(props.quests) && props.quests.length > 0,
 );
@@ -123,14 +111,10 @@ const displayQuests = computed(() => {
     return props.quests.map((q, i) => {
       const typeCode = toTypeCode(q?.quizType);
       const tag =
-        // 1) 상위에서 내려준 라벨
         q?.typeLabel ??
-        // 2) 코드 매핑
         TYPE_LABELS[typeCode] ??
         undefined ??
-        // 3) 프리패치 결과
         fetchedTypeLabelById[String(q?.id)] ??
-        // 4) 최종 기본값(실데이터가 있는데도 끝내 없으면 주관식)
         "주관식";
 
       return {

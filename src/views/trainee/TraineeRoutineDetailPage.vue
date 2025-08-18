@@ -40,7 +40,7 @@ const isEntryMode = computed(
   () => !!route.query.enrollmentId && !isLocked.value,
 );
 
-// ✅ 타입 정규화(영문/한글/숫자코드/변형 전부 흡수)
+// 타입 정규화(영문/한글/숫자코드/변형 전부 흡수)
 const normalizeRoutineType = (t) => {
   const s = String(t ?? "")
     .trim()
@@ -124,9 +124,6 @@ const scopeCtx = (routineId) => ({
     Number(route.query.enrollmentId || enrollmentStore.enrollmentId) || null,
 });
 
-/* =======================
-   ✅ PASS 판정 & 스코프 정리 유틸
-   ======================= */
 // 서버 PASS 판정 (COMPLETED 류는 제외)
 const normalizePassResult = (apiRes) => {
   const r = apiRes?.data ?? apiRes;
@@ -185,7 +182,6 @@ const loadRoutineDetail = async () => {
       category: raw.routineType,
       reward: raw.routineScore,
       videoUrl: raw.routineVideoUrl || null,
-      // ⛔ 쿼리 폴백 제거: 서버 값만 신뢰
       type: normalizeRoutineType(raw.quizType),
       quizType: raw.quizType,
       completed: localLocked,
@@ -266,7 +262,7 @@ const handleCertificationSubmit = async (submission) => {
     const res = await submitRoutineResult(id, payload, file);
     console.log("res : ", res);
 
-    // ✅ 안전한 PASS 판정
+    // 안전한 PASS 판정
     const passed = normalizePassResult(res);
     submissionStatus.value = passed ? "success" : "failure";
 

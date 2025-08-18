@@ -7,8 +7,6 @@
       aria-modal="true"
       @click.self="$emit('close')"
     >
-      <!-- 서비스 화면 폭에 맞추기 -->
-      <!-- 우리 앱이 중앙 컨테이너를 max-w-sm(24rem=384px) 쓰면: -->
       <div
         class="mx-auto w-full max-w-sm rounded-t-2xl border border-gray-800/60 bg-realBlack px-5 pb-[max(env(safe-area-inset-bottom),20px)] pt-3 shadow-[0_20px_60px_rgba(0,0,0,0.5)]"
       >

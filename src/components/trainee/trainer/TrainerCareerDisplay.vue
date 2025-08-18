@@ -27,7 +27,6 @@ defineProps({
 </template>
 
 <style scoped>
-/* 스크롤바를 숨기는 스타일은 그대로 유지합니다. */
 div::-webkit-scrollbar {
   display: none;
 }

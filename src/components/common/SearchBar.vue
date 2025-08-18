@@ -19,14 +19,13 @@ const filteredTrainings = computed(() => {
   );
 });
 
-// 무한스크롤 (추후 API 연동 시 이벤트 추가)
+// 무한스크롤
 onMounted(() => {
   window.addEventListener("scroll", () => {
     if (
       window.innerHeight + window.scrollY >=
       document.body.offsetHeight - 200
     ) {
-      // API 호출 또는 더미 데이터 추가 가능
     }
   });
 });
