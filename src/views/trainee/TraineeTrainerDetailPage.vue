@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, onMounted } from "vue";
+import { reactive, ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import starIcon from "@/assets/images/star.svg";
@@ -7,9 +7,31 @@ import profileDefault from "@/assets/images/mascot/profile.png";
 
 import { traineeTrainerApi } from "@/composables/api/trainee/trainer/traineeTrainerApi";
 import { getTraineeTrainingPreDetail } from "@/composables/api/trainee/training/traineeTrainingPreDetailAPI";
+import badgeIcon from "@/assets/images/trainer/mypage/badge.png"; // 배지 아이콘 import
 
 const route = useRoute();
 const router = useRouter();
+
+const showTooltip = ref(false); // 툴팁 표시 상태
+
+// 자격증이 있는지 확인하는 computed
+const hasCertificates = computed(() => {
+  return trainerData.certificates && trainerData.certificates.length > 0;
+});
+
+// 툴팁에 표시할 자격증 목록
+const certificateList = computed(() => {
+  return trainerData.certificates.join(", ");
+});
+
+// 툴팁 표시/숨기기 함수들
+const showCertificateTooltip = () => {
+  showTooltip.value = true;
+};
+
+const hideCertificateTooltip = () => {
+  showTooltip.value = false;
+};
 
 const trainerData = reactive({
   username: "트레이너",
@@ -122,11 +144,38 @@ onMounted(fetchTrainerDetail);
           </div>
 
           <!-- 인증 뱃지 (첫 번째 자격증 텍스트) -->
-          <div
-            v-if="trainerData.certificates.length"
-            class="absolute left-1/2 top-full z-10 mt-3 -translate-x-1/2 whitespace-nowrap rounded-full bg-primary px-3 py-1 text-body3 font-bold text-black"
-          >
-            {{ trainerData.certificates[0] }}
+          <div class="flex items-center gap-2 text-center">
+            <div
+              v-if="hasCertificates"
+              class="relative"
+              @mouseenter="showCertificateTooltip"
+              @mouseleave="hideCertificateTooltip"
+            >
+              <img
+                :src="badgeIcon"
+                alt="자격증"
+                class="h-6 w-6 cursor-pointer"
+              />
+
+              <div
+                v-if="showTooltip"
+                class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 transform"
+              >
+                <div class="relative">
+                  <div
+                    class="min-w-[225px] whitespace-normal rounded-full border border-primary bg-primary bg-opacity-30 px-4 py-2 text-body text-white shadow-lg"
+                  >
+                    {{ certificateList }}
+                  </div>
+                  <div
+                    class="absolute bottom-full left-1/2 h-0 w-0 -translate-x-1/2 border-b-4 border-l-4 border-r-4 border-transparent border-b-gray-900"
+                  ></div>
+                </div>
+              </div>
+            </div>
+            <div class="text-title font-semibold text-white">
+              {{ trainerData.username }}
+            </div>
           </div>
         </div>
 

@@ -8,6 +8,11 @@ import BaseHeader from "@/components/common/BaseHeader.vue";
 const router = useRouter();
 const authStore = useAuthStore();
 
+// 툴팁에 표시할 자격증 목록
+const certificateList = computed(() => {
+  return trainerData.certificates.join(", ");
+});
+
 const handleLogout = () => {
   authStore.logout();
   router.push("/login");
