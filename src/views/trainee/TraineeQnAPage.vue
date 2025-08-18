@@ -12,7 +12,7 @@ const router = useRouter();
 const route = useRoute();
 const num = (v) => (v == null ? 0 : Number(v));
 const trainingId = ref(route.params.trainingId);
-const trainingData = ref(null); // ✅ TrainingInfo용 데이터
+const trainingData = ref(null); // TrainingInfo용 데이터
 const courseTitle = ref("");
 
 const qnaData = ref([]);
@@ -28,7 +28,7 @@ const handleCreateQuestion = () => {
 
 onMounted(async () => {
   try {
-    // ✅ 트레이닝 상세
+    // 트레이닝 상세
     const { data: res } = await getTrainerTrainingDetail(trainingId.value);
     const detail = res.data;
 
@@ -94,7 +94,7 @@ onMounted(async () => {
       <TrainingInfo :training-data="trainingData" user-role="trainer" />
     </div>
 
-    <!-- ✅ 중간 구분선 -->
+    <!-- 중간 구분선 -->
     <div class="px-6">
       <div class="my-4 h-px w-full bg-gray-700/80"></div>
     </div>

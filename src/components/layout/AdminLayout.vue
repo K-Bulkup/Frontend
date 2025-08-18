@@ -11,6 +11,4 @@
 import AdminSidebar from "@/components/layout/AdminSidebar.vue";
 </script>
 
-<style scoped>
-/* Add specific styles if necessary */
-</style>
+<style scoped></style>

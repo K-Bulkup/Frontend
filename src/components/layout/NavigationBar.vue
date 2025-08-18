@@ -23,7 +23,6 @@ const userType = computed(() => userStore.role?.toLowerCase() || "trainee");
 
 const activeTab = computed(() => {
   const path = route.path;
-  // If path includes '/asset' (trainee) or '/mypage/report' (trainer), return "asset"
   if (path.includes("/asset") || path.includes("/mypage/report"))
     return "asset";
   if (path.includes("/training")) return "training";
@@ -46,7 +45,7 @@ const navItems = {
     {
       id: "asset",
       icon: "layer-group",
-      label: "수익 관리",
+      label: "자산",
       path: "/trainee/asset",
     },
   ],

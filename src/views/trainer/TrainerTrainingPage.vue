@@ -20,9 +20,7 @@ const goToDetail = (trainingId) => {
 };
 
 const handleProfileClick = () => {
-  // 프로필 클릭 시 동작 구현
   console.log("Profile clicked");
-  // router.push('/profile');
 };
 
 // 상태 필터 변경 함수

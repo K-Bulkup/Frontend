@@ -39,7 +39,7 @@ const colors = [
 // 언더스코어 → 슬래시 정규화
 const normalizeCategory = (s) => (s ? s.replaceAll("_", "/") : "기타");
 
-// ✅ 차트 데이터
+// 차트 데이터
 const chartData = computed(() => {
   // 카테고리별 합계 초기화
   const categoryTotals = Object.fromEntries(categories.map((c) => [c, 0]));
@@ -54,7 +54,7 @@ const chartData = computed(() => {
 
   const values = categories.map((c) => categoryTotals[c]);
 
-  // ✅ 모두 0이면 기본 회색 차트
+  // 모두 0이면 기본 회색 차트
   if (values.every((v) => v === 0)) {
     return {
       labels: ["데이터 없음"],
@@ -80,7 +80,7 @@ const chartData = computed(() => {
   };
 });
 
-// ✅ 옵션
+// 옵션
 const chartOptions = {
   responsive: true,
   plugins: {
@@ -112,7 +112,7 @@ const chartOptions = {
 
         const pct = (value / total) * 100;
 
-        // ✅ 4% 미만은 표기하지 않음
+        // 4% 미만은 표기하지 않음
         if (pct < 4) return null;
 
         return `${pct.toFixed(1)}%`;

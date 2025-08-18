@@ -1,4 +1,3 @@
-<!-- src/pages/trainee/trainer/TraineeTrainerDetail.vue -->
 <script setup>
 import { reactive, ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -51,12 +50,12 @@ const fetchTrainerDetail = async () => {
     const trainerId = route.params.trainerId;
     const r = await traineeTrainerApi.getTrainerInfo(trainerId);
 
-    // 통합 응답(payload) 파싱 (구/신 키 모두 대응)
+    // 통합 응답(payload) 파싱
     const payload = r?.data?.data ?? {};
     const t = payload.profile ?? payload.trainer ?? {};
     const trainings = payload.trainings ?? [];
 
-    // ✅ 키 불일치 모두 대응 (name/username, profileUrl/userProfileUrl 등)
+    // 키 불일치 모두 대응 (name/username, profileUrl/userProfileUrl 등)
     trainerData.username =
       t.name ?? t.username ?? trainerData.username ?? "트레이너";
     trainerData.userProfileUrl =

@@ -1,4 +1,3 @@
-// src/stores/routineLock.js
 import { defineStore } from "pinia";
 import { useAuthStore } from "@/stores/auth";
 import { useEnrollmentStore } from "@/stores/enrollment";
@@ -25,15 +24,14 @@ function scopedKey({ userId, trainingId, enrollmentId, routineId }) {
     enrollmentId != null
       ? `enr:${enrollmentId}`
       : trainingId != null
-      ? `tr:${trainingId}`
-      : "tr:na";
+        ? `tr:${trainingId}`
+        : "tr:na";
   const r = String(routineId ?? "");
   return `${u}::${t}::${r}`;
 }
 
 export const useRoutineLockStore = defineStore("routineLock", {
   state: () => ({
-    // { [scopedKey]: true }
     lockedByKey: load(),
   }),
   actions: {

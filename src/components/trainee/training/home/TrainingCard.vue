@@ -1,4 +1,3 @@
-<!-- src/components/trainee/training/home/TrainingCard.vue -->
 <script setup>
 import { computed } from "vue";
 import star from "@/assets/images/star.svg";
@@ -14,7 +13,6 @@ const emit = defineEmits(["click"]);
 
 const formattedPrice = (price) => (price || 0).toLocaleString() + "원";
 
-/** 레벨 표준화: 숫자/영문/대소문자 모두 처리 */
 const normalizeLevel = (val) => {
   if (val == null) return null;
   const s = String(val).trim();
@@ -35,12 +33,11 @@ const normalizeLevel = (val) => {
     3: "고급",
   };
   const key = s.toUpperCase?.() ?? s;
-  return LUT[key] ?? s; // 모르는 값이면 원문 유지
+  return LUT[key] ?? s;
 };
 
 // 레벨 배지 (오른쪽 상단)
 const levelBadge = computed(() => {
-  // ✅ level 우선, 없으면 tags[1] 사용
   const raw = props.training.level ?? props.training.tags?.[1] ?? null;
   const level = normalizeLevel(raw) ?? "초급";
 
