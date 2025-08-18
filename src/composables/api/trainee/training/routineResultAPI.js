@@ -22,3 +22,10 @@ export const submitRoutineResult = async (routineId, payload, file) => {
     ],
   });
 };
+
+export const getUserAnswer = async (trainingId, routineId) => {
+  // 👉 apiClient 사용
+  return apiClient.get(
+    `/api/trainee/routines/user-answers/${trainingId}/${routineId}`,
+  );
+};
