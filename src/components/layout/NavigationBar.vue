@@ -45,7 +45,7 @@ const navItems = {
     {
       id: "asset",
       icon: "layer-group",
-      label: "수익 관리",
+      label: "자산",
       path: "/trainee/asset",
     },
   ],
