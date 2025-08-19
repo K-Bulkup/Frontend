@@ -131,10 +131,10 @@ onMounted(fetchTrainerDetail);
 
     <!-- 상단 프로필 -->
     <section class="mb-12 px-5">
-      <div class="flex flex-col items-center">
-        <div class="relative mb-4">
+      <div class="flex flex-col items-center justify-center">
+        <div class="mb-4 justify-center">
           <div
-            class="h-28 w-28 overflow-hidden rounded-full bg-gray-800 ring-2 ring-gray-800"
+            class="h-28 w-28 justify-center overflow-hidden rounded-full bg-gray-800 ring-2 ring-gray-800"
           >
             <img
               :src="trainerData.userProfileUrl"
@@ -144,7 +144,7 @@ onMounted(fetchTrainerDetail);
           </div>
 
           <!-- 인증 뱃지 (첫 번째 자격증 텍스트) -->
-          <div class="flex items-center gap-2 text-center">
+          <div class="mt-3 flex items-center justify-center gap-2">
             <div
               v-if="hasCertificates"
               class="relative"
@@ -178,8 +178,6 @@ onMounted(fetchTrainerDetail);
             </div>
           </div>
         </div>
-
-        <h1 class="mt-6 text-subTitle font-bold">{{ trainerData.username }}</h1>
 
         <div class="mb-8 mt-2 flex items-center gap-3 text-body2 text-gray-200">
           <span
