@@ -2,7 +2,10 @@
 import { ref, onMounted, watch, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { getRoutineDetail } from "@/composables/api/trainee/training/routineDetailAPI";
-import { submitRoutineResult } from "@/composables/api/trainee/training/routineResultAPI";
+import {
+  submitRoutineResult,
+  getUserAnswer,
+} from "@/composables/api/trainee/training/routineResultAPI";
 import { useEnrollmentStore } from "@/stores/enrollment";
 import { useRoutineLockStore } from "@/stores/routineLock";
 import { useAuthStore } from "@/stores/auth";
@@ -34,50 +37,51 @@ const isResultModalVisible = ref(false);
 const submissionStatus = ref("success");
 const acquiredReward = ref(0);
 const failCommentary = ref("");
-
 const isLocked = ref(false);
+
+// ✅ 모달/이전 제출 상태
+const extractedAnswer = ref(""); // 문자열(텍스트 or 이미지 URL)
+const extractedAnswerIsText = ref(true);
+const previousAnswer = ref("");
+const previousAnswerIsText = ref(true);
+const previousAnswerAt = ref(null);
+const previousAnswerIsPass = ref(null);
+
 const isEntryMode = computed(
   () => !!route.query.enrollmentId && !isLocked.value,
 );
 
-// 타입 정규화(영문/한글/숫자코드/변형 전부 흡수)
+// 타입 정규화
 const normalizeRoutineType = (t) => {
   const s = String(t ?? "")
     .trim()
     .toUpperCase();
-
-  // 한글 우선 처리
   if (/주관/.test(s)) return "SUBJECTIVE";
   if (/^OX$|TRUE|FALSE|T\/F|O\/X/.test(s)) return "OX";
-  // PHOTO(=사진 인증)도 실천형으로 취급
   if (
     /실천|행동|실습|연습|PRACT|PRACTICE|PRACTICAL|ACTION|TASK|EXER(CISE)?|ACTIVITY|BEHAVIOR|PHOTO|IMAGE|PICTURE|UPLOAD|EVIDENCE/.test(
       s,
     )
   )
     return "PRACTICE";
-
-  // 영문/코드 처리
   if (/(SUBJ|SUBJECT|SUBJECTIVE|ESSAY|TEXT|SHORT_?ANSWER)/.test(s))
     return "SUBJECTIVE";
   if (/^(OX|TRUE_FALSE|TF|BINARY)$/.test(s)) return "OX";
-  // PRACTICE 변형을 더 포괄
   if (
     /실천|행동|실습|연습|PRACT|PRACTICE|PRACTICAL|ACTION|TASK|EXER(CISE)?|ACTIVITY|BEHAVIOR/.test(
       s,
     )
   )
     return "PRACTICE";
-
-  // 숫자 코드(예: 1=주관식, 2=OX, 3=실천형 가정)
   const n = Number(s);
-  if (!Number.isNaN(n)) {
-    if (n === 1) return "SUBJECTIVE";
-    if (n === 2) return "OX";
-    if (n === 3) return "PRACTICE";
-  }
-
-  // 모르면 안전하게 주관식
+  if (!Number.isNaN(n))
+    return n === 1
+      ? "SUBJECTIVE"
+      : n === 2
+        ? "OX"
+        : n === 3
+          ? "PRACTICE"
+          : "SUBJECTIVE";
   return "SUBJECTIVE";
 };
 
@@ -99,20 +103,14 @@ const routineGroup = computed(() => {
   if (/유산소/.test(raw)) return "유산소";
   return "스트레칭";
 });
+const groupIcon = computed(() =>
+  routineGroup.value === "근력"
+    ? IconStrength
+    : routineGroup.value === "유산소"
+      ? IconCardio
+      : IconStretch,
+);
 
-const groupIcon = computed(() => {
-  switch (routineGroup.value) {
-    case "근력":
-      return IconStrength;
-    case "유산소":
-      return IconCardio;
-    case "스트레칭":
-    default:
-      return IconStretch;
-  }
-});
-
-// v2 스코프 컨텍스트
 const userKey = computed(() =>
   String(authStore.userId ?? authStore.user?.userId ?? "anon"),
 );
@@ -124,13 +122,11 @@ const scopeCtx = (routineId) => ({
     Number(route.query.enrollmentId || enrollmentStore.enrollmentId) || null,
 });
 
-// 서버 PASS 판정 (COMPLETED 류는 제외)
 const normalizePassResult = (apiRes) => {
   const r = apiRes?.data ?? apiRes;
   const s = String(r?.passFailResult ?? r?.result ?? "")
     .trim()
     .toUpperCase();
-
   const trueish = new Set([
     "PASS",
     "PASSED",
@@ -142,7 +138,6 @@ const normalizePassResult = (apiRes) => {
     "1",
   ]);
   if (trueish.has(s)) return true;
-
   const boolKeys = [
     "isPassed",
     "isPass",
@@ -153,15 +148,26 @@ const normalizePassResult = (apiRes) => {
     "success",
   ];
   if (boolKeys.some((k) => r?.[k] === true || r?.[k] === 1)) return true;
-
-  // 'COMPLETED' 같은 시도 상태는 PASS 아님
   return false;
 };
 
-// 같은 루틴의 모든 스코프 잠금 정리 (과거 tr 스코프 잔여 제거)
+// ✅ 답안 + 타입 추출 (text=false면 이미지)
+const pickAnswerAndType = (r) => {
+  const d = r?.data ?? r;
+  const ans = String(
+    d?.answer ?? d?.extractedAnswer ?? d?.recognizedText ?? d?.answerText ?? "",
+  ).trim();
+  let isText = d?.text;
+  if (typeof isText !== "boolean") {
+    // 서버에서 text 여부를 주지 않는 경우 URL 확장자로 추정
+    isText = !/^https?:\/\/.+\.(png|jpe?g|gif|webp|bmp|heic|heif)$/i.test(ans);
+  }
+  return { ans, isText };
+};
+
 const clearAllScopesFor = (routineId) => {
-  const ctxE = scopeCtx(routineId); // enr:enrollmentId
-  const ctxT = { ...ctxE, enrollmentId: null }; // tr:trainingId
+  const ctxE = scopeCtx(routineId);
+  const ctxT = { ...ctxE, enrollmentId: null };
   routineLock.unlock(ctxE);
   routineLock.unlock(ctxT);
 };
@@ -170,10 +176,8 @@ const loadRoutineDetail = async () => {
   try {
     const res = await getRoutineDetail(route.params.routineId);
     const raw = res.data;
-
     const id = String(route.params.routineId);
     const localLocked = routineLock.isLocked(scopeCtx(id));
-
     currentRoutine.value = {
       id,
       title: raw.routineTitle,
@@ -187,7 +191,6 @@ const loadRoutineDetail = async () => {
       completed: localLocked,
     };
     isLocked.value = localLocked;
-
     if (isLocked.value && route.query.enrollmentId) {
       const { enrollmentId, ...rest } = route.query;
       router.replace({ path: route.path, query: rest });
@@ -208,7 +211,26 @@ onMounted(async () => {
     await loadRoutineDetail();
   }
 
-  // 과거 tr 스코프만 잠겨있던 경우 enr 스코프로 이관
+  // ✅ 기존 제출 이력 조회
+  try {
+    const trainingId = route.params.trainingId;
+    const routineId = route.params.routineId;
+    const res = await getUserAnswer(trainingId, routineId);
+    const ua = res?.data ?? res;
+
+    const { ans, isText } = pickAnswerAndType(ua);
+    previousAnswer.value = ans;
+    previousAnswerIsText.value = !!isText;
+    previousAnswerIsPass.value = normalizePassResult(ua);
+    previousAnswerAt.value =
+      ua?.submittedAt ?? ua?.createdAt ?? ua?.timestamp ?? null;
+
+    console.log("✅ UserAnswerDTO:", ua);
+  } catch (e) {
+    console.error("❌ getUserAnswer 실패:", e);
+  }
+
+  // 기존 Lock 전환 로직
   try {
     const id = String(route.params.routineId);
     const ctxE = scopeCtx(id);
@@ -258,37 +280,42 @@ const handleCertificationSubmit = async (submission) => {
       enrollmentId: Number(route.query.enrollmentId),
       answerText: submission.text,
     };
-
     const res = await submitRoutineResult(id, payload, file);
     console.log("res : ", res);
 
-    // 안전한 PASS 판정
+    // ✅ 모달용 answer 저장 (타입 포함)
+    const { ans, isText } = pickAnswerAndType(res);
+    extractedAnswer.value = ans;
+    extractedAnswerIsText.value = !!isText;
+
     const passed = normalizePassResult(res);
     submissionStatus.value = passed ? "success" : "failure";
 
     const serverComment = res?.data?.commentary ?? res?.data?.comment ?? "";
     failCommentary.value = passed ? "" : String(serverComment).trim();
 
-    // ✅ 스코프 정리: 과거 tr 스코프 잔여 제거
     clearAllScopesFor(id);
 
     if (passed) {
-      // 성공: enr 스코프만 잠금
       routineLock.lock(scopeCtx(id));
       isLocked.value = true;
       currentRoutine.value.completed = true;
       acquiredReward.value = currentRoutine.value.reward;
 
-      // 응시 모드 종료(쿼리 정리)
       if (route.query.enrollmentId) {
         const { enrollmentId, ...rest } = route.query;
         router.replace({ path: route.path, query: rest });
       }
     } else {
-      // 실패: 어떤 스코프에도 잠금 없도록 보장
       isLocked.value = false;
       currentRoutine.value.completed = false;
       acquiredReward.value = 0;
+
+      // ✅ 직전 제출을 "이전 오답"으로 반영 (타입 포함)
+      previousAnswer.value = ans;
+      previousAnswerIsText.value = !!isText;
+      previousAnswerIsPass.value = false;
+      previousAnswerAt.value = new Date().toISOString();
     }
   } catch (e) {
     console.error("루틴 제출 실패", e);
@@ -304,7 +331,6 @@ const closeModal = () => router.back();
 const closeResult = (reason) => {
   isResultModalVisible.value = false;
   if (reason === "primary" && submissionStatus.value === "success") {
-    // 트레이닝 상세로 명시 이동 (history 쌓이지 않게 replace)
     router.replace(`/trainee/mypage/training/${route.params.trainingId}`);
   }
 };
@@ -366,7 +392,6 @@ const retrySubmission = () => {
             :loading="isLoading"
             @submit="handleCertificationSubmit"
           />
-          <!-- 모르는 타입은 주관식 폴백 -->
           <RoutineTypeSubjective
             v-else
             :minimal="true"
@@ -375,11 +400,47 @@ const retrySubmission = () => {
           />
         </div>
 
+        <!-- ✅ 이전 오답 표시 (텍스트/이미지 분기) -->
+        <div
+          v-if="isEntryMode && previousAnswer && previousAnswerIsPass === false"
+          class="mt-4 rounded-[12px] bg-[#232323] px-3 py-3 text-white"
+        >
+          <div class="mb-1 text-[11px] text-gray-400">이전 제출(오답)</div>
+          <div v-if="previousAnswerIsText" class="break-words text-sm">
+            {{ previousAnswer }}
+          </div>
+          <img
+            v-else
+            :src="previousAnswer"
+            alt="이전 제출 이미지"
+            class="mt-1 max-h-72 w-full rounded-lg bg-black/30 object-contain"
+          />
+          <div v-if="previousAnswerAt" class="mt-1 text-[11px] text-gray-500">
+            {{ new Date(previousAnswerAt).toLocaleString() }}
+          </div>
+        </div>
+
+        <!-- ✅ 완료된 루틴: 제출한 정답 표시 (텍스트/이미지 분기) -->
         <div
           v-else-if="isLocked"
-          class="mt-8 rounded-xl bg-gray-custom px-4 py-5 text-center text-gray-500"
+          class="mt-8 rounded-xl bg-gray-custom px-4 py-5 text-left"
         >
-          이미 완료된 루틴입니다.
+          <div class="mb-1 text-[12px] text-gray-400">제출한 정답</div>
+          <div
+            v-if="previousAnswerIsText"
+            class="break-words text-sm text-white"
+          >
+            {{ previousAnswer || "제출한 답안을 불러올 수 없습니다." }}
+          </div>
+          <img
+            v-else
+            :src="previousAnswer"
+            alt="제출한 정답 이미지"
+            class="mt-1 max-h-72 w-full rounded-lg bg-black/30 object-contain"
+          />
+          <div v-if="previousAnswerAt" class="mt-1 text-[11px] text-gray-500">
+            {{ new Date(previousAnswerAt).toLocaleString() }}
+          </div>
         </div>
       </template>
 
@@ -450,11 +511,55 @@ const retrySubmission = () => {
               />
             </div>
 
+            <!-- ✅ 이전 오답 표시 (텍스트/이미지 분기) -->
+            <div
+              v-if="
+                isEntryMode && previousAnswer && previousAnswerIsPass === false
+              "
+              class="mt-4 rounded-[12px] bg-[#232323] px-3 py-3 text-white"
+            >
+              <div class="mb-1 text-[11px] text-gray-400">이전 제출(오답)</div>
+              <div v-if="previousAnswerIsText" class="break-words text-sm">
+                {{ previousAnswer }}
+              </div>
+              <img
+                v-else
+                :src="previousAnswer"
+                alt="이전 제출 이미지"
+                class="mt-1 max-h-72 w-full rounded-lg bg-black/30 object-contain"
+              />
+              <div
+                v-if="previousAnswerAt"
+                class="mt-1 text-[11px] text-gray-500"
+              >
+                {{ new Date(previousAnswerAt).toLocaleString() }}
+              </div>
+            </div>
+
+            <!-- ✅ 완료된 루틴: 제출한 정답 표시 (텍스트/이미지 분기) -->
             <div
               v-else-if="isLocked"
-              class="mt-6 rounded-xl bg-gray-800 px-4 py-5 text-center text-gray-300"
+              class="mt-6 rounded-xl bg-gray-800 px-4 py-5 text-left"
             >
-              이미 완료된 루틴입니다.
+              <div class="mb-1 text-[12px] text-gray-400">제출한 정답</div>
+              <div
+                v-if="previousAnswerIsText"
+                class="break-words text-sm text-white"
+              >
+                {{ previousAnswer || "제출한 답안을 불러올 수 없습니다." }}
+              </div>
+              <img
+                v-else
+                :src="previousAnswer"
+                alt="제출한 정답 이미지"
+                class="mt-1 max-h-72 w-full rounded-lg bg-black/30 object-contain"
+              />
+              <div
+                v-if="previousAnswerAt"
+                class="mt-1 text-[11px] text-gray-500"
+              >
+                {{ new Date(previousAnswerAt).toLocaleString() }}
+              </div>
             </div>
           </div>
         </div>
@@ -477,6 +582,8 @@ const retrySubmission = () => {
       :status="submissionStatus"
       :reward="acquiredReward"
       :commentary="failCommentary"
+      :answer="extractedAnswer"
+      :answer-is-text="extractedAnswerIsText"
       @close="closeResult"
       @retry="retrySubmission"
     />
