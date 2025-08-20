@@ -42,7 +42,7 @@ const parsedCommentary = computed(() => {
     role="dialog"
     aria-modal="true"
     @click.self="$emit('close', 'dismiss')"
-    style="-webkit-backdrop-filter: blur(12px)"
+    style="backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px)"
   >
     <!-- 카드 -->
     <div

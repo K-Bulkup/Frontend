@@ -1,28 +1,44 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAccountConnect } from "@/composables/asset/useCreateAsset";
 import { awaitUserReady } from "@/composables/user/awaitUserReady";
-import failImage from "@/assets/images/fail.svg";
+
 import ActionModal from "@/components/common/ActionStateModal.vue";
 import LoadingOverlay from "@/components/common/LoadingOverlay.vue";
 import BaseHeader from "@/components/common/BaseHeader.vue";
+import BaseFormField from "@/components/common/BaseFormField.vue";
+import failImage from "@/assets/images/fail.svg";
 
 const router = useRouter();
 const { connectAccount } = useAccountConnect();
 
-const selectedBanks = ref([]); // 다중 선택용
-const selectedBank = ref(null); // 마지막 클릭한 은행 1개
+const selectedBanks = ref([]);
+const selectedBank = ref(null);
 const isLoading = ref(false);
 const showSuccessModal = ref(false);
 const showFailureModal = ref(false);
 
-// userId 비동기로 가져오기
+// userId (필요 시 payload에 포함)
 const userId = ref(null);
 onMounted(async () => {
   userId.value = await awaitUserReady();
 });
 
+// ---------- 계좌번호 ----------
+const accountNumber = ref("");
+
+// BaseFormField가 v-model을 emit할 때 들어오는 값을 숫자만으로 정제
+const onAccountInput = (val) => {
+  accountNumber.value = (val ?? "").replace(/\D/g, "");
+};
+
+// 8자리 이상 숫자만 허용
+const isAccountNumberValid = computed(() =>
+  /^\d{8,}$/.test(accountNumber.value),
+);
+
+// ---------- 은행 목록 ----------
 const banks = [
   {
     id: "kookmin",
@@ -58,43 +74,35 @@ const banks = [
 
 const selectBank = (bank) => {
   const index = selectedBanks.value.findIndex((b) => b.id === bank.id);
+  if (index >= 0) selectedBanks.value.splice(index, 1);
+  else selectedBanks.value.push(bank);
 
-  if (index >= 0) {
-    selectedBanks.value.splice(index, 1); // 이미 있으면 제거
-  } else {
-    selectedBanks.value.push(bank); // 없으면 추가
-  }
-
-  // 선택된 은행이 없으면 null 처리
-  if (selectedBanks.value.length === 0) {
-    selectedBank.value = null;
-  } else {
-    selectedBank.value = selectedBanks.value[selectedBanks.value.length - 1]; // 마지막 선택 은행
-  }
+  selectedBank.value = selectedBanks.value.length
+    ? selectedBanks.value[selectedBanks.value.length - 1]
+    : null;
 };
 
-const goBack = () => {
-  router.back();
-};
-
-const cancel = () => {
-  router.back();
-};
+const goBack = () => router.back();
+const cancel = () => router.back();
 
 const onClickConnect = async () => {
-  isLoading.value = true;
+  if (!selectedBank.value || !isAccountNumberValid.value) return;
 
+  isLoading.value = true;
   try {
-    const result = await connectAccount(selectedBank.value);
+    const result = await connectAccount({
+      bank: selectedBank.value,
+      accountNumber: accountNumber.value, // 숫자만 전달
+    });
 
     if (!result.success) {
       showFailureModal.value = true;
       return;
     }
-
     showSuccessModal.value = true;
   } catch (error) {
     console.error("계좌 연결 중 에러:", error);
+    showFailureModal.value = true;
   } finally {
     isLoading.value = false;
   }
@@ -114,10 +122,10 @@ const handleSuccessClose = () => {
   <!-- Header -->
   <BaseHeader title="자산 정보 입력" @back="goBack" />
 
-  <!-- Main Content -->
-  <div class="flex-1 justify-items-center px-4">
-    <!-- Title Section -->
-    <div class="mb-12 mt-6 text-center">
+  <!-- Main -->
+  <div class="flex-1 px-4">
+    <!-- Title -->
+    <div class="mx-auto mb-10 mt-6 max-w-md text-center">
       <h2 class="mb-2 text-[18px] font-semibold text-white">
         안전한 자산 연결
       </h2>
@@ -126,14 +134,13 @@ const handleSuccessClose = () => {
       </p>
     </div>
 
-    <!-- Bank Selection Grid -->
-    <!-- 부모: 칸 안에서 아이템을 중앙 배치 -->
-    <div class="mb-8 grid grid-cols-3 gap-4">
+    <!-- Banks -->
+    <div class="mx-auto mb-8 grid max-w-md grid-cols-3 gap-4">
       <div
         v-for="bank in banks"
         :key="bank.id"
         @click="selectBank(bank)"
-        class="flex size-[92px] cursor-pointer flex-col items-center justify-center rounded-xl bg-[#353535]/50"
+        class="flex size-[92px] cursor-pointer flex-col items-center justify-center rounded-xl bg-[#353535]/50 transition"
         :class="{
           'ring-2 ring-primary': selectedBanks.some((b) => b.id === bank.id),
         }"
@@ -149,27 +156,54 @@ const handleSuccessClose = () => {
       </div>
     </div>
 
-    <!-- Security Notice -->
-    <div class="mb-8 rounded-xl bg-gray-900 p-5">
-      <div class="mb-4 flex items-center">
-        <img
-          src="@/assets/images/shiledCheck.png"
-          alt="shiledCheck"
-          class="h-10 w-7"
+    <!-- Account + Notice (간격 넉넉하게) -->
+    <div class="mx-auto max-w-md">
+      <!-- Account -->
+      <div class="mb-12">
+        <BaseFormField
+          v-model="accountNumber"
+          @update:modelValue="onAccountInput"
+          label="계좌번호"
+          placeholder="숫자만, 8자리 이상 입력해주세요."
+          variant="dark"
+          class="h-14 w-full"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+          aria-label="계좌번호"
         />
-        <h3 class="ml-1 text-[14px] font-semibold text-white">보안 안내</h3>
+        <p
+          v-if="accountNumber && !isAccountNumberValid"
+          class="mt-3 text-[12px] text-red-400"
+        >
+          계좌번호는 숫자 기준 8자리 이상이어야 합니다.
+        </p>
       </div>
-      <div class="space-y-3 text-[12px] text-white">
-        <p>• 계좌 정보는 256비트 SSL 암호화로 안전하게 보호됩니다.</p>
-        <p>• 자산 조회 목적으로만 사용되며, 출금이나 이체는 불가능합니다.</p>
-        <p>• 언제든지 연결을 해제하고 정보를 삭제할 수 있습니다.</p>
-        <p>• 금융감독원 가이드라인을 준수하여 운영됩니다.</p>
+
+      <!-- Security Notice -->
+      <div class="mb-10 rounded-xl bg-gray-900 p-5">
+        <div class="mb-4 flex items-center">
+          <img
+            src="@/assets/images/shiledCheck.png"
+            alt="shiledCheck"
+            class="h-10 w-7"
+          />
+          <h3 class="ml-1 text-[14px] font-semibold text-white">보안 안내</h3>
+        </div>
+        <div class="space-y-3 text-[12px] text-white">
+          <p>• 계좌 정보는 256비트 SSL 암호화로 안전하게 보호됩니다.</p>
+          <p>• 자산 조회 목적으로만 사용되며, 출금이나 이체는 불가능합니다.</p>
+          <p>• 언제든지 연결을 해제하고 정보를 삭제할 수 있습니다.</p>
+          <p>• 금융감독원 가이드라인을 준수하여 운영됩니다.</p>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Action Buttons -->
-  <div class="mb-6 flex gap-4 px-4">
+  <div class="mx-auto mb-6 flex max-w-md gap-4 px-4">
     <button
       @click="cancel"
       class="h-14 flex-1 rounded-xl bg-gray-600 text-body font-semibold text-white"
@@ -179,10 +213,10 @@ const handleSuccessClose = () => {
 
     <button
       @click="onClickConnect"
-      :disabled="!selectedBank"
+      :disabled="!selectedBank || !isAccountNumberValid"
       class="h-14 flex-1 rounded-xl text-body font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60"
       :class="
-        selectedBank
+        selectedBank && isAccountNumberValid
           ? 'bg-primary text-realBlack hover:brightness-110 active:scale-95'
           : 'bg-gray-900 text-gray-400'
       "
@@ -191,7 +225,7 @@ const handleSuccessClose = () => {
     </button>
   </div>
 
-  <!-- 모달 -->
+  <!-- Modals -->
   <LoadingOverlay
     :show="isLoading"
     title="자산 연동 중입니다."
