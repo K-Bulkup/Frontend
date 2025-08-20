@@ -174,12 +174,6 @@ const handleSuccessClose = () => {
           spellcheck="false"
           aria-label="계좌번호"
         />
-        <p
-          v-if="accountNumber && !isAccountNumberValid"
-          class="mt-3 text-[12px] text-red-400"
-        >
-          계좌번호는 숫자 기준 8자리 이상이어야 합니다.
-        </p>
       </div>
 
       <!-- Security Notice -->
