@@ -1,23 +1,25 @@
 <script setup>
 defineProps({
-  isDisabled: {
-    type: Boolean,
-    default: false,
-  },
+  isDisabled: { type: Boolean, default: false },
+  type: { type: String, default: "button" },
 });
+const emit = defineEmits(["click"]);
 </script>
 
 <template>
   <button
-    :class="[
-      'text-heading w-[90%] rounded-xl font-medium',
-      isDisabled
-        ? 'cursor-not-allowed border-gray-600 bg-gray-700 text-gray-400'
-        : 'bg-black text-white hover:opacity-80',
-      'border-gray100 border',
-      'py-[12px]',
-    ]"
+    :type="type"
     :disabled="isDisabled"
+    @click="emit('click', $event)"
+    :class="[
+      // 크기 & 배치
+      'mx-auto block h-btn w-btn rounded-xl font-semibold',
+      // 내용 중앙 정렬
+      'flex items-center justify-center gap-2 text-center',
+      // 색/상태
+      'bg-primary text-background transition hover:opacity-90',
+      isDisabled ? 'cursor-not-allowed opacity-80' : '',
+    ]"
   >
     <slot />
   </button>

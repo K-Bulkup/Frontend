@@ -1,0 +1,111 @@
+<script setup>
+import { computed } from "vue";
+import { UserIcon } from "lucide-vue-next";
+import { useAuthStore } from "@/stores/auth";
+
+const authStore = useAuthStore();
+
+const isTrainer = computed(() => authStore.role === "TRAINER");
+
+const props = defineProps({
+  userName: {
+    type: String,
+    required: true,
+  },
+  userProfileUrl: {
+    type: String,
+    default: null,
+  },
+  expiresAt: {
+    type: [Date, null],
+    default: null,
+  },
+  isAiChat: {
+    type: Boolean,
+    default: false,
+  },
+  buttonText: {
+    type: String,
+    required: true,
+  },
+  buttonHandler: {
+    type: Function,
+    required: true,
+  },
+  buttonDisabled: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+defineEmits(["back"]);
+
+const remainingPeriodText = computed(() => {
+  if (!props.expiresAt || isNaN(props.expiresAt.getTime?.())) {
+    return "만료 시간 알 수 없음";
+  }
+
+  const diff = props.expiresAt.getTime() - Date.now();
+  if (diff <= 0) return "만료";
+
+  const totalMinutes = Math.floor(diff / 1000 / 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  return `${hours}시간 ${minutes}분 남음`;
+});
+
+const badgeClass = computed(() => {
+  if (!props.expiresAt || isNaN(props.expiresAt.getTime?.())) {
+    return "bg-gray-400";
+  }
+
+  const diff = props.expiresAt.getTime() - Date.now();
+  if (diff <= 0) return "bg-gray-400";
+  if (diff <= 60 * 60 * 1000) return "bg-red-500";
+  return "bg-green-500";
+});
+</script>
+
+<template>
+  <div
+    class="flex items-center justify-between border-b border-gray-800 px-5 pb-6 pt-6"
+  >
+    <div class="flex items-center space-x-3">
+      <button @click="$emit('back')">
+        <img src="@/assets/images/arrow-back.png" class="pr-3" alt="뒤로가기" />
+      </button>
+      <div
+        class="flex h-10 w-10 items-center justify-center rounded-full bg-white"
+      >
+        <UserIcon v-if="!userProfileUrl" class="h-6 w-6 text-gray-600" />
+        <img
+          v-else
+          :src="userProfileUrl"
+          class="h-10 w-10 rounded-full object-cover"
+        />
+      </div>
+      <div class="flex items-center space-x-2">
+        <span class="font-medium">{{ userName }}</span>
+        <span
+          v-if="expiresAt"
+          class="rounded-full px-2 py-1 text-xs text-white"
+          :class="badgeClass"
+        >
+          {{ remainingPeriodText }}
+        </span>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-end">
+      <button
+        v-if="isAiChat || (!isAiChat && isTrainer)"
+        @click="buttonHandler"
+        :disabled="buttonDisabled"
+        class="mr-2 mt-2 h-[32px] w-[100px] rounded-[15px] border border-gray-700 text-body2 font-medium text-gray-200 transition-all"
+      >
+        {{ buttonText }}
+      </button>
+    </div>
+  </div>
+</template>

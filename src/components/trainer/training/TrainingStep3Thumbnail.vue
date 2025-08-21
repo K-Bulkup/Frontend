@@ -1,0 +1,72 @@
+<script setup>
+import { ref, watch } from "vue";
+import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
+
+const props = defineProps({
+  modelValue: {
+    type: File,
+    default: null,
+  },
+});
+const emit = defineEmits(["update:modelValue"]);
+
+const thumbnailUrl = ref(null);
+
+const onFileChange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    emit("update:modelValue", file);
+    thumbnailUrl.value = URL.createObjectURL(file);
+  }
+};
+
+const triggerFileInput = () => {
+  document.getElementById("thumbnailInput").click();
+};
+
+watch(
+  () => props.modelValue,
+  (newFile) => {
+    if (!newFile && thumbnailUrl.value) {
+      URL.revokeObjectURL(thumbnailUrl.value);
+      thumbnailUrl.value = null;
+    }
+  },
+);
+</script>
+
+<template>
+  <div>
+    <BaseStatusMessage
+      title="트레이닝을 오픈하시겠습니까?"
+      subtitle="썸네일을 등록해주세요"
+    />
+    <div class="mt-12 flex flex-col items-center">
+      <input
+        id="thumbnailInput"
+        type="file"
+        class="hidden"
+        accept="image/*"
+        @change="onFileChange"
+      />
+      <div
+        @click="triggerFileInput"
+        class="bg-gray-custom flex h-64 w-full cursor-pointer items-center justify-center rounded-xl transition-colors hover:bg-gray-900"
+      >
+        <img
+          v-if="thumbnailUrl"
+          :src="thumbnailUrl"
+          alt="Thumbnail preview"
+          class="h-full w-full rounded-xl object-cover"
+        />
+        <div v-else class="text-center text-gray-700">
+          <img
+            src="@/assets/images/Image_Square_gray.svg"
+            alt="이미지 업로드"
+            class="mx-auto h-12 w-12"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

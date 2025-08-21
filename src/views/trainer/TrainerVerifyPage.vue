@@ -1,0 +1,30 @@
+<script setup>
+import BaseHeader from "@/components/common/BaseHeader.vue";
+import BaseStatusMessage from "@/components/common/BaseStatusMessage.vue";
+import CertificatesInfo from "@/components/trainer/certificates/CertificatesInfo.vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
+const handleBack = () => {
+  router.go(-1); // 이전 페이지로 이동
+};
+</script>
+
+<template>
+  <div>
+    <BaseHeader title="자격 인증" @back="handleBack" />
+  </div>
+
+  <!-- 페이지 설명 -->
+  <div class="p-5">
+    <BaseStatusMessage
+      title="자격 정보를 입력해주세요"
+      subtitle="합격증 번호와 발급 번호를 입력해주세요."
+    />
+  </div>
+
+  <div>
+    <CertificatesInfo />
+  </div>
+</template>
