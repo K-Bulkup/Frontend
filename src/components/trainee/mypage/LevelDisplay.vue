@@ -8,6 +8,61 @@ import background3 from "@/assets/images/background/background3.png";
 import background4 from "@/assets/images/background/background4.png";
 import background5 from "@/assets/images/background/background5.png";
 
+// 레벨별 금육이 이미지
+import Geumyuk1 from "@/assets/images/mascot/level/Geumyuk_1.png";
+import Geumyuk2 from "@/assets/images/mascot/level/Geumyuk_2.png";
+import Geumyuk3 from "@/assets/images/mascot/level/Geumyuk_3.png";
+import Geumyuk4 from "@/assets/images/mascot/level/Geumyuk_4.png";
+import Geumyuk5 from "@/assets/images/mascot/level/Geumyuk_5.png";
+import Geumyuk6 from "@/assets/images/mascot/level/Geumyuk_6.png";
+import Geumyuk7 from "@/assets/images/mascot/level/Geumyuk_7.png";
+import Geumyuk8 from "@/assets/images/mascot/level/Geumyuk_8.png";
+import Geumyuk9 from "@/assets/images/mascot/level/Geumyuk_9.png";
+import Geumyuk10 from "@/assets/images/mascot/level/Geumyuk_10.png";
+import Geumyuk11 from "@/assets/images/mascot/level/Geumyuk_11.png";
+import Geumyuk12 from "@/assets/images/mascot/level/Geumyuk_12.png";
+import Geumyuk13 from "@/assets/images/mascot/level/Geumyuk_13.png";
+import Geumyuk14 from "@/assets/images/mascot/level/Geumyuk_14.png";
+import Geumyuk15 from "@/assets/images/mascot/level/Geumyuk_15.png";
+import Geumyuk16 from "@/assets/images/mascot/level/Geumyuk_16.png";
+import Geumyuk17 from "@/assets/images/mascot/level/Geumyuk_17.png";
+import Geumyuk18 from "@/assets/images/mascot/level/Geumyuk_18.png";
+import Geumyuk19 from "@/assets/images/mascot/level/Geumyuk_19.png";
+import Geumyuk20 from "@/assets/images/mascot/level/Geumyuk_20.png";
+import Geumyuk21 from "@/assets/images/mascot/level/Geumyuk_21.png";
+import Geumyuk22 from "@/assets/images/mascot/level/Geumyuk_22.png";
+import Geumyuk23 from "@/assets/images/mascot/level/Geumyuk_23.png";
+import Geumyuk24 from "@/assets/images/mascot/level/Geumyuk_24.png";
+import Geumyuk25 from "@/assets/images/mascot/level/Geumyuk_25.png";
+
+const characterImages = [
+  Geumyuk1,
+  Geumyuk2,
+  Geumyuk3,
+  Geumyuk4,
+  Geumyuk5,
+  Geumyuk6,
+  Geumyuk7,
+  Geumyuk8,
+  Geumyuk9,
+  Geumyuk10,
+  Geumyuk11,
+  Geumyuk12,
+  Geumyuk13,
+  Geumyuk14,
+  Geumyuk15,
+  Geumyuk16,
+  Geumyuk17,
+  Geumyuk18,
+  Geumyuk19,
+  Geumyuk20,
+  Geumyuk21,
+  Geumyuk22,
+  Geumyuk23,
+  Geumyuk24,
+  Geumyuk25,
+];
+
 const props = defineProps({
   growthScore: { type: Number, required: true },
   applyBackdropBlur: { type: Boolean, default: false },
@@ -25,10 +80,8 @@ const backgroundImage = computed(() => {
 // growthScore에 따른 캐릭터 이미지 결정
 const characterImage = computed(() => {
   const imageIndex = Math.floor(props.growthScore / 20);
-
-  const finalIndex = Math.min(imageIndex, 24);
-  const imagePath = `../../../assets/images/mascot/level/Geumyuk_${finalIndex + 1}.png`;
-  return new URL(imagePath, import.meta.url).href;
+  const finalIndex = Math.min(imageIndex, characterImages.length - 1);
+  return characterImages[finalIndex];
 });
 </script>
 
