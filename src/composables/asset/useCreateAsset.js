@@ -2,20 +2,19 @@ import { useRouter } from "vue-router";
 import { postConnectAccount } from "@/composables/api/useAssetApi";
 
 export const useAccountConnect = () => {
-  const router = useRouter();
-
-  const connectAccount = async (selectedBank) => {
+  const connectAccount = async ({ bank, accountNumber }) => {
     try {
-      const response = await postConnectAccount(selectedBank.name);
+      const bankName = typeof bank === "string" ? bank : bank?.name;
+      const cleanAccount = String(accountNumber ?? "")
+        .replaceAll("-", "")
+        .replaceAll(" ", "");
 
-      return {
-        success: true,
-        data: response.data,
-      };
+      const { data } = await postConnectAccount(bankName, cleanAccount);
+      return { success: true, data };
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || error.message,
+        error: error?.response?.data?.message || error.message,
       };
     }
   };

@@ -1,8 +1,9 @@
 import apiClient from "@/plugins/axios";
 
-export const postConnectAccount = async (bankName) => {
+export const postConnectAccount = async (bankName, accountNumber) => {
   return await apiClient.post(`/api/trainee/assets/account`, {
     bank: bankName,
+    accountNumber: accountNumber,
   });
 };
 
